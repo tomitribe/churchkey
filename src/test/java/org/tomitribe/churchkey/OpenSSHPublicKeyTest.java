@@ -78,7 +78,7 @@ public class OpenSSHPublicKeyTest {
         final RSAPublicKey rsaPublicKey = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
 
         final String expected = new String(resource.bytes("public.openssh"), "UTF-8");
-        final String actual = OpenSSH.formatSshPublicKey(rsaPublicKey, "dblevins@mingus.lan");
+        final String actual = OpenSSHParser.OpenSSH.formatSshPublicKey(rsaPublicKey, "dblevins@mingus.lan");
 
         assertEquals(expected, actual);
     }

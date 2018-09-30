@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
-import org.tomitribe.churchkey.PemDecoder;
+import org.tomitribe.churchkey.PemParser;
 import org.tomitribe.churchkey.Resource;
 
 import java.security.KeyFactory;
@@ -33,7 +33,7 @@ public class BeginRsaPrivateKeyTest {
 
     @Test
     public void testDecode1024() throws Exception {
-        final Decoder decoder = new PemDecoder()::decode;
+        final Decoder decoder = new PemParser.PemDecoder()::decode;
         final Resource resource = Resource.resource("rsa", 1024, 256);
 
         assertDecode(decoder, resource);
@@ -49,7 +49,7 @@ public class BeginRsaPrivateKeyTest {
 
     @Test
     public void testDecode2048() throws Exception {
-        final Decoder decoder = new PemDecoder()::decode;
+        final Decoder decoder = new PemParser.PemDecoder()::decode;
         final Resource resource = Resource.resource("rsa", 2048, 256);
 
         assertDecode(decoder, resource);

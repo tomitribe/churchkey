@@ -16,6 +16,17 @@
  */
 package org.tomitribe.churchkey;
 
+import org.tomitribe.churchkey.pem.BeginDsaPrivateKey;
+import org.tomitribe.churchkey.pem.BeginPrivateKey;
+import org.tomitribe.churchkey.pem.BeginPublicKey;
+import org.tomitribe.churchkey.pem.BeginRsaPrivateKey;
+import org.tomitribe.churchkey.pem.BeginRsaPublicKey;
+import org.tomitribe.util.Base64;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 public class PemParser implements Key.Format.Parser {
 
     private final PemDecoder decoder = new PemDecoder();
@@ -36,4 +47,41 @@ public class PemParser implements Key.Format.Parser {
     }
 
 
+    public static class PemDecoder implements Decoder {
+
+        private final Map<String, Function<byte[], Key>> converters = new HashMap<>();
+
+        {
+            converters.put("PRIVATE KEY", BeginPrivateKey::decode);
+            converters.put("PUBLIC KEY", BeginPublicKey::decode);
+            converters.put("RSA PRIVATE KEY", BeginRsaPrivateKey::decode);
+            converters.put("RSA PUBLIC KEY", BeginRsaPublicKey::decode);
+            converters.put("DSA PRIVATE KEY", BeginDsaPrivateKey::decode);
+        }
+
+        public PemDecoder() {
+        }
+
+
+        @Override
+        public Key decode(final byte[] key) {
+            if (!Utils.startsWith("-----", key)) return null;
+
+            final String s = new String(key);
+            final String[] parts = s
+                    .replaceAll(" *\n *", "")
+                    .replaceAll(" *\r *", "")
+                    .split("-----(BEGIN|END) |------?");
+
+            final Function<byte[], Key> converter = converters.get(parts[1]);
+
+            if (converter == null) {
+                throw new UnsupportedOperationException(String.format("Unsupported PEM format '%s'", parts[1]));
+            }
+
+            final byte[] bytes = Base64.decodeBase64(parts[2].getBytes());
+
+            return converter.apply(bytes);
+        }
+    }
 }

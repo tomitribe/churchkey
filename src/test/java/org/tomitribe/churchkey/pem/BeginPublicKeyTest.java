@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
-import org.tomitribe.churchkey.PemDecoder;
+import org.tomitribe.churchkey.PemParser;
 import org.tomitribe.churchkey.Resource;
 
 import java.io.IOException;
@@ -37,12 +37,12 @@ public class BeginPublicKeyTest {
 
     @Test
     public void testRsaDecode1024() throws Exception {
-        assertRsaDecode(new PemDecoder()::decode, "rsa", 1024);
+        assertRsaDecode(new PemParser.PemDecoder()::decode, "rsa", 1024);
     }
 
     @Test
     public void testRsaDecode2048() throws Exception {
-        assertRsaDecode(new PemDecoder()::decode, "rsa", 2048);
+        assertRsaDecode(new PemParser.PemDecoder()::decode, "rsa", 2048);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class BeginPublicKeyTest {
 
     @Test
     public void testDSADecode1024() throws Exception {
-        assertDsaDecode(new PemDecoder()::decode, "dsa", 1024);
+        assertDsaDecode(new PemParser.PemDecoder()::decode, "dsa", 1024);
     }
 
     @Test

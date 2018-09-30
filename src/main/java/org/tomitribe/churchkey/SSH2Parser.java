@@ -16,6 +16,12 @@
  */
 package org.tomitribe.churchkey;
 
+import org.tomitribe.util.Base64;
+
+import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPublicKey;
+
 public class SSH2Parser implements Key.Format.Parser {
 
     @Override
@@ -31,5 +37,41 @@ public class SSH2Parser implements Key.Format.Parser {
     @Override
     public boolean canEncode(final Key key) {
         return false;
+    }
+
+    public static class Ssh2PublicKeyDecoder implements Decoder {
+
+        public Ssh2PublicKeyDecoder() {
+        }
+
+        @Override
+        public Key decode(final byte[] key) {
+            if (!Utils.startsWith("---- BEGIN SSH2 PUBLIC KEY ----", key)) return null;
+
+            final String s = new String(key);
+            final StringBuilder sb = new StringBuilder();
+            for (final String line : s.split("\r?\n")) {
+                if (line.startsWith("---- ")) continue;
+                if (line.contains(":")) continue;
+                sb.append(line);
+            }
+
+            final byte[] bytes = Base64.decodeBase64(sb.toString().getBytes());
+
+            final PublicKey publicKey;
+            try {
+                publicKey = OpenSSHParser.OpenSSH.decode4253PublicKey(bytes);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
+            }
+
+            if (publicKey instanceof RSAPublicKey) {
+                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2);
+            }
+            if (publicKey instanceof DSAPublicKey) {
+                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2);
+            }
+            return null;
+        }
     }
 }

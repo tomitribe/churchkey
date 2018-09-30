@@ -16,9 +16,9 @@
  */
 package org.tomitribe.churchkey.pem;
 
-import org.tomitribe.churchkey.Asn1Object;
-import org.tomitribe.churchkey.DerParser;
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.asn1.Asn1Object;
+import org.tomitribe.churchkey.asn1.DerParser;
 
 import java.io.IOException;
 import java.math.BigInteger;

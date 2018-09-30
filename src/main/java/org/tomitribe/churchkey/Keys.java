@@ -41,7 +41,7 @@ public class Keys {
 
     public static PublicKey readPublicKey(final byte[] bytes) {
         try {
-            return OpenSSH.readSshPublicKey(new String(bytes, "UTF-8"));
+            return OpenSSHParser.OpenSSH.readSshPublicKey(new String(bytes, "UTF-8"));
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
