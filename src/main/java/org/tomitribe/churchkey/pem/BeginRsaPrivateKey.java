@@ -16,12 +16,53 @@
  */
 package org.tomitribe.churchkey.pem;
 
+import org.tomitribe.churchkey.Asn1Object;
+import org.tomitribe.churchkey.DerParser;
 import org.tomitribe.churchkey.Key;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPrivateCrtKeySpec;
 
 public class BeginRsaPrivateKey {
 
     public static Key decode(final byte[] bytes) {
-        return null;
+        try {
+            final DerParser parser = new DerParser(bytes);
+
+            final Asn1Object sequence = parser.read();
+            if (sequence.getType() != DerParser.SEQUENCE) {
+                throw new IllegalArgumentException("Invalid DER: not a sequence");
+            }
+
+            // Parse inside the sequence
+            final DerParser p = sequence.getParser();
+
+            p.read(); // Skip version
+            final BigInteger modulus = p.read().getInteger();
+            final BigInteger publicExp = p.read().getInteger();
+            final BigInteger privateExp = p.read().getInteger();
+            final BigInteger prime1 = p.read().getInteger();
+            final BigInteger prime2 = p.read().getInteger();
+            final BigInteger exp1 = p.read().getInteger();
+            final BigInteger exp2 = p.read().getInteger();
+            final BigInteger crtCoef = p.read().getInteger();
+
+            final RSAPrivateCrtKeySpec spec = new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, prime1, prime2, exp1, exp2, crtCoef);
+
+            final KeyFactory result = KeyFactory.getInstance("RSA");
+            final PrivateKey publicKey = result.generatePrivate(spec);
+
+            return new Key(publicKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.PEM);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        } catch (IOException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static byte[] encode(final Key key) {

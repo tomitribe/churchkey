@@ -18,14 +18,11 @@ package org.tomitribe.churchkey;
 
 public class PemParser implements Key.Format.Parser {
 
-    @Override
-    public boolean canDecode(final byte[] bytes) {
-        return false;
-    }
+    private final PemDecoder decoder = new PemDecoder();
 
     @Override
     public Key decode(final byte[] bytes) {
-        return null;
+        return decoder.decode(bytes);
     }
 
     @Override

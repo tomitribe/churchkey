@@ -17,10 +17,6 @@
 package org.tomitribe.churchkey;
 
 public class JwkParser implements Key.Format.Parser {
-    @Override
-    public boolean canDecode(final byte[] bytes) {
-        return Utils.startsWith("{", bytes);
-    }
 
     @Override
     public Key decode(final byte[] bytes) {

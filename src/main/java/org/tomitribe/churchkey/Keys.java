@@ -22,8 +22,9 @@ public class Keys {
 
     public static Key decode(final byte[] bytes) {
         for (final Key.Format format : Key.Format.values()) {
-            if (format.canDecode(bytes)) {
-                return format.decode(bytes);
+            final Key key = format.decode(bytes);
+            if (key != null) {
+                return key;
             }
         }
 

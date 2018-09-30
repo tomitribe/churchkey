@@ -19,11 +19,6 @@ package org.tomitribe.churchkey;
 public class OpenSSHParser implements Key.Format.Parser {
 
     @Override
-    public boolean canDecode(final byte[] bytes) {
-        return Utils.startsWith("ssh-", bytes);
-    }
-
-    @Override
     public Key decode(final byte[] bytes) {
         return null;
     }

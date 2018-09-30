@@ -67,10 +67,6 @@ public class Key {
             this.parser = parser;
         }
 
-        public boolean canDecode(final byte[] bytes) {
-            return parser.canDecode(bytes);
-        }
-
         public byte[] encode(final Key key) {
             return parser.encode(key);
         }
@@ -80,7 +76,6 @@ public class Key {
         }
 
         interface Parser {
-            boolean canDecode(final byte[] bytes);
             Key decode(final byte[] bytes);
 
             boolean canEncode(final Key key);

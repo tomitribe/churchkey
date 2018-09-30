@@ -17,6 +17,7 @@
 package org.tomitribe.churchkey;
 
 import org.tomitribe.churchkey.pem.BeginPublicKey;
+import org.tomitribe.churchkey.pem.BeginRsaPrivateKey;
 import org.tomitribe.churchkey.pem.BeginRsaPublicKey;
 import org.tomitribe.util.Base64;
 
@@ -41,7 +42,7 @@ public class PemDecoder implements Decoder {
     {
         converters.put("PRIVATE KEY", this::unimplemented);
         converters.put("PUBLIC KEY", this::publicKey);
-        converters.put("RSA PRIVATE KEY", this::unimplemented);
+        converters.put("RSA PRIVATE KEY", BeginRsaPrivateKey::decode);
         converters.put("RSA PUBLIC KEY", BeginRsaPublicKey::decode);
         converters.put("DSA PRIVATE KEY", this::unimplemented);
         converters.put("DSA PUBLIC KEY", this::unimplemented);
@@ -64,6 +65,11 @@ public class PemDecoder implements Decoder {
                 .split("-----(BEGIN|END) |------?");
 
         final Function<byte[], Key> converter = converters.get(parts[1]);
+
+        if (converter == null) {
+            throw new UnsupportedOperationException(String.format("Unsupported PEM format '%s'", parts[1]));
+        }
+
         final byte[] bytes = Base64.decodeBase64(parts[2].getBytes());
 
         return converter.apply(bytes);
