@@ -16,6 +16,7 @@
  */
 package org.tomitribe.churchkey;
 
+import org.tomitribe.churchkey.pem.BeginPrivateKey;
 import org.tomitribe.churchkey.pem.BeginPublicKey;
 import org.tomitribe.churchkey.pem.BeginRsaPrivateKey;
 import org.tomitribe.churchkey.pem.BeginRsaPublicKey;
@@ -30,7 +31,7 @@ public class PemDecoder implements Decoder {
     private final Map<String, Function<byte[], Key>> converters = new HashMap<>();
 
     {
-        converters.put("PRIVATE KEY", this::unimplemented);
+        converters.put("PRIVATE KEY", BeginPrivateKey::decode);
         converters.put("PUBLIC KEY", BeginPublicKey::decode);
         converters.put("RSA PRIVATE KEY", BeginRsaPrivateKey::decode);
         converters.put("RSA PUBLIC KEY", BeginRsaPublicKey::decode);
