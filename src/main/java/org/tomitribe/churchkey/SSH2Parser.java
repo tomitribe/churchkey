@@ -18,12 +18,9 @@ package org.tomitribe.churchkey;
 
 public class SSH2Parser implements Key.Format.Parser {
 
-    private final byte[] publicKeyPrefix = "-----BEGIN PUBLIC KEY------".getBytes();
-    private final byte[] privateKeyPrefix = "-----BEGIN PRIVATE KEY------".getBytes();
-
     @Override
     public Key decode(final byte[] bytes) {
-        return null;
+        return new Ssh2PublicKeyDecoder().decode(bytes);
     }
 
     @Override

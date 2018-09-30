@@ -58,6 +58,7 @@ public class Key {
     public enum Format {
         JWK(new JwkParser()),
         OPENSSH(new OpenSSHParser()),
+        SSH2(new SSH2Parser()),
         PEM(new PemParser()),;
 
         private final Parser parser;

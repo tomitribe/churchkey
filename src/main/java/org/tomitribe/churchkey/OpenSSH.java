@@ -115,8 +115,14 @@ public class OpenSSH {
     public static PublicKey readSshPublicKey(final String sshPublicKeyFileContents) throws IOException, GeneralSecurityException {
 
         final String[] parts = sshPublicKeyFileContents.split(" +");
-        final byte[] bytes = Base64.getDecoder().decode(parts[1]);
-        final InputStream keyData = new ByteArrayInputStream(bytes);
+        final byte[] bytes1 = parts[1].getBytes();
+        final byte[] bytes = Base64.getDecoder().decode(bytes1);
+
+        return decode4253PublicKey(bytes);
+    }
+
+    public static PublicKey decode4253PublicKey(final byte[] bytes1) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        final InputStream keyData = new ByteArrayInputStream(bytes1);
 
         final String algorithm = readString(keyData);
 
@@ -124,7 +130,7 @@ public class OpenSSH {
 
             return readRsaPublicKey(keyData);
 
-        } else if (algorithm.equals("ssh-dss ")) {
+        } else if (algorithm.equals("ssh-dss")) {
 
             return readDsaPublicKey(keyData);
         }
