@@ -49,6 +49,7 @@ public class RsaTest extends Assert {
         signature.update(resource.bytes("data.txt"));
         assertTrue(signature.verify(sign));
     }
+
     @Test
     public void test3() throws Exception {
 

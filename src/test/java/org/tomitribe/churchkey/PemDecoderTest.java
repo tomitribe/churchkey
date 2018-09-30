@@ -6,7 +6,7 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class PemDecoderTest {
 
@@ -24,7 +24,7 @@ public class PemDecoderTest {
 
         assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
-   }
+    }
 
     @Test
     public void rsaPublicKey() throws Exception {
@@ -40,6 +40,6 @@ public class PemDecoderTest {
 
         assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
-   }
+    }
 
 }

@@ -58,8 +58,7 @@ public class Key {
     public enum Format {
         JWK(new JwkParser()),
         OPENSSH(new OpenSSHParser()),
-        PEM(new PemParser()),
-        ;
+        PEM(new PemParser()),;
 
         private final Parser parser;
 
@@ -79,6 +78,7 @@ public class Key {
             Key decode(final byte[] bytes);
 
             boolean canEncode(final Key key);
+
             byte[] encode(final Key key);
         }
     }

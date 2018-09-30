@@ -30,7 +30,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class BeginPublicKeyTest {
 
