@@ -26,6 +26,7 @@ import org.tomitribe.churchkey.Resource;
 import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -35,47 +36,67 @@ import static org.junit.Assert.assertEquals;
 public class BeginPublicKeyTest {
 
     @Test
-    public void testDecode1024() throws Exception {
-        final Decoder decoder = new PemDecoder()::decode;
-        final Resource resource = Resource.resource("rsa", 1024, 256);
-
-        assertDecode(decoder, resource);
+    public void testRsaDecode1024() throws Exception {
+        assertRsaDecode(new PemDecoder()::decode, "rsa", 1024);
     }
 
     @Test
-    public void testDecode2048() throws Exception {
-        final Decoder decoder = new PemDecoder()::decode;
-        final Resource resource = Resource.resource("rsa", 2048, 256);
-
-        assertDecode(decoder, resource);
+    public void testRsaDecode2048() throws Exception {
+        assertRsaDecode(new PemDecoder()::decode, "rsa", 2048);
     }
 
     @Test
-    public void testKeysDecode1024() throws Exception {
-        final Decoder decoder = Keys::decode;
-        final Resource resource = Resource.resource("rsa", 1024, 256);
-
-        assertDecode(decoder, resource);
+    public void testRsaKeysDecode1024() throws Exception {
+        assertRsaDecode(Keys::decode, "rsa", 1024);
     }
 
     @Test
-    public void testKeysDecode2048() throws Exception {
-        final Decoder decoder = Keys::decode;
-        final Resource resource = Resource.resource("rsa", 2048, 256);
-
-        assertDecode(decoder, resource);
+    public void testRsaKeysDecode2048() throws Exception {
+        assertRsaDecode(Keys::decode, "rsa", 2048);
     }
 
-    public static void assertDecode(final Decoder decoder, final Resource resource) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
-        final KeyFactory rsa = KeyFactory.getInstance("RSA");
+    @Test
+    public void testDSADecode1024() throws Exception {
+        assertDsaDecode(new PemDecoder()::decode, "dsa", 1024);
+    }
+
+    @Test
+    public void testDSAKeysDecode1024() throws Exception {
+        assertDsaDecode(Keys::decode, "dsa", 1024);
+    }
+
+    public static void assertRsaDecode(final Decoder decoder, final String algorithm, final int bits) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+        final Resource resource = Resource.resource(algorithm, bits, 256);
+        final KeyFactory rsa = KeyFactory.getInstance(algorithm.toUpperCase());
         final RSAPublicKey expected = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
 
         final Key key = decoder.decode(resource.bytes("public.pkcs8.pem"));
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+        assertEquals(Key.Type.PUBLIC, key.getType());
+        assertEquals(Key.Format.PEM, key.getFormat());
 
         final RSAPublicKey actual = (RSAPublicKey) key.getKey();
 
         assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
     }
+
+    public static void assertDsaDecode(final Decoder decoder, final String algorithm, final int bits) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+        final Resource resource = Resource.resource(algorithm, bits, 256);
+        final KeyFactory rsa = KeyFactory.getInstance(algorithm.toUpperCase());
+        final DSAPublicKey expected = (DSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
+
+        final Key key = decoder.decode(resource.bytes("public.pkcs8.pem"));
+        assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
+        assertEquals(Key.Type.PUBLIC, key.getType());
+        assertEquals(Key.Format.PEM, key.getFormat());
+
+        final DSAPublicKey actual = (DSAPublicKey) key.getKey();
+
+        assertEquals(expected.getY(), actual.getY());
+        assertEquals(expected.getParams().getG(), actual.getParams().getG());
+        assertEquals(expected.getParams().getP(), actual.getParams().getP());
+        assertEquals(expected.getParams().getQ(), actual.getParams().getQ());
+    }
+
 }
