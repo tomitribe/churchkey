@@ -1,0 +1,27 @@
+# Churchkey
+
+Designed for those who aren't security experts and just need something that works.
+
+Churchkey can read RSA and DSA that look like any of the following:
+
+PKCS#1 Private Key
+
+----
+-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG7UuaUHqs09
+6M754HtP2IiHFcIQqwYNzHgKmjmfGdbk9JBkz/DNeDVsA5nc7qTnsSgULXTxwHSF
+286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/QIDAQAB
+AoGAVWV8gV5nkMISe927eW0IHM6VfS8gzPqqYgbmymq9YIJuLLRKJIh92mB55M/R
+nVsp/hYA5TREHSQ94xxPQ7j/ASohev1Etv7Hr9AFixa7Q6sRdT1DY7YO1kf/wLk0
+Urg2bHrvAvukcmBAV9+OHKDkRUY+e03ZK3cCfetsHP41RmECQQDpSP20vw8H7ycO
+xyGQElSOMV0Gkb8KB7AsnCgNhzxZJsZSXD26KBkZc0fDldIb8kj1XRP0fB94+vKr
+XUbKDp8lAkEAxDW+MI04a6Kb1gZD+ud0PrSuWAwzpBP/j0BQQwElSWbaDuJXJsSu
+11TYBeHYrWqvE2Gi7CAKrMy8MwnYRoM2+QJAEcJBtgm5XjRBd+mGz43lq/FsEHz1
+2xCcw7ibf/QkjvDZthlZhZtZ1csl0mjMVt5J2YvdYgY06yPHZ24xXl5glQJBAMNn
+koXf3rSzOOepTcJvB4H7hzYA0N0zXWxY7JYOagfz+m6gU5M0hbvFr24MQjJS8REo
+R41JS9hT/YoG3/E5dGECQQDJNraxCstAIWQu5zdmL7TEgfIP6iFvVYMuJPTwfV1I
+9/H5jmXyk2f98bs3kZYWJz5p7mH4YptfXh7gwATl9iAo
+-----END RSA PRIVATE KEY-----
+----
+
+----
