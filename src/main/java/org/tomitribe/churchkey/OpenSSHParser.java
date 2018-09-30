@@ -16,11 +16,32 @@
  */
 package org.tomitribe.churchkey;
 
+import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.RSAPublicKey;
+
 public class OpenSSHParser implements Key.Format.Parser {
 
     @Override
     public Key decode(final byte[] bytes) {
-        return null;
+        if (!Utils.startsWith("ssh-", bytes)) return null;
+        try {
+
+            final PublicKey publicKey = OpenSSH.readSshPublicKey(new String(bytes, "UTF-8"));
+
+            if (publicKey instanceof RSAPublicKey) {
+                final RSAPublicKey key = (RSAPublicKey) publicKey;
+                return new Key(key, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.OPENSSH);
+            }
+            if (publicKey instanceof DSAPublicKey) {
+                final DSAPublicKey key = (DSAPublicKey) publicKey;
+                return new Key(key, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.OPENSSH);
+            }
+
+            throw new UnsupportedOperationException("Unknown key type " + publicKey);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
