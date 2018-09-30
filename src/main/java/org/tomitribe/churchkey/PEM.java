@@ -111,7 +111,7 @@ public enum PEM {
      * This method can be useful if more than one PEM object of different types
      * are embedded in the same PEM file.
      */
-    private static List<PEMObject> readPEMObjects(final InputStream is) throws IOException {
+    public static List<PEMObject> readPEMObjects(final InputStream is) throws IOException {
 
         final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {

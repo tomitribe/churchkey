@@ -16,35 +16,35 @@
  */
 package org.tomitribe.churchkey;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.util.Base64;
 
-class Utils {
+public class Scenario extends Resource {
 
-    private Utils() {
+    private final int shaBits;
+    private final int rsaBits;
+
+    public Scenario(final int rsaBits, final int shaBits) {
+        super(Scenario.class, String.format("rsa%s-sha%s/%s", rsaBits, shaBits, "data.txt"));
+        this.shaBits = shaBits;
+        this.rsaBits = rsaBits;
     }
 
-    public static boolean startsWith(final String prefix, final byte[] bytes) {
-        final byte[] prefixBytes = prefix.getBytes();
-
-        return startsWith(bytes, prefixBytes);
+    public int getShaBits() {
+        return shaBits;
     }
 
-    public static boolean startsWith(final byte[] bytes, final byte[] prefixBytes) {
-        if (bytes.length < prefixBytes.length) return false;
-
-        for (int i = 0; i < prefixBytes.length; i++) {
-            if (prefixBytes[i] != bytes[i]) return false;
-        }
-
-        return true;
+    public int getRsaBits() {
+        return rsaBits;
     }
 
-    public static byte[] base64Decode(final String s) throws UnsupportedEncodingException {
-        return Base64.getDecoder().decode(s.getBytes("UTF-8"));
+    public byte[] signature() throws IOException {
+
+        final String signature = new String(this.bytes("signature.txt")).trim();
+        return Base64.getDecoder().decode(signature.getBytes());
     }
 
-    public static String base64Encode(final byte[] bytes) throws UnsupportedEncodingException {
-        return Base64.getEncoder().encodeToString(bytes);
+    public byte[] data() throws IOException {
+        return this.bytes("data.txt");
     }
 }

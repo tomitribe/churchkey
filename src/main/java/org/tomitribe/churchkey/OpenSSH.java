@@ -33,8 +33,11 @@ import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 public class OpenSSH {
+
+    private static final Pattern FORMAT = Pattern.compile("(ssh-rsa|ssh-dss|ssh-ed25519|ecdsa-sha2-nistp256) ");
 
     public static String formatSshPublicKey(final PublicKey publicKey, final String comment) throws IOException {
         if (publicKey instanceof RSAPublicKey) {
@@ -110,6 +113,7 @@ public class OpenSSH {
     }
 
     public static PublicKey readSshPublicKey(final String sshPublicKeyFileContents) throws IOException, GeneralSecurityException {
+
         final String[] parts = sshPublicKeyFileContents.split(" +");
         final byte[] bytes = Base64.getDecoder().decode(parts[1]);
         final InputStream keyData = new ByteArrayInputStream(bytes);
@@ -169,11 +173,11 @@ public class OpenSSH {
         return dsa.generatePublic(keySpec);
     }
 
-    private static BigInteger readBigInt(final InputStream s) throws IOException {
+    public static BigInteger readBigInt(final InputStream s) throws IOException {
         return new BigInteger(readByteBlock(s));
     }
 
-    private static String readString(final InputStream s) throws IOException {
+    public static String readString(final InputStream s) throws IOException {
         return new String(readByteBlock(s));
     }
 
