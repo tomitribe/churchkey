@@ -16,12 +16,50 @@
  */
 package org.tomitribe.churchkey.pem;
 
+import org.tomitribe.churchkey.Asn1Object;
+import org.tomitribe.churchkey.DerParser;
 import org.tomitribe.churchkey.Key;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.DSAPrivateKeySpec;
+import java.security.spec.InvalidKeySpecException;
 
 public class BeginDsaPrivateKey {
 
     public static Key decode(final byte[] bytes) {
-        return null;
+        try {
+            final DerParser parser = new DerParser(bytes);
+
+            final Asn1Object sequence = parser.read();
+            if (sequence.getType() != DerParser.SEQUENCE) {
+                throw new IllegalArgumentException("Invalid DER: not a sequence");
+            }
+
+            // Parse inside the sequence
+            final DerParser parser1 = sequence.getParser();
+
+            parser1.read(); // Skip version
+            final BigInteger p = parser1.read().getInteger();
+            final BigInteger q = parser1.read().getInteger();
+            final BigInteger g = parser1.read().getInteger();
+            final BigInteger unknown = parser1.read().getInteger();
+            final BigInteger x = parser1.read().getInteger();
+
+            final DSAPrivateKeySpec spec = new DSAPrivateKeySpec(x, p, q, g);
+
+            final KeyFactory result = KeyFactory.getInstance("DSA");
+            final PrivateKey publicKey = result.generatePrivate(spec);
+
+            return new Key(publicKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.PEM);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        } catch (IOException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static byte[] encode(final Key key) {

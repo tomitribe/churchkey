@@ -16,6 +16,7 @@
  */
 package org.tomitribe.churchkey;
 
+import org.tomitribe.churchkey.pem.BeginDsaPrivateKey;
 import org.tomitribe.churchkey.pem.BeginPrivateKey;
 import org.tomitribe.churchkey.pem.BeginPublicKey;
 import org.tomitribe.churchkey.pem.BeginRsaPrivateKey;
@@ -35,7 +36,7 @@ public class PemDecoder implements Decoder {
         converters.put("PUBLIC KEY", BeginPublicKey::decode);
         converters.put("RSA PRIVATE KEY", BeginRsaPrivateKey::decode);
         converters.put("RSA PUBLIC KEY", BeginRsaPublicKey::decode);
-        converters.put("DSA PRIVATE KEY", this::unimplemented);
+        converters.put("DSA PRIVATE KEY", BeginDsaPrivateKey::decode);
         converters.put("DSA PUBLIC KEY", this::unimplemented);
         converters.put("EC PRIVATE KEY", this::unimplemented);
         converters.put("ECDSA PUBLIC KEY", this::unimplemented);
