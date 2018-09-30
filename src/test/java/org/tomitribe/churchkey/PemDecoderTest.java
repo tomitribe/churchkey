@@ -12,7 +12,7 @@ public class PemDecoderTest {
 
     @Test
     public void publicKey() throws Exception {
-        final Resource resource = Resource.resource(1024, 256);
+        final Resource resource = Resource.resource("rsa", 1024, 256);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPublicKey expected = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
@@ -28,7 +28,7 @@ public class PemDecoderTest {
 
     @Test
     public void rsaPublicKey() throws Exception {
-        final Resource resource = Resource.resource(1024, 256);
+        final Resource resource = Resource.resource("rsa", 1024, 256);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPublicKey expected = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));

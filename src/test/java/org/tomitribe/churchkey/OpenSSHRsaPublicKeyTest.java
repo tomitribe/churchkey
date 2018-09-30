@@ -25,7 +25,7 @@ public class OpenSSHRsaPublicKeyTest {
 
     @Test
     public void testEncode1024() throws Exception {
-        final Resource resource = Resource.resource(1024, 256);
+        final Resource resource = Resource.resource("rsa", 1024, 256);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPublicKey rsaPublicKey = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
@@ -37,7 +37,7 @@ public class OpenSSHRsaPublicKeyTest {
     }
 
     private void assertDecodeOpenSSHPublicKey(final int rsaBits, final int shaBits) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
-        final Resource resource = Resource.resource(rsaBits, shaBits);
+        final Resource resource = Resource.resource("rsa", rsaBits, shaBits);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPublicKey expected = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));

@@ -33,8 +33,8 @@ public class Resource {
         this.base = base;
     }
 
-    public static Resource resource(int rsaBits, int shaBits) {
-        return new Resource(Resource.class, String.format("rsa%s-sha%s/%s", rsaBits, shaBits, "data.txt"));
+    public static Resource resource(final String algorithm, int rsaBits, int shaBits) {
+        return new Resource(Resource.class, String.format("%s%s-sha%s/%s", algorithm, rsaBits, shaBits, "data.txt"));
     }
 
     public byte[] bytes(final String name) throws IOException {

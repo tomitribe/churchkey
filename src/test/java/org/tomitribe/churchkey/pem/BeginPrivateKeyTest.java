@@ -34,7 +34,7 @@ public class BeginPrivateKeyTest {
     @Test
     public void testDecode1024() throws Exception {
         final Decoder decoder = new PemDecoder()::decode;
-        final Resource resource = Resource.resource(1024, 256);
+        final Resource resource = Resource.resource("rsa", 1024, 256);
 
         assertDecode(decoder, resource);
     }
@@ -42,7 +42,7 @@ public class BeginPrivateKeyTest {
     @Test
     public void testKeysDecode1024() throws Exception {
         final Decoder decoder = Keys::decode;
-        final Resource resource = Resource.resource(1024, 256);
+        final Resource resource = Resource.resource("rsa", 1024, 256);
 
         assertDecode(decoder, resource);
     }
@@ -50,7 +50,7 @@ public class BeginPrivateKeyTest {
     @Test
     public void testDecode2048() throws Exception {
         final Decoder decoder = new PemDecoder()::decode;
-        final Resource resource = Resource.resource(2048, 256);
+        final Resource resource = Resource.resource("rsa", 2048, 256);
 
         assertDecode(decoder, resource);
     }
@@ -58,7 +58,7 @@ public class BeginPrivateKeyTest {
     @Test
     public void testKeysDecode2048() throws Exception {
         final Decoder decoder = Keys::decode;
-        final Resource resource = Resource.resource(2048, 256);
+        final Resource resource = Resource.resource("rsa", 2048, 256);
 
         assertDecode(decoder, resource);
     }

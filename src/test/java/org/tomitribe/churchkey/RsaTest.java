@@ -33,7 +33,7 @@ public class RsaTest extends Assert {
         final int rsaBits = 1024;
         final int shaBits = 256;
 
-        final Resource resource = Resource.resource(rsaBits, shaBits);
+        final Resource resource = Resource.resource("rsa", rsaBits, shaBits);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPrivateKey privateKey = (RSAPrivateKey) rsa.generatePrivate(new PKCS8EncodedKeySpec(resource.bytes("private.pkcs8.der")));
@@ -56,7 +56,7 @@ public class RsaTest extends Assert {
         final int rsaBits = 1024;
         final int shaBits = 256;
 
-        final Resource resource = Resource.resource(rsaBits, shaBits);
+        final Resource resource = Resource.resource("rsa", rsaBits, shaBits);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPrivateKey privateKey = (RSAPrivateKey) rsa.generatePrivate(new PKCS8EncodedKeySpec(resource.bytes("private.pkcs8.der")));
