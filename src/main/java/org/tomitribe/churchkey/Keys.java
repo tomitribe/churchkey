@@ -16,9 +16,14 @@
  */
 package org.tomitribe.churchkey;
 
+import org.tomitribe.churchkey.ssh.OpenSSHParser;
+
 import java.security.PublicKey;
 
 public class Keys {
+
+    private Keys() {
+    }
 
     public static Key decode(final byte[] bytes) {
         for (final Key.Format format : Key.Format.values()) {

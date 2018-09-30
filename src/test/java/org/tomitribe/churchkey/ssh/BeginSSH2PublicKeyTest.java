@@ -14,9 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.tomitribe.churchkey;
+package org.tomitribe.churchkey.ssh;
 
 import org.junit.Test;
+import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.Keys;
+import org.tomitribe.churchkey.Resource;
 
 import java.io.IOException;
 import java.security.KeyFactory;

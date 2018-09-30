@@ -14,7 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.tomitribe.churchkey;
+package org.tomitribe.churchkey.ssh;
+
+import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -61,11 +64,6 @@ public class OpenSSHParser implements Key.Format.Parser {
     @Override
     public byte[] encode(final Key key) {
         return new byte[0];
-    }
-
-    @Override
-    public boolean canEncode(final Key key) {
-        return false;
     }
 
     public static class OpenSSH {

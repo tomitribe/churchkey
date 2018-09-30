@@ -30,6 +30,9 @@ import java.security.spec.RSAPublicKeySpec;
 
 public class BeginRsaPublicKey {
 
+    private BeginRsaPublicKey() {
+    }
+
     public static Key decode(final byte[] bytes) {
         try {
             final DerParser parser = new DerParser(bytes);

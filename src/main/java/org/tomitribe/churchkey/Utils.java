@@ -19,7 +19,7 @@ package org.tomitribe.churchkey;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 
-class Utils {
+public class Utils {
 
     private Utils() {
     }

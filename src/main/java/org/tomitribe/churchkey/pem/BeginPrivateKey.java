@@ -28,6 +28,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 
 public class BeginPrivateKey {
 
+    private BeginPrivateKey() {
+    }
+
     public static Key decode(final byte[] bytes) {
         try {
             final KeyFactory factory = KeyFactory.getInstance("RSA");

@@ -28,6 +28,9 @@ import java.security.spec.X509EncodedKeySpec;
 
 public class BeginPublicKey {
 
+    private BeginPublicKey() {
+    }
+
     public static Key decode(final byte[] bytes) {
         try {
             final KeyFactory factory = KeyFactory.getInstance("RSA");

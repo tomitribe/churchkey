@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
-import org.tomitribe.churchkey.PemParser;
 import org.tomitribe.churchkey.Resource;
 
 import java.security.KeyFactory;

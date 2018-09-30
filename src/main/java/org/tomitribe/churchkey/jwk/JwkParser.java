@@ -14,18 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.tomitribe.churchkey.pem;
+package org.tomitribe.churchkey.jwk;
 
 import org.tomitribe.churchkey.Key;
 
-public class BeginDsaPublicKey {
+public class JwkParser implements Key.Format.Parser {
 
-    public static Key decode(final byte[] bytes) {
+    @Override
+    public Key decode(final byte[] bytes) {
         return null;
     }
 
-    public static byte[] encode(final Key key) {
-        return null;
+    @Override
+    public byte[] encode(final Key key) {
+        return new byte[0];
     }
 
 }

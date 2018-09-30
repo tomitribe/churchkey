@@ -30,6 +30,9 @@ import java.security.spec.RSAPrivateCrtKeySpec;
 
 public class BeginRsaPrivateKey {
 
+    private BeginRsaPrivateKey() {
+    }
+
     public static Key decode(final byte[] bytes) {
         try {
             final DerParser parser = new DerParser(bytes);

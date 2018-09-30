@@ -30,6 +30,9 @@ import java.security.spec.InvalidKeySpecException;
 
 public class BeginDsaPrivateKey {
 
+    private BeginDsaPrivateKey() {
+    }
+
     public static Key decode(final byte[] bytes) {
         try {
             final DerParser parser = new DerParser(bytes);

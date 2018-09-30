@@ -14,13 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.tomitribe.churchkey;
+package org.tomitribe.churchkey.pem;
 
-import org.tomitribe.churchkey.pem.BeginDsaPrivateKey;
-import org.tomitribe.churchkey.pem.BeginPrivateKey;
-import org.tomitribe.churchkey.pem.BeginPublicKey;
-import org.tomitribe.churchkey.pem.BeginRsaPrivateKey;
-import org.tomitribe.churchkey.pem.BeginRsaPublicKey;
+import org.tomitribe.churchkey.Decoder;
+import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.Utils;
 import org.tomitribe.util.Base64;
 
 import java.util.HashMap;
@@ -34,11 +32,6 @@ public class PemParser implements Key.Format.Parser {
     @Override
     public Key decode(final byte[] bytes) {
         return decoder.decode(bytes);
-    }
-
-    @Override
-    public boolean canEncode(final Key key) {
-        return false;
     }
 
     @Override

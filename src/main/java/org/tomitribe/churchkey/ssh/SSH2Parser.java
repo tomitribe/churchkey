@@ -14,8 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.tomitribe.churchkey;
+package org.tomitribe.churchkey.ssh;
 
+import org.tomitribe.churchkey.Decoder;
+import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.Utils;
 import org.tomitribe.util.Base64;
 
 import java.security.PublicKey;
@@ -32,11 +35,6 @@ public class SSH2Parser implements Key.Format.Parser {
     @Override
     public byte[] encode(final Key key) {
         return new byte[0];
-    }
-
-    @Override
-    public boolean canEncode(final Key key) {
-        return false;
     }
 
     public static class Ssh2PublicKeyDecoder implements Decoder {

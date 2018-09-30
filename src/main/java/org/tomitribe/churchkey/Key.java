@@ -16,6 +16,11 @@
  */
 package org.tomitribe.churchkey;
 
+import org.tomitribe.churchkey.jwk.JwkParser;
+import org.tomitribe.churchkey.pem.PemParser;
+import org.tomitribe.churchkey.ssh.OpenSSHParser;
+import org.tomitribe.churchkey.ssh.SSH2Parser;
+
 public class Key {
 
     private final java.security.Key key;
@@ -75,10 +80,8 @@ public class Key {
             return parser.decode(bytes);
         }
 
-        interface Parser {
+        public interface Parser {
             Key decode(final byte[] bytes);
-
-            boolean canEncode(final Key key);
 
             byte[] encode(final Key key);
         }
