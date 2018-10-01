@@ -26,11 +26,11 @@ import java.math.BigInteger;
  * PKCS#1 private keys. Especially, it doesn't handle explicitly tagged types
  * with an outer tag.
  *
- * <p/>
+ * <p>
  * This parser can only handle one layer. To parse nested constructs, get a new
  * parser for each layer using <code>Asn1Object.getParser()</code>.
  *
- * <p/>
+ * <p>
  * There are many DER decoders in JRE but using them will tie this program to a
  * specific JCE/JVM.
  *
