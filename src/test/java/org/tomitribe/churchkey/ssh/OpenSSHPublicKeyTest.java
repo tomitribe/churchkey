@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
-import org.tomitribe.churchkey.ssh.OpenSSHParser;
 
 import java.io.IOException;
 import java.security.KeyFactory;
