@@ -70,7 +70,16 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.johnzon</groupId>
+      <artifactId>johnzon-core</artifactId>
+      <version>1.1.10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-json_1.1_spec</artifactId>
+      <version>1.1</version>
+    </dependency>
     <dependency>
       <groupId>org.tomitribe</groupId>
       <artifactId>tomitribe-util</artifactId>
@@ -99,6 +108,12 @@
       <artifactId>geronimo-validation_1.1_spec</artifactId>
       <version>1.0-alpha-1</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
+      <version>5.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
