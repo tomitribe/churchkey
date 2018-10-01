@@ -7,8 +7,13 @@ Churchkey is a Java library designed for those who aren't security experts and j
   - java.security.interfaces.DSAPrivateKey
   - java.security.interfaces.DSAPublicKey
 
-Churchkey can parse public and private key files in several formats created by other programs
-such as OpenSSL, OpenSSH and more.  See the full list at the bottom.
+Churchkey can parse public and private key files in several formats including created by other programs
+such as OpenSSL, OpenSSH and more:
+
+  - JSON Web Key (JWK)
+  - PEM
+  - OpenSSH
+  - SSH2
 
 ## Java Sample
 
@@ -48,6 +53,24 @@ public class ExampleTest {
 # Supported Key Formats
 Churchkey is a Java library that can read RSA and DSA that look like any of the following:
 
+## JSON Web Key (JWK)
+
+[source,json]
+----
+{
+  "kty": "RSA",
+  "n": "sszbq1NfZap2IceUCO9rCF9ZYfHE3oU5m6Avgyxu1LmlB6rNPejO-eB7T9iIhxXCEKsGDcx4Cpo5nxnW5PSQZM_wzXg1bAOZ3O6k57EoFC108cB0hdvOiCXXKOZGrGiZuF7q5Zt1ftqIk7oK2gbItSdB7dDrR4CSJSGhsSu5mP0",
+  "e": "AQAB",
+  "d": "VWV8gV5nkMISe927eW0IHM6VfS8gzPqqYgbmymq9YIJuLLRKJIh92mB55M_RnVsp_hYA5TREHSQ94xxPQ7j_ASohev1Etv7Hr9AFixa7Q6sRdT1DY7YO1kf_wLk0Urg2bHrvAvukcmBAV9-OHKDkRUY-e03ZK3cCfetsHP41RmE",
+  "p": "6Uj9tL8PB-8nDschkBJUjjFdBpG_CgewLJwoDYc8WSbGUlw9uigZGXNHw5XSG_JI9V0T9HwfePryq11Gyg6fJQ",
+  "q": "xDW-MI04a6Kb1gZD-ud0PrSuWAwzpBP_j0BQQwElSWbaDuJXJsSu11TYBeHYrWqvE2Gi7CAKrMy8MwnYRoM2-Q",
+  "dp": "EcJBtgm5XjRBd-mGz43lq_FsEHz12xCcw7ibf_QkjvDZthlZhZtZ1csl0mjMVt5J2YvdYgY06yPHZ24xXl5glQ",
+  "dq": "w2eShd_etLM456lNwm8HgfuHNgDQ3TNdbFjslg5qB_P6bqBTkzSFu8WvbgxCMlLxEShHjUlL2FP9igbf8Tl0YQ",
+  "qi": "yTa2sQrLQCFkLuc3Zi-0xIHyD-ohb1WDLiT08H1dSPfx-Y5l8pNn_fG7N5GWFic-ae5h-GKbX14e4MAE5fYgKA"
+}
+----
+
+## Various PEM Files
 ----
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG7UuaUHqs09
@@ -94,6 +117,13 @@ eDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht
 -----END PUBLIC KEY-----
 ----
 
+## OpenSSH
+
+Common locations for these would be in:
+
+ - `~/.ssh/id_rsa` (PEM format shown above)
+ - `~/.ssh/id_rsa.pub` (`ssh-` format shown here)
+
 ----
 ssh-dss AAAAB3NzaC1kc3MAAACBAN9w84QLHWmzl/gY2Xh/CnM7hfTsUl6Z89NUmhOFfs/wzO54Pl84qKjWmlhJO9VGFwsMRbw0EqGgS1eBngv+DR/eMAN+0KnLTPTNEajKP/ibTRf3sI3Rf7UTYhSp7W5r5FB8TN39chg9JQUR7c0ALOdbyDL8d+yhB5SzLEAWQ4QTAAAAFQCcu9GKMJJyX8go6w1gn93Xi1/EDwAAAIBJYC9VGyg80b7DF8+fHKfezGEjjRgJOVMJQA946vA3A+cntFUU+Y1LayXJ2y... dblevins@mingus.lan
 ----
@@ -101,6 +131,10 @@ ssh-dss AAAAB3NzaC1kc3MAAACBAN9w84QLHWmzl/gY2Xh/CnM7hfTsUl6Z89NUmhOFfs/wzO54Pl84
 ----
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG7UuaUHqs096M754HtP2IiHFcIQqwYNzHgKmjmfGdbk9JBkz/DNeDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q== dblevins@mingus.lan
 ----
+
+## SSH2
+
+Commonly mistaken for PEM, but different.
 
 ----
 ---- BEGIN SSH2 PUBLIC KEY ----
@@ -110,7 +144,6 @@ AAAAB3NzaC1yc2EAAAADAQABAAAAgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG
 wHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q==
 ---- END SSH2 PUBLIC KEY ----
 ----
-
 
 # Maven Coordinates
 
