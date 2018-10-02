@@ -21,18 +21,35 @@ import org.tomitribe.churchkey.pem.PemParser;
 import org.tomitribe.churchkey.ssh.OpenSSHParser;
 import org.tomitribe.churchkey.ssh.SSH2Parser;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Key {
 
     private final java.security.Key key;
     private final Type type;
     private final Algorithm algorithm;
     private final Format format;
+    private final Map<String, String> attributes = new HashMap<>();
 
     public Key(final java.security.Key key, final Type type, final Algorithm algorithm, final Format format) {
+        this(key, type, algorithm, format, new HashMap<>());
+    }
+
+    public Key(final java.security.Key key, final Type type, final Algorithm algorithm, final Format format, final Map<String, String> attributes) {
         this.key = key;
         this.type = type;
         this.algorithm = algorithm;
         this.format = format;
+        this.attributes.putAll(attributes);
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public String getAttribute(final String name) {
+        return attributes.get(name);
     }
 
     public java.security.Key getKey() {

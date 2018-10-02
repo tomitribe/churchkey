@@ -35,8 +35,11 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JwkParser implements Key.Format.Parser {
 
@@ -77,6 +80,7 @@ public class JwkParser implements Key.Format.Parser {
 //            }
 
             throw new UnsupportedKtyAlgorithmException(kty);
+
         } catch (Exception e) {
             throw new InvalidJwkException(e, rawJson);
         }
@@ -104,11 +108,39 @@ public class JwkParser implements Key.Format.Parser {
 
         if (privateExp != null) {
             final PrivateKey privateKey = result.generatePrivate(rsaPrivateKeySpec);
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.JWK);
+            final Map<String, String> attributes = getAttributes(jwkObject, "kty", "n", "e", "d", "p", "q", "dp", "dq", "qi");
+            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.JWK, attributes);
         }
 
         final PublicKey publicKey = result.generatePublic(rsaPublicKeySpec);
-        return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.JWK);
+        final Map<String, String> attributes = getAttributes(jwkObject, "kty", "n", "e");
+        return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.JWK, attributes);
+    }
+
+    private Map<String, String> getAttributes(final JsonObject jwkObject, final String... excludes) {
+        return getAttributes(jwkObject, Arrays.asList(excludes));
+    }
+
+    private Map<String, String> getAttributes(final JsonObject jwkObject, final Collection<String> excludes) {
+        final Map<String, String> map = new HashMap<>();
+
+        for (final Map.Entry<String, JsonValue> entry : jwkObject.entrySet()) {
+            if (excludes.contains(entry.getKey())) continue;
+            map.put(entry.getKey(), toString(entry.getValue()));
+        }
+        return map;
+    }
+
+    private String toString(final JsonValue value) {
+        switch (value.getValueType()) {
+            case STRING:
+                final String string = value.toString();
+                return string.substring(1, string.length() - 1);
+            case NULL:
+                return null;
+            default:
+                return value.toString();
+        }
     }
 
 
