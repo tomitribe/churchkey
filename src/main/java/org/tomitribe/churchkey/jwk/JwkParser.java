@@ -20,10 +20,12 @@ import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Utils;
 import org.tomitribe.util.IO;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonReaderFactory;
 import javax.json.JsonValue;
@@ -32,11 +34,15 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -122,7 +128,33 @@ public class JwkParser implements Key.Format.Parser {
         return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.JWK, attributes);
     }
 
-    private Key asOctKey(final JsonObject jwkObject) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private void toRsaKey(final Key key, final JsonObjectBuilder jwk) {
+
+        if (key.getKey() instanceof RSAPrivateCrtKey) {
+            final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
+            jwk.add("n", encode(privateKey.getModulus()));
+            jwk.add("e", encode(privateKey.getPublicExponent()));
+            jwk.add("d", encode(privateKey.getPrivateExponent()));
+            jwk.add("p", encode(privateKey.getPrimeP()));
+            jwk.add("q", encode(privateKey.getPrimeQ()));
+            jwk.add("dp", encode(privateKey.getPrimeExponentP()));
+            jwk.add("dq", encode(privateKey.getPrimeExponentQ()));
+            jwk.add("qi", encode(privateKey.getCrtCoefficient()));
+        } else if (key.getKey() instanceof RSAPrivateKey) {
+            final RSAPrivateKey privateKey = (RSAPrivateKey) key.getKey();
+            jwk.add("n", encode(privateKey.getModulus()));
+            jwk.add("d", encode(privateKey.getPrivateExponent()));
+        } else if (key.getKey() instanceof RSAPublicKey) {
+            final RSAPublicKey publicKey = (RSAPublicKey) key.getKey();
+            jwk.add("n", encode(publicKey.getModulus()));
+            jwk.add("e", encode(publicKey.getPublicExponent()));
+        } else {
+            throw new UnsupportedOperationException("Unkown RSA Key type: " + key.getKey().getClass().getName());
+        }
+        jwk.add("kty", "RSA");
+    }
+
+    private Key asOctKey(final JsonObject jwkObject) {
         final Jwk jwk = new Jwk(jwkObject);
 
         final byte[] keyBytes = jwk.getBytes("k");
@@ -133,6 +165,18 @@ public class JwkParser implements Key.Format.Parser {
         final Map<String, String> attributes = getAttributes(jwkObject, "kty", "k");
         return new Key(keySpec, Key.Type.SECRET, Key.Algorithm.OCT, Key.Format.JWK, attributes);
     }
+
+    private void toOctKey(final Key key, final JsonObjectBuilder jwk) {
+
+        if (key.getKey() instanceof SecretKey) {
+            final SecretKey publicKey = (SecretKey) key.getKey();
+            jwk.add("k", encode(publicKey.getEncoded()));
+        } else {
+            throw new UnsupportedOperationException("Unkown RSA Key type: " + key.getKey().getClass().getName());
+        }
+        jwk.add("kty", "oct");
+    }
+
 
     private Map<String, String> getAttributes(final JsonObject jwkObject, final String... excludes) {
         return getAttributes(jwkObject, Arrays.asList(excludes));
@@ -190,6 +234,16 @@ public class JwkParser implements Key.Format.Parser {
          * They supplied just some.  This doesn't work and isn't likely what they want
          */
         throw new InvalidJwkKeySpecException("rsa", missing);
+    }
+
+    public static String encode(final BigInteger bigInteger) {
+        final Base64.Encoder urlEncoder = Base64.getUrlEncoder().withoutPadding();
+        return urlEncoder.encodeToString(bigInteger.toByteArray());
+    }
+
+    public static String encode(final byte[] bytes) {
+        final Base64.Encoder urlEncoder = Base64.getUrlEncoder().withoutPadding();
+        return urlEncoder.encodeToString(bytes);
     }
 
     private static class Jwk {
@@ -283,7 +337,26 @@ public class JwkParser implements Key.Format.Parser {
 
     @Override
     public byte[] encode(final Key key) {
-        return new byte[0];
+        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        for (final Map.Entry<String, String> entry : key.getAttributes().entrySet()) {
+            builder.add(entry.getKey(), entry.getValue());
+        }
+
+        switch (key.getAlgorithm()) {
+            case RSA:
+                toRsaKey(key, builder);
+                break;
+
+            case OCT:
+                toOctKey(key, builder);
+                break;
+
+            default:
+                throw new UnsupportedOperationException("Cannot encode key type: " + key.getAlgorithm());
+        }
+
+        final JsonObject build = builder.build();
+        return build.toString().getBytes();
     }
 
 }
