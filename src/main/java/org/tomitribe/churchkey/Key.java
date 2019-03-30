@@ -70,11 +70,12 @@ public class Key {
 
     public enum Type {
         PUBLIC,
-        PRIVATE
+        PRIVATE,
+        SECRET
     }
 
     public enum Algorithm {
-        RSA, DSA, EC
+        RSA, DSA, EC, OCT
     }
 
     public enum Format {

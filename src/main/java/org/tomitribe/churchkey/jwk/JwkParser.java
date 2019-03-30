@@ -20,6 +20,7 @@ import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Utils;
 import org.tomitribe.util.IO;
 
+import javax.crypto.spec.SecretKeySpec;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -67,8 +68,12 @@ public class JwkParser implements Key.Format.Parser {
 
             kty = jwk.getString("kty");
 
-            if ("RSA".equals(kty)) {
+            if ("RSA".equalsIgnoreCase(kty)) {
                 return asRsaKey(jwk);
+            }
+
+            if ("OCT".equalsIgnoreCase(kty)) {
+                return asOctKey(jwk);
             }
 
 //            if ("DSA".equals(kty)) {
@@ -115,6 +120,18 @@ public class JwkParser implements Key.Format.Parser {
         final PublicKey publicKey = result.generatePublic(rsaPublicKeySpec);
         final Map<String, String> attributes = getAttributes(jwkObject, "kty", "n", "e");
         return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.JWK, attributes);
+    }
+
+    private Key asOctKey(final JsonObject jwkObject) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        final Jwk jwk = new Jwk(jwkObject);
+
+        final byte[] keyBytes = jwk.getBytes("k");
+        final String alg = jwk.getString("alg", "HS256").toUpperCase();
+        final String jmvAlg = alg.replace("HS", "HmacSHA");
+        final SecretKeySpec keySpec = new SecretKeySpec(keyBytes, jmvAlg);
+
+        final Map<String, String> attributes = getAttributes(jwkObject, "kty", "k");
+        return new Key(keySpec, Key.Type.SECRET, Key.Algorithm.OCT, Key.Format.JWK, attributes);
     }
 
     private Map<String, String> getAttributes(final JsonObject jwkObject, final String... excludes) {
@@ -189,6 +206,21 @@ public class JwkParser implements Key.Format.Parser {
             final java.util.Base64.Decoder urlDecoder = java.util.Base64.getUrlDecoder();
             final byte[] bytes = urlDecoder.decode(string);
             return new BigInteger(1, bytes);
+        }
+
+        public byte[] getBytes(final String name) {
+            if (!jwk.containsKey(name)) return null;
+            final String string = jwk.getString(name);
+            final java.util.Base64.Decoder urlDecoder = java.util.Base64.getUrlDecoder();
+            return urlDecoder.decode(string);
+        }
+
+        public String getString(final String s) {
+            return jwk.getString(s);
+        }
+
+        public String getString(final String s, final String s1) {
+            return jwk.getString(s, s1);
         }
     }
 
