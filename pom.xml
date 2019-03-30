@@ -27,14 +27,14 @@
 
   <artifactId>churchkey</artifactId>
   <packaging>jar</packaging>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.8</version>
   <name>Tomitribe :: Churchkey</name>
 
   <scm>
     <connection>scm:git:git@github.com:tomitribe/churchkey.git</connection>
     <url>scm:git:git@github.com:tomitribe/churchkey.git</url>
     <developerConnection>scm:git:git@github.com:tomitribe/churchkey.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>churchkey-0.8</tag>
   </scm>
 
   <properties>
