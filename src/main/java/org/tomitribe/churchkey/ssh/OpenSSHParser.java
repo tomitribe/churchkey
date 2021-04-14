@@ -144,7 +144,7 @@ public class OpenSSHParser implements Key.Format.Parser {
         public static PublicKey readSshPublicKey(final String sshPublicKeyFileContents) throws IOException, GeneralSecurityException {
 
             final String[] parts = sshPublicKeyFileContents.split(" +");
-            final byte[] bytes1 = parts[1].getBytes();
+            final byte[] bytes1 = parts[1].trim().getBytes();
             final byte[] bytes = Base64.getDecoder().decode(bytes1);
 
             return decode4253PublicKey(bytes);
