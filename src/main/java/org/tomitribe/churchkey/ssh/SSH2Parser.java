@@ -50,7 +50,7 @@ public class SSH2Parser implements Key.Format.Parser {
 
             final PublicKey publicKey;
             try {
-                publicKey = OpenSSHParser.OpenSSH.decode4253PublicKey(pem.getData());
+                publicKey = OpenSSHParser.Public.read(pem.getData());
             } catch (Exception e) {
                 throw new IllegalArgumentException(e);
             }
