@@ -16,10 +16,6 @@
  */
 package org.tomitribe.churchkey;
 
-import org.tomitribe.churchkey.ssh.OpenSSHParser;
-
-import java.security.PublicKey;
-
 public class Keys {
 
     private Keys() {
@@ -44,11 +40,4 @@ public class Keys {
         return format.encode(key);
     }
 
-    public static PublicKey readPublicKey(final byte[] bytes) {
-        try {
-            return OpenSSHParser.OpenSSH.readSshPublicKey(new String(bytes, "UTF-8"));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
 }

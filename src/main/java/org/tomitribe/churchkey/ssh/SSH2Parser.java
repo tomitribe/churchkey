@@ -18,8 +18,8 @@ package org.tomitribe.churchkey.ssh;
 
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
-import org.tomitribe.churchkey.Utils;
-import org.tomitribe.util.Base64;
+import org.tomitribe.churchkey.util.Pem;
+import org.tomitribe.churchkey.util.Utils;
 
 import java.security.PublicKey;
 import java.security.interfaces.DSAPublicKey;
@@ -46,28 +46,20 @@ public class SSH2Parser implements Key.Format.Parser {
         public Key decode(final byte[] key) {
             if (!Utils.startsWith("---- BEGIN SSH2 PUBLIC KEY ----", key)) return null;
 
-            final String s = new String(key);
-            final StringBuilder sb = new StringBuilder();
-            for (final String line : s.split("\r?\n")) {
-                if (line.startsWith("---- ")) continue;
-                if (line.contains(":")) continue;
-                sb.append(line);
-            }
-
-            final byte[] bytes = Base64.decodeBase64(sb.toString().getBytes());
+            final Pem pem = Pem.parse(key);
 
             final PublicKey publicKey;
             try {
-                publicKey = OpenSSHParser.OpenSSH.decode4253PublicKey(bytes);
+                publicKey = OpenSSHParser.OpenSSH.decode4253PublicKey(pem.getData());
             } catch (Exception e) {
                 throw new IllegalArgumentException(e);
             }
 
             if (publicKey instanceof RSAPublicKey) {
-                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2);
+                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2, pem.getAttributes());
             }
             if (publicKey instanceof DSAPublicKey) {
-                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2);
+                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2, pem.getAttributes());
             }
             return null;
         }

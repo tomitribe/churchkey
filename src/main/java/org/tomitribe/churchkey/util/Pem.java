@@ -48,6 +48,10 @@ public class Pem {
         this.attributes = attributes;
     }
 
+    public static Pem parse(final byte[] bytes) {
+        return parse(new String(bytes));
+    }
+
     public static Pem parse(final String string) {
         final List<String> lines = new ArrayList<>(Arrays.asList(string.split("[\r\n]")));
 

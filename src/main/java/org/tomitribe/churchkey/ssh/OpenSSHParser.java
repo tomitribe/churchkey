@@ -17,7 +17,7 @@
 package org.tomitribe.churchkey.ssh;
 
 import org.tomitribe.churchkey.Key;
-import org.tomitribe.churchkey.Utils;
+import org.tomitribe.churchkey.util.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,31 +40,68 @@ import java.util.Base64;
 public class OpenSSHParser implements Key.Format.Parser {
 
     @Override
-    public Key decode(final byte[] bytes) {
-        if (!Utils.startsWith("ssh-", bytes)) return null;
-        try {
-
-            final PublicKey publicKey = OpenSSH.readSshPublicKey(new String(bytes, "UTF-8"));
-
-            if (publicKey instanceof RSAPublicKey) {
-                final RSAPublicKey key = (RSAPublicKey) publicKey;
-                return new Key(key, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.OPENSSH);
-            }
-            if (publicKey instanceof DSAPublicKey) {
-                final DSAPublicKey key = (DSAPublicKey) publicKey;
-                return new Key(key, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.OPENSSH);
-            }
-
-            throw new UnsupportedOperationException("Unknown key type " + publicKey);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @Override
     public byte[] encode(final Key key) {
         return new byte[0];
     }
+
+    @Override
+    public Key decode(final byte[] bytes) {
+
+        if (Utils.startsWith("ssh-", bytes)) {
+            return new Public().decode(bytes);
+        }
+        
+//        if (Utils.startsWith("-----BEGIN OPENSSH PRIVATE KEY-----", bytes)) {
+//            return new Private().decode(bytes);
+//        }
+        return null;
+    }
+
+
+    private static class Public implements Key.Format.Parser {
+
+        @Override
+        public Key decode(final byte[] bytes) {
+            if (!Utils.startsWith("ssh-", bytes)) return null;
+            try {
+
+                final PublicKey publicKey = OpenSSH.readSshPublicKey(new String(bytes, "UTF-8"));
+
+                if (publicKey instanceof RSAPublicKey) {
+                    final RSAPublicKey key = (RSAPublicKey) publicKey;
+                    return new Key(key, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.OPENSSH);
+                }
+                if (publicKey instanceof DSAPublicKey) {
+                    final DSAPublicKey key = (DSAPublicKey) publicKey;
+                    return new Key(key, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.OPENSSH);
+                }
+
+                throw new UnsupportedOperationException("Unknown key type " + publicKey);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        @Override
+        public byte[] encode(final Key key) {
+            return new byte[0];
+        }
+    }
+
+    private static class Private implements Key.Format.Parser {
+        @Override
+        public Key decode(final byte[] bytes) {
+
+
+            return null;
+        }
+
+        @Override
+        public byte[] encode(final Key key) {
+            return new byte[0];
+        }
+    }
+
 
     public static class OpenSSH {
 
@@ -164,7 +201,7 @@ public class OpenSSHParser implements Key.Format.Parser {
                 return readDsaPublicKey(keyData);
             }
 
-            throw new UnsupportedOperationException("");
+            throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
         }
 
         /**

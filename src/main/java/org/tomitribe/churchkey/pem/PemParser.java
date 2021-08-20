@@ -18,8 +18,8 @@ package org.tomitribe.churchkey.pem;
 
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
-import org.tomitribe.churchkey.Utils;
-import org.tomitribe.util.Base64;
+import org.tomitribe.churchkey.util.Pem;
+import org.tomitribe.churchkey.util.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,21 +60,15 @@ public class PemParser implements Key.Format.Parser {
         public Key decode(final byte[] key) {
             if (!Utils.startsWith("-----", key)) return null;
 
-            final String s = new String(key);
-            final String[] parts = s
-                    .replaceAll(" *\n *", "")
-                    .replaceAll(" *\r *", "")
-                    .split("-----(BEGIN|END) |------?");
+            final Pem pem = Pem.parse(key);
 
-            final Function<byte[], Key> converter = converters.get(parts[1]);
+            final Function<byte[], Key> converter = converters.get(pem.getType());
 
             if (converter == null) {
-                throw new UnsupportedOperationException(String.format("Unsupported PEM format '%s'", parts[1]));
+                throw new UnsupportedOperationException(String.format("Unsupported PEM format '%s'", pem.getType()));
             }
 
-            final byte[] bytes = Base64.decodeBase64(parts[2].getBytes());
-
-            return converter.apply(bytes);
+            return converter.apply(pem.getData());
         }
     }
 }

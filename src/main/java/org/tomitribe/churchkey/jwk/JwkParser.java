@@ -17,7 +17,7 @@
 package org.tomitribe.churchkey.jwk;
 
 import org.tomitribe.churchkey.Key;
-import org.tomitribe.churchkey.Utils;
+import org.tomitribe.churchkey.util.Utils;
 import org.tomitribe.util.IO;
 
 import javax.crypto.SecretKey;
