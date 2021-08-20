@@ -22,8 +22,6 @@ import org.tomitribe.churchkey.util.Pem;
 import org.tomitribe.churchkey.util.Utils;
 
 import java.security.PublicKey;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
 
 public class SSH2Parser implements Key.Format.Parser {
 
@@ -48,20 +46,32 @@ public class SSH2Parser implements Key.Format.Parser {
 
             final Pem pem = Pem.parse(key);
 
-            final PublicKey publicKey;
             try {
-                publicKey = OpenSSHParser.Public.read(pem.getData());
+                final KeyInput reader = new KeyInput(pem.getData());
+
+                final String algorithm = reader.readString();
+
+                if (algorithm.equals("ssh-rsa")) {
+
+                    final PublicKey publicKey = OpenSSHParser.Public.Rsa.read(reader);
+
+                    return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2, pem.getAttributes());
+
+                } else if (algorithm.equals("ssh-dss")) {
+
+                    final PublicKey publicKey = OpenSSHParser.Public.Dss.read(reader);
+
+                    return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2, pem.getAttributes());
+
+                } else {
+                    throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
+                }
+                
+            } catch (UnsupportedOperationException e) {
+                throw e;
             } catch (Exception e) {
                 throw new IllegalArgumentException(e);
             }
-
-            if (publicKey instanceof RSAPublicKey) {
-                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2, pem.getAttributes());
-            }
-            if (publicKey instanceof DSAPublicKey) {
-                return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2, pem.getAttributes());
-            }
-            return null;
         }
     }
 }

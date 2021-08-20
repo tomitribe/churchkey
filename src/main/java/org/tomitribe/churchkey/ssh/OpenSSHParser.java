@@ -21,6 +21,7 @@ import org.tomitribe.churchkey.util.Utils;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -30,6 +31,8 @@ import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OpenSSHParser implements Key.Format.Parser {
 
@@ -37,13 +40,13 @@ public class OpenSSHParser implements Key.Format.Parser {
         if (publicKey instanceof RSAPublicKey) {
 
             final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
-            final String encodedKey = base64(format(rsaPublicKey));
+            final String encodedKey = base64(Public.Rsa.write(rsaPublicKey));
             return String.format("ssh-rsa %s %s%n", encodedKey, comment);
 
         } else if (publicKey instanceof DSAPublicKey) {
 
             final DSAPublicKey dSAPublicKey = (DSAPublicKey) publicKey;
-            final String encodedKey = base64(format(dSAPublicKey));
+            final String encodedKey = base64(Public.Dss.write(dSAPublicKey));
             return String.format("ssh-dss %s %s%n", encodedKey, comment);
         }
 
@@ -52,36 +55,6 @@ public class OpenSSHParser implements Key.Format.Parser {
 
     private static String base64(byte[] src) {
         return Base64.getEncoder().encodeToString(src);
-    }
-
-    public static byte[] format(final RSAPublicKey key) throws IOException {
-        final KeyOutput out = new KeyOutput();
-        out.writeString("ssh-rsa");
-        out.writeBigInteger(key.getPublicExponent());
-        out.writeBigInteger(key.getModulus());
-        return out.toByteArray();
-    }
-
-    /**
-     * Order determined by https://tools.ietf.org/html/rfc4253#section-6.6
-     *
-     * The "ssh-dss" key format has the following specific encoding:
-     *
-     *      string    "ssh-dss"
-     *      mpint     p
-     *      mpint     q
-     *      mpint     g
-     *      mpint     y
-     *
-     */
-    public static byte[] format(final DSAPublicKey key) throws IOException {
-        final KeyOutput out = new KeyOutput();
-        out.writeString("ssh-dss");
-        out.writeBigInteger(key.getParams().getP());
-        out.writeBigInteger(key.getParams().getQ());
-        out.writeBigInteger(key.getParams().getG());
-        out.writeBigInteger(key.getY());
-        return out.toByteArray();
     }
 
     @Override
@@ -95,7 +68,7 @@ public class OpenSSHParser implements Key.Format.Parser {
         if (Utils.startsWith("ssh-", bytes)) {
             return new Public().decode(bytes);
         }
-        
+
 //        if (Utils.startsWith("-----BEGIN OPENSSH PRIVATE KEY-----", bytes)) {
 //            return new Private().decode(bytes);
 //        }
@@ -110,46 +83,37 @@ public class OpenSSHParser implements Key.Format.Parser {
             if (!Utils.startsWith("ssh-", bytes)) return null;
             try {
 
-                final String[] parts = new String(bytes, "UTF-8").split(" +");
+                final String[] parts = new String(bytes, StandardCharsets.UTF_8).split(" +");
                 final byte[] encoded = parts[1].trim().getBytes();
-                final byte[] bytes1 = Base64.getDecoder().decode(encoded);
+                final byte[] unencoded = Base64.getDecoder().decode(encoded);
 
-                final PublicKey publicKey = read(bytes1);
+                final Map<String, String> attributes = new HashMap<>();
 
-                if (publicKey instanceof RSAPublicKey) {
-                    final RSAPublicKey key = (RSAPublicKey) publicKey;
-                    return new Key(key, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.OPENSSH);
-                }
-                if (publicKey instanceof DSAPublicKey) {
-                    final DSAPublicKey key = (DSAPublicKey) publicKey;
-                    return new Key(key, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.OPENSSH);
+                if (parts.length == 3) {
+                    attributes.put("Comment", parts[2].trim());
                 }
 
-                throw new UnsupportedOperationException("Unknown key type " + publicKey);
+                final KeyInput reader = new KeyInput(unencoded);
+
+                final String algorithm = reader.readString();
+
+                if (algorithm.equals("ssh-rsa")) {
+
+                    return new Key(Rsa.read(reader), Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.OPENSSH, attributes);
+
+                } else if (algorithm.equals("ssh-dss")) {
+
+                    return new Key(Dss.read(reader), Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.OPENSSH, attributes);
+
+                } else {
+                    throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
+                }
+
+            } catch (UnsupportedOperationException e) {
+                throw e;
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
-        }
-
-        /**
-         * Reads a public key in RFC 4253 format
-         * @param bytes raw bytes for the key value, not base64 encoded
-         */
-        public static PublicKey read(final byte[] bytes) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-            final KeyInput reader = new KeyInput(bytes);
-
-            final String algorithm = reader.readString();
-
-            if (algorithm.equals("ssh-rsa")) {
-
-                return rsa(reader);
-
-            } else if (algorithm.equals("ssh-dss")) {
-
-                return dss(reader);
-            }
-
-            throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
         }
 
         /**
@@ -161,13 +125,24 @@ public class OpenSSHParser implements Key.Format.Parser {
          *      mpint     e
          *      mpint     n
          */
-        private static PublicKey rsa(final KeyInput keyInput) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-            final BigInteger e = keyInput.readBigInteger();
-            final BigInteger n = keyInput.readBigInteger();
+        static class Rsa {
 
-            final RSAPublicKeySpec keySpec = new RSAPublicKeySpec(n, e);
-            final KeyFactory rsa = KeyFactory.getInstance("RSA");
-            return rsa.generatePublic(keySpec);
+            static PublicKey read(final KeyInput keyInput) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+                final BigInteger e = keyInput.readBigInteger();
+                final BigInteger n = keyInput.readBigInteger();
+
+                final RSAPublicKeySpec keySpec = new RSAPublicKeySpec(n, e);
+                final KeyFactory rsa = KeyFactory.getInstance("RSA");
+                return rsa.generatePublic(keySpec);
+            }
+
+            static byte[] write(final RSAPublicKey key) throws IOException {
+                final KeyOutput out = new KeyOutput();
+                out.writeString("ssh-rsa");
+                out.writeBigInteger(key.getPublicExponent());
+                out.writeBigInteger(key.getModulus());
+                return out.toByteArray();
+            }
         }
 
         /**
@@ -182,16 +157,41 @@ public class OpenSSHParser implements Key.Format.Parser {
          *      mpint     y
          *
          */
-        private static PublicKey dss(final KeyInput keyData) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-            final BigInteger p = keyData.readBigInteger();
-            final BigInteger q = keyData.readBigInteger();
-            final BigInteger g = keyData.readBigInteger();
-            final BigInteger y = keyData.readBigInteger();
+        static class Dss {
+            static PublicKey read(final KeyInput keyData) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+                final BigInteger p = keyData.readBigInteger();
+                final BigInteger q = keyData.readBigInteger();
+                final BigInteger g = keyData.readBigInteger();
+                final BigInteger y = keyData.readBigInteger();
 
-            final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
-            final KeyFactory dsa = KeyFactory.getInstance("DSA");
-            return dsa.generatePublic(keySpec);
+                final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
+                final KeyFactory dsa = KeyFactory.getInstance("DSA");
+                return dsa.generatePublic(keySpec);
+            }
+
+            /**
+             * Order determined by https://tools.ietf.org/html/rfc4253#section-6.6
+             *
+             * The "ssh-dss" key format has the following specific encoding:
+             *
+             *      string    "ssh-dss"
+             *      mpint     p
+             *      mpint     q
+             *      mpint     g
+             *      mpint     y
+             *
+             */
+            static byte[] write(final DSAPublicKey key) throws IOException {
+                final KeyOutput out = new KeyOutput();
+                out.writeString("ssh-dss");
+                out.writeBigInteger(key.getParams().getP());
+                out.writeBigInteger(key.getParams().getQ());
+                out.writeBigInteger(key.getParams().getG());
+                out.writeBigInteger(key.getY());
+                return out.toByteArray();
+            }
         }
+
 
         @Override
         public byte[] encode(final Key key) {
