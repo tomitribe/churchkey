@@ -17,6 +17,7 @@
 package org.tomitribe.churchkey.pem;
 
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.util.Pem;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -66,7 +67,38 @@ public class BeginPublicKey {
     }
 
     public static byte[] encode(final Key key) {
-        return null;
+
+        final Pem.Builder pem = Pem.builder()
+                .type("PUBLIC KEY")
+                .wrap(64);
+
+        final java.security.Key value = key.getKey();
+
+        try {
+            if (value instanceof RSAPublicKey) {
+                final KeyFactory factory = KeyFactory.getInstance("RSA");
+                final X509EncodedKeySpec keySpec = factory.getKeySpec(value, X509EncodedKeySpec.class);
+                return pem.data(keySpec.getEncoded()).format().getBytes();
+            }
+
+            if (value instanceof DSAPublicKey) {
+                final KeyFactory factory = KeyFactory.getInstance("DSA");
+                final X509EncodedKeySpec keySpec = factory.getKeySpec(value, X509EncodedKeySpec.class);
+                return pem.data(keySpec.getEncoded()).format().getBytes();
+            }
+
+            if (value instanceof ECPublicKey) {
+                final KeyFactory factory = KeyFactory.getInstance("EC");
+                final X509EncodedKeySpec keySpec = factory.getKeySpec(value, X509EncodedKeySpec.class);
+                return pem.data(keySpec.getEncoded()).format().getBytes();
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unsupported key algorithm", e);
+        } catch (InvalidKeySpecException e) {
+            throw new IllegalStateException("Invalid Key Spec", e);
+        }
+
+        throw new UnsupportedOperationException("Unsupported key algorithm " + key.getAlgorithm());
     }
 
 }

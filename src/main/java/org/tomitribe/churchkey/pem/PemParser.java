@@ -36,7 +36,18 @@ public class PemParser implements Key.Format.Parser {
 
     @Override
     public byte[] encode(final Key key) {
-        return new byte[0];
+        switch (key.getType()) {
+            case PUBLIC: {
+                return BeginPublicKey.encode(key);
+            }
+            case PRIVATE: {
+                return BeginPrivateKey.encode(key);
+            }
+            case SECRET:
+                throw new UnsupportedOperationException("Secret keys cannot be exported to PEM format.");
+            default:
+                throw new UnsupportedOperationException("Unsupported key type: " + key.getType());
+        }
     }
 
 

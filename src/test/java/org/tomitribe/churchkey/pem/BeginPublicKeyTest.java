@@ -78,6 +78,9 @@ public class BeginPublicKeyTest {
 
         assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
+
+        final String exported = key.encode(Key.Format.PEM);
+        assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
     }
 
     public static void assertDsaDecode(final Decoder decoder, final String algorithm, final int bits) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
@@ -96,6 +99,9 @@ public class BeginPublicKeyTest {
         assertEquals(expected.getParams().getG(), actual.getParams().getG());
         assertEquals(expected.getParams().getP(), actual.getParams().getP());
         assertEquals(expected.getParams().getQ(), actual.getParams().getQ());
+
+        final String exported = key.encode(Key.Format.PEM);
+        assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
     }
 
 }

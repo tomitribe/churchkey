@@ -68,6 +68,13 @@ public class Key {
         return format;
     }
 
+    // TODO
+    // public Key getPublicKey()
+
+    public String encode(final Format format) {
+        return new String(format.encode(this));
+    }
+
     public enum Type {
         PUBLIC,
         PRIVATE,
@@ -82,7 +89,8 @@ public class Key {
         JWK(new JwkParser()),
         OPENSSH(new OpenSSHParser()),
         SSH2(new SSH2Parser()),
-        PEM(new PemParser()),;
+        PEM(new PemParser()),
+        ;
 
         private final Parser parser;
 
