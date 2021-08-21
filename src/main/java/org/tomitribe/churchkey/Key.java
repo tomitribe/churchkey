@@ -71,8 +71,8 @@ public class Key {
     // TODO
     // public Key getPublicKey()
 
-    public String encode(final Format format) {
-        return new String(format.encode(this));
+    public byte[] encode(final Format format) {
+        return format.encode(this);
     }
 
     public enum Type {

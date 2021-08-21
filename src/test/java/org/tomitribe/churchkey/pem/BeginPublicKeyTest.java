@@ -79,8 +79,16 @@ public class BeginPublicKeyTest {
         assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
 
-        final String exported = key.encode(Key.Format.PEM);
-        assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(new String(resource.bytes("public.openssh")).replace(" dblevins@mingus.lan", ""), exported);
+        }
+
     }
 
     public static void assertDsaDecode(final Decoder decoder, final String algorithm, final int bits) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
@@ -100,8 +108,16 @@ public class BeginPublicKeyTest {
         assertEquals(expected.getParams().getP(), actual.getParams().getP());
         assertEquals(expected.getParams().getQ(), actual.getParams().getQ());
 
-        final String exported = key.encode(Key.Format.PEM);
-        assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(new String(resource.bytes("public.openssh")).replace(" dblevins@mingus.lan", ""), exported);
+        }
+
     }
 
 }

@@ -36,30 +36,20 @@ import java.util.Map;
 
 public class OpenSSHParser implements Key.Format.Parser {
 
-    public static String formatSshPublicKey(final PublicKey publicKey, final String comment) throws IOException {
-        if (publicKey instanceof RSAPublicKey) {
-
-            final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
-            final String encodedKey = base64(Public.Rsa.write(rsaPublicKey));
-            return String.format("ssh-rsa %s %s%n", encodedKey, comment);
-
-        } else if (publicKey instanceof DSAPublicKey) {
-
-            final DSAPublicKey dSAPublicKey = (DSAPublicKey) publicKey;
-            final String encodedKey = base64(Public.Dss.write(dSAPublicKey));
-            return String.format("ssh-dss %s %s%n", encodedKey, comment);
-        }
-
-        throw new UnsupportedOperationException("PublicKey type unsupported: " + publicKey.getClass().getName());
-    }
-
-    private static String base64(byte[] src) {
-        return Base64.getEncoder().encodeToString(src);
-    }
-
     @Override
     public byte[] encode(final Key key) {
-        return new byte[0];
+        switch (key.getType()) {
+            case PUBLIC: {
+                return new Public().encode(key);
+            }
+            case PRIVATE: {
+                throw new UnsupportedOperationException("Unsupported key type: " + key.getType());
+            }
+            case SECRET:
+                throw new UnsupportedOperationException("Secret keys cannot be exported to PEM format.");
+            default:
+                throw new UnsupportedOperationException("Unsupported key type: " + key.getType());
+        }
     }
 
     @Override
@@ -115,6 +105,38 @@ public class OpenSSHParser implements Key.Format.Parser {
                 throw new IllegalStateException(e);
             }
         }
+
+        public byte[] encode(final Key key) {
+            final java.security.Key publicKey = key.getKey();
+
+            final String comment;
+            if (key.getAttributes().containsKey("Comment")) {
+                comment = " " + key.getAttribute("Comment");
+            } else {
+                comment = "";
+            }
+
+            try {
+                if (publicKey instanceof RSAPublicKey) {
+
+                    final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
+                    final String encodedKey = base64(Rsa.write(rsaPublicKey));
+                    return String.format("ssh-rsa %s%s%n", encodedKey, comment).getBytes();
+
+                } else if (publicKey instanceof DSAPublicKey) {
+
+                    final DSAPublicKey dSAPublicKey = (DSAPublicKey) publicKey;
+                    final String encodedKey = base64(Dss.write(dSAPublicKey));
+                    return String.format("ssh-dss %s%s%n", encodedKey, comment).getBytes();
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to encode key", e);
+            }
+
+            throw new UnsupportedOperationException("PublicKey type unsupported: " + publicKey.getClass().getName());
+
+        }
+
 
         /**
          * Order determined by https://tools.ietf.org/html/rfc4253#section-6.6
@@ -191,11 +213,9 @@ public class OpenSSHParser implements Key.Format.Parser {
                 return out.toByteArray();
             }
         }
+    }
 
-
-        @Override
-        public byte[] encode(final Key key) {
-            return new byte[0];
-        }
+    private static String base64(byte[] src) {
+        return Base64.getEncoder().encodeToString(src);
     }
 }

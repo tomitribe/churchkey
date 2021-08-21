@@ -58,6 +58,32 @@ public class BeginSSH2PublicKeyTest {
 
         assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
+
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(
+                    normalizeOpenSSHComment(resource.bytes("public.openssh")),
+                    normalizeOpenSSHComment(exported.getBytes())
+            );
+        }
+    }
+
+    /**
+     * Our test SSH2 keys will have a longer comment.  This comment will
+     * be in the generated output and is valid.  As our generated test
+     * OpenSSH keys have a short comment, we simply need to replace that
+     * short comment with the expected longer comment.
+     */
+    private static String normalizeOpenSSHComment(final byte[] bytes) {
+        return new String(bytes)
+                .replaceAll("dblevins@mingus.lan$", "0000-bit XXX, converted by dblevins@mingus.lan from OpenSSH")
+                .replaceAll("[0-9]{4}-bit [A-Z]+", "0000-bit XXX")
+                ;
     }
 
     @Test
@@ -82,5 +108,18 @@ public class BeginSSH2PublicKeyTest {
         assertEquals(expected.getParams().getG(), actual.getParams().getG());
         assertEquals(expected.getParams().getP(), actual.getParams().getP());
         assertEquals(expected.getParams().getQ(), actual.getParams().getQ());
+
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(
+                    normalizeOpenSSHComment(resource.bytes("public.openssh")),
+                    normalizeOpenSSHComment(exported.getBytes())
+            );
+        }
     }
 }

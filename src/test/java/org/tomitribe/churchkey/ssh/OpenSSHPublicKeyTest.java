@@ -58,16 +58,22 @@ public class OpenSSHPublicKeyTest {
 
         assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
+
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(new String(resource.bytes("public.openssh")), exported);
+        }
+
     }
 
     @Test
     public void testDSADecode1024() throws Exception {
-        assertDecodeRsaPublicKey(1024, 256);
-    }
-
-    @Test
-    public void testDSADecode2048() throws Exception {
-        assertDecodeRsaPublicKey(2048, 256);
+        assertDecodeDsaPublicKey(1024, 256);
     }
 
     private void assertDecodeDsaPublicKey(final int rsaBits, final int shaBits) throws Exception {
@@ -87,19 +93,16 @@ public class OpenSSHPublicKeyTest {
         assertEquals(expected.getParams().getG(), actual.getParams().getG());
         assertEquals(expected.getParams().getQ(), actual.getParams().getQ());
         assertEquals(expected.getParams().getP(), actual.getParams().getP());
-    }
 
-    @Test
-    public void testEncode1024() throws Exception {
-        final Resource resource = Resource.resource("rsa", 1024, 256);
-
-        final KeyFactory rsa = KeyFactory.getInstance("RSA");
-        final RSAPublicKey rsaPublicKey = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
-
-        final String expected = new String(resource.bytes("public.openssh"), "UTF-8");
-        final String actual = OpenSSHParser.formatSshPublicKey(rsaPublicKey, "dblevins@mingus.lan");
-
-        assertEquals(expected, actual);
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(new String(resource.bytes("public.openssh")), exported);
+        }
     }
 
 }
