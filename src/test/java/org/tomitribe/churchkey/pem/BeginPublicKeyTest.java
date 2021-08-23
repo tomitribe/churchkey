@@ -18,6 +18,7 @@ package org.tomitribe.churchkey.pem;
 
 import org.junit.Test;
 import org.tomitribe.churchkey.Decoder;
+import org.tomitribe.churchkey.JsonAsserts;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
@@ -87,6 +88,10 @@ public class BeginPublicKeyTest {
             // PEM Public Keys do not have comments, so remove the comment from the expected output
             final String exported = new String(key.encode(Key.Format.OPENSSH));
             assertEquals(new String(resource.bytes("public.openssh")).replace(" dblevins@mingus.lan", ""), exported);
+        }
+        { // Export to JWK
+            final String exported = new String(key.encode(Key.Format.JWK));
+            JsonAsserts.assertJson(new String(resource.bytes("public.jwk")), exported);
         }
 
     }

@@ -27,6 +27,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 
 import static org.junit.Assert.assertEquals;
+import static org.tomitribe.churchkey.JsonAsserts.assertJson;
 
 public class JwtRsaPublicKeyEncodeTest {
 
@@ -43,16 +44,7 @@ public class JwtRsaPublicKeyEncodeTest {
 
         final byte[] encode = Keys.encode(key);
 
-        assertEquals("{" +
-                "\"n\":\"ALLM26tTX2WqdiHHlAjvawhfWWHxx" +
-                "N6FOZugL4MsbtS5pQeqzT3ozvnge0_Y" +
-                "iIcVwhCrBg3MeAqaOZ8Z1uT0kGTP8M1" +
-                "4NWwDmdzupOexKBQtdPHAdIXbzogl1y" +
-                "jmRqxombhe6uWbdX7aiJO6CtoGyLUnQ" +
-                "e3Q60eAkiUhobEruZj9\"," +
-                "\"e\":\"AQAB\"," +
-                "\"kty\":\"RSA\"" +
-                "}", new String(encode));
+        assertJson(new String(resource.bytes("public.jwk")), new String(encode));
 
         assertKey(expected, Keys.decode(encode));
     }
@@ -81,21 +73,7 @@ public class JwtRsaPublicKeyEncodeTest {
 
         final byte[] encode = Keys.encode(key);
 
-        assertEquals("{" +
-                "\"n\":\"ANOONCbZoZcsLZDL0erUzLNFOn" +
-                "vSWuMV4-fqvo6FnU9sQh7fdQpPfuQuVjmk" +
-                "U3KOAjxTAcaFD4tY5LVuXPjspJziAAl7uo" +
-                "K13sWqxUC47ERBPnZA1azLu-X-xm_f5Qu5" +
-                "q1TO99dfMJzD9ruTDkCKFzqqgtctYGqCWi" +
-                "6fzo04iRgpuLsc7m81DzeSAwBWk3yvkBK4" +
-                "bXBngQ8Fo74pBn1H1_llau-AzqIIC4hmwe" +
-                "I7E_IlVxJudyXKBGPJ1a9soK_dk7lNfsSw" +
-                "BorI0UmCVXu1dbaXURtQosgiJKoQxXxQRo" +
-                "RZ1pbuICjIk9Ck6APRiXzrgs-u12RAIUGI" +
-                "s3F259bsWjk\"," +
-                "\"e\":\"AQAB\"," +
-                "\"kty\":\"RSA\"" +
-                "}", new String(encode));
+        assertJson(new String(resource.bytes("public.jwk")), new String(encode));
 
         assertKey(expected, Keys.decode(encode));
     }

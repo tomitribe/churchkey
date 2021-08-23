@@ -238,7 +238,15 @@ public class JwkParser implements Key.Format.Parser {
 
     public static String encode(final BigInteger bigInteger) {
         final Base64.Encoder urlEncoder = Base64.getUrlEncoder().withoutPadding();
-        return urlEncoder.encodeToString(bigInteger.toByteArray());
+
+        final byte[] bytes = bigInteger.toByteArray();
+        if (bytes[0] == 0) {
+            final byte[] trimmed = new byte[bytes.length - 1];
+            System.arraycopy(bytes, 1, trimmed, 0, trimmed.length);
+            return urlEncoder.encodeToString(trimmed);
+        } else {
+            return urlEncoder.encodeToString(bytes);
+        }
     }
 
     public static String encode(final byte[] bytes) {
