@@ -59,9 +59,10 @@ public class OpenSSHParser implements Key.Format.Parser {
             return new Public().decode(bytes);
         }
 
-//        if (Utils.startsWith("-----BEGIN OPENSSH PRIVATE KEY-----", bytes)) {
-//            return new Private().decode(bytes);
-//        }
+        if (Utils.startsWith("-----BEGIN OPENSSH PRIVATE KEY-----", bytes)) {
+            return OpenSSHPrivateKey.decode(bytes);
+        }
+        
         return null;
     }
 

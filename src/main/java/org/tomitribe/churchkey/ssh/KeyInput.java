@@ -19,6 +19,7 @@ import org.tomitribe.util.PrintString;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.math.BigInteger;
 
@@ -32,6 +33,7 @@ public class KeyInput extends DataInputStream {
         final PrintString string = new PrintString();
         int read = this.read();
         while (read != '\000') {
+            if (read == -1) throw new EOFException();
             string.write(read);
             read = this.read();
         }
