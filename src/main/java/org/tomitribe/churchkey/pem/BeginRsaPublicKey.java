@@ -19,14 +19,11 @@ package org.tomitribe.churchkey.pem;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.asn1.Asn1Object;
 import org.tomitribe.churchkey.asn1.DerParser;
+import org.tomitribe.churchkey.rsa.Rsa;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
+import java.io.UncheckedIOException;
+import java.security.interfaces.RSAPublicKey;
 
 public class BeginRsaPublicKey {
 
@@ -45,18 +42,15 @@ public class BeginRsaPublicKey {
             // Parse inside the sequence
             final DerParser p = sequence.getParser();
 
-            final BigInteger modulus = p.read().getInteger();
-            final BigInteger publicExponent = p.read().getInteger();
-
-            final RSAPublicKeySpec keySpec = new RSAPublicKeySpec(modulus, publicExponent);
-            final KeyFactory result = KeyFactory.getInstance("RSA");
-            final PublicKey publicKey = result.generatePublic(keySpec);
+            final RSAPublicKey publicKey = Rsa.Public.builder()
+                    .modulus(p.read().getInteger())
+                    .publicExponent(p.read().getInteger())
+                    .build()
+                    .toKey();
 
             return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.PEM);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        } catch (IOException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

@@ -19,14 +19,11 @@ package org.tomitribe.churchkey.pem;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.asn1.Asn1Object;
 import org.tomitribe.churchkey.asn1.DerParser;
+import org.tomitribe.churchkey.dsa.Dsa;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.spec.DSAPrivateKeySpec;
-import java.security.spec.InvalidKeySpecException;
+import java.io.UncheckedIOException;
+import java.security.interfaces.DSAPrivateKey;
 
 public class BeginDsaPrivateKey {
 
@@ -46,22 +43,18 @@ public class BeginDsaPrivateKey {
             final DerParser parser1 = sequence.getParser();
 
             parser1.read(); // Skip version
-            final BigInteger p = parser1.read().getInteger();
-            final BigInteger q = parser1.read().getInteger();
-            final BigInteger g = parser1.read().getInteger();
-            final BigInteger unknown = parser1.read().getInteger();
-            final BigInteger x = parser1.read().getInteger();
+            final DSAPrivateKey privateKey = Dsa.Private.builder()
+                    .p(parser1.read().getInteger())
+                    .q(parser1.read().getInteger())
+                    .g(parser1.read().getInteger())
+                    .y(parser1.read().getInteger())
+                    .x(parser1.read().getInteger())
+                    .build()
+                    .toKey();
 
-            final DSAPrivateKeySpec spec = new DSAPrivateKeySpec(x, p, q, g);
-
-            final KeyFactory result = KeyFactory.getInstance("DSA");
-            final PrivateKey publicKey = result.generatePrivate(spec);
-
-            return new Key(publicKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.PEM);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        } catch (IOException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
+            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.PEM);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

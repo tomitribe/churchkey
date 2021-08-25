@@ -19,14 +19,11 @@ package org.tomitribe.churchkey.pem;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.asn1.Asn1Object;
 import org.tomitribe.churchkey.asn1.DerParser;
+import org.tomitribe.churchkey.rsa.Rsa;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPrivateCrtKeySpec;
+import java.io.UncheckedIOException;
+import java.security.interfaces.RSAPrivateCrtKey;
 
 public class BeginRsaPrivateKey {
 
@@ -46,25 +43,22 @@ public class BeginRsaPrivateKey {
             final DerParser p = sequence.getParser();
 
             p.read(); // Skip version
-            final BigInteger modulus = p.read().getInteger();
-            final BigInteger publicExp = p.read().getInteger();
-            final BigInteger privateExp = p.read().getInteger();
-            final BigInteger prime1 = p.read().getInteger();
-            final BigInteger prime2 = p.read().getInteger();
-            final BigInteger exp1 = p.read().getInteger();
-            final BigInteger exp2 = p.read().getInteger();
-            final BigInteger crtCoef = p.read().getInteger();
 
-            final RSAPrivateCrtKeySpec spec = new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, prime1, prime2, exp1, exp2, crtCoef);
+            final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
+                    .modulus(p.read().getInteger())
+                    .publicExponent(p.read().getInteger())
+                    .privateExponent(p.read().getInteger())
+                    .primeP(p.read().getInteger())
+                    .primeQ(p.read().getInteger())
+                    .primeExponentP(p.read().getInteger())
+                    .primeExponentQ(p.read().getInteger())
+                    .crtCoefficient(p.read().getInteger())
+                    .build()
+                    .toKey();
 
-            final KeyFactory result = KeyFactory.getInstance("RSA");
-            final PrivateKey publicKey = result.generatePrivate(spec);
-
-            return new Key(publicKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.PEM);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        } catch (IOException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
+            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.PEM);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
