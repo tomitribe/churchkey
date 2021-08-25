@@ -21,6 +21,8 @@ import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.util.Pem;
 import org.tomitribe.churchkey.util.Utils;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.security.PublicKey;
 
 public class SSH2Parser implements Key.Format.Parser {
@@ -53,7 +55,7 @@ public class SSH2Parser implements Key.Format.Parser {
 
                 if (algorithm.equals("ssh-rsa")) {
 
-                    final PublicKey publicKey = OpenSSHParser.Public.Rsa.read(reader);
+                    final PublicKey publicKey = OpenSSHParser.Public.RsaPublic.read(reader);
 
                     return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2, pem.getAttributes());
 
@@ -66,11 +68,11 @@ public class SSH2Parser implements Key.Format.Parser {
                 } else {
                     throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
                 }
-                
+
             } catch (UnsupportedOperationException e) {
                 throw e;
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
     }

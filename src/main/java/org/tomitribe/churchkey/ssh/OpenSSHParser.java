@@ -17,19 +17,16 @@
 package org.tomitribe.churchkey.ssh;
 
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.dsa.Dsa;
+import org.tomitribe.churchkey.rsa.Rsa;
 import org.tomitribe.churchkey.util.Utils;
 
 import java.io.IOException;
-import java.math.BigInteger;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +59,7 @@ public class OpenSSHParser implements Key.Format.Parser {
         if (Utils.startsWith("-----BEGIN OPENSSH PRIVATE KEY-----", bytes)) {
             return OpenSSHPrivateKey.decode(bytes);
         }
-        
+
         return null;
     }
 
@@ -90,7 +87,7 @@ public class OpenSSHParser implements Key.Format.Parser {
 
                 if (algorithm.equals("ssh-rsa")) {
 
-                    return new Key(Rsa.read(reader), Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.OPENSSH, attributes);
+                    return new Key(RsaPublic.read(reader), Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.OPENSSH, attributes);
 
                 } else if (algorithm.equals("ssh-dss")) {
 
@@ -102,8 +99,8 @@ public class OpenSSHParser implements Key.Format.Parser {
 
             } catch (UnsupportedOperationException e) {
                 throw e;
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
 
@@ -121,7 +118,7 @@ public class OpenSSHParser implements Key.Format.Parser {
                 if (publicKey instanceof RSAPublicKey) {
 
                     final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
-                    final String encodedKey = base64(Rsa.write(rsaPublicKey));
+                    final String encodedKey = base64(RsaPublic.write(rsaPublicKey));
                     return String.format("ssh-rsa %s%s%n", encodedKey, comment).getBytes();
 
                 } else if (publicKey instanceof DSAPublicKey) {
@@ -148,15 +145,14 @@ public class OpenSSHParser implements Key.Format.Parser {
          *      mpint     e
          *      mpint     n
          */
-        static class Rsa {
+        static class RsaPublic {
 
-            static PublicKey read(final KeyInput keyInput) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-                final BigInteger e = keyInput.readBigInteger();
-                final BigInteger n = keyInput.readBigInteger();
-
-                final RSAPublicKeySpec keySpec = new RSAPublicKeySpec(n, e);
-                final KeyFactory rsa = KeyFactory.getInstance("RSA");
-                return rsa.generatePublic(keySpec);
+            static PublicKey read(final KeyInput keyInput) throws IOException {
+                return Rsa.Public.builder()
+                        .publicExponent(keyInput.readBigInteger())
+                        .modulus(keyInput.readBigInteger())
+                        .build()
+                        .toKey();
             }
 
             static byte[] write(final RSAPublicKey key) throws IOException {
@@ -181,15 +177,14 @@ public class OpenSSHParser implements Key.Format.Parser {
          *
          */
         static class Dss {
-            static PublicKey read(final KeyInput keyData) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-                final BigInteger p = keyData.readBigInteger();
-                final BigInteger q = keyData.readBigInteger();
-                final BigInteger g = keyData.readBigInteger();
-                final BigInteger y = keyData.readBigInteger();
-
-                final DSAPublicKeySpec keySpec = new DSAPublicKeySpec(y, p, q, g);
-                final KeyFactory dsa = KeyFactory.getInstance("DSA");
-                return dsa.generatePublic(keySpec);
+            static PublicKey read(final KeyInput key) throws IOException {
+                return Dsa.Public.builder()
+                        .p(key.readBigInteger())
+                        .q(key.readBigInteger())
+                        .g(key.readBigInteger())
+                        .y(key.readBigInteger())
+                        .build()
+                        .toKey();
             }
 
             /**
