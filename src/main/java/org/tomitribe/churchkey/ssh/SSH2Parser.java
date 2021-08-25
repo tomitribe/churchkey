@@ -55,13 +55,13 @@ public class SSH2Parser implements Key.Format.Parser {
 
                 if (algorithm.equals("ssh-rsa")) {
 
-                    final PublicKey publicKey = OpenSSHParser.Public.RsaPublic.read(reader);
+                    final PublicKey publicKey = OpenSSHPublicKey.RsaPublic.read(reader);
 
                     return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2, pem.getAttributes());
 
                 } else if (algorithm.equals("ssh-dss")) {
 
-                    final PublicKey publicKey = OpenSSHParser.Public.Dss.read(reader);
+                    final PublicKey publicKey = OpenSSHPublicKey.DsaPublic.read(reader);
 
                     return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2, pem.getAttributes());
 
