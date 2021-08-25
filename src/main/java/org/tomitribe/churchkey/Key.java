@@ -21,6 +21,12 @@ import org.tomitribe.churchkey.pem.PemParser;
 import org.tomitribe.churchkey.ssh.OpenSSHParser;
 import org.tomitribe.churchkey.ssh.SSH2Parser;
 
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +56,10 @@ public class Key {
 
     public String getAttribute(final String name) {
         return attributes.get(name);
+    }
+
+    public boolean hasAttribute(final String name) {
+        return attributes.containsKey(name);
     }
 
     public java.security.Key getKey() {
@@ -82,7 +92,16 @@ public class Key {
     }
 
     public enum Algorithm {
-        RSA, DSA, EC, OCT
+        RSA, DSA, EC, OCT;
+
+        public Factory getKeyFactory() {
+            if (this == OCT) throw new UnsupportedOperationException();
+            try {
+                return new Factory(KeyFactory.getInstance(name()));
+            } catch (NoSuchAlgorithmException e) {
+                throw new UnsupportedAlgorithmException(this, e);
+            }
+        }
     }
 
     public enum Format {
@@ -112,4 +131,29 @@ public class Key {
             byte[] encode(final Key key);
         }
     }
+
+    public static class Factory {
+        private final KeyFactory keyFactory;
+
+        public Factory(final KeyFactory keyFactory) {
+            this.keyFactory = keyFactory;
+        }
+
+        public PublicKey generatePublic(final KeySpec keySpec) {
+            try {
+                return keyFactory.generatePublic(keySpec);
+            } catch (InvalidKeySpecException e) {
+                throw new InvalidPrivateKeySpecException(keySpec, e);
+            }
+        }
+
+        public PrivateKey generatePrivate(final KeySpec keySpec) {
+            try {
+                return keyFactory.generatePrivate(keySpec);
+            } catch (InvalidKeySpecException e) {
+                throw new InvalidPublicKeySpecException(keySpec, e);
+            }
+        }
+    }
+
 }
