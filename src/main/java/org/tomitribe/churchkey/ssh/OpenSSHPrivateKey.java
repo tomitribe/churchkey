@@ -16,14 +16,19 @@
 package org.tomitribe.churchkey.ssh;
 
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.Ecdsa;
 import org.tomitribe.churchkey.util.Pem;
+import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.spec.DSAPrivateKeySpec;
+import java.security.spec.ECPoint;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.HashMap;
@@ -36,13 +41,9 @@ public class OpenSSHPrivateKey {
 
     public static Key decode(final byte[] bytes) {
         final Pem pem = Pem.parse(bytes);
-        return decodeBlob(pem.getData());
-    }
-
-    public static Key decodeBlob(final byte[] bytes) {
         try {
 
-            final KeyInput keyInput = new KeyInput(bytes);
+            final KeyInput keyInput = new KeyInput(pem.getData());
 
             assertString("Auth Magic", "openssh-key-v1", keyInput.readAuthMagic());
             assertString("ciphername", "none", keyInput.readString());
@@ -55,19 +56,27 @@ public class OpenSSHPrivateKey {
 
 
             keyInput.readInt();
-            final KeyInput privateKeyKeyInput = keyInput;
 
             // a random 32-bit int, repeated
-            privateKeyKeyInput.readInt();
-            privateKeyKeyInput.readInt();
+            keyInput.readInt();
+            keyInput.readInt();
 
-            final String keyType = privateKeyKeyInput.readString();
+            final String keyType = keyInput.readString();
 
             if ("ssh-rsa".equals(keyType)) {
-                return readRsaPrivateKey(privateKeyKeyInput);
+                return readRsaPrivateKey(keyInput);
             }
             if ("ssh-dss".equals(keyType)) {
-                return readPrivateDssKey(privateKeyKeyInput);
+                return readPrivateDssKey(keyInput);
+            }
+            if ("ecdsa-sha2-nistp256".equals(keyType)) {
+                return readEcdsaPrivateKey(Curve.nistp256, keyInput);
+            }
+            if ("ecdsa-sha2-nistp384".equals(keyType)) {
+                return readEcdsaPrivateKey(Curve.nistp384, keyInput);
+            }
+            if ("ecdsa-sha2-nistp521".equals(keyType)) {
+                return readEcdsaPrivateKey(Curve.nistp521, keyInput);
             }
 
             throw new UnsupportedOperationException("Unsupported key type: " + keyType);
@@ -121,6 +130,67 @@ public class OpenSSHPrivateKey {
 
         // TODO make Key.Format.OPENSSH and move to into OpenSSHParser
         return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.OPENSSH, attributes);
+    }
+
+    private static Key readEcdsaPrivateKey(final Curve curve, final KeyInput keyInput) throws IOException {
+
+        final String curveName = keyInput.readString();
+
+        if (!curve.name().equals(curveName)) {
+            throw new IllegalStateException(String.format("Mismatched curve %s does not match key type of ecdsa-sha2-%s", curveName, curve.name()));
+        }
+
+        final byte[] q = keyInput.readBytes();
+
+        final ECPoint ecPoint = getEcPoint(q);
+
+        final BigInteger d = keyInput.readBigInteger();
+
+        final ECPrivateKey ecPrivateKey = Ecdsa.Private.builder()
+                .curveName(curveName)
+                .d(d)
+                .x(ecPoint.getAffineX())
+                .y(ecPoint.getAffineY())
+                .build()
+                .toKey();
+
+        final Map<String, String> attributes = new HashMap<String, String>();
+
+        final String comment = keyInput.readString();
+        if (comment != null) {
+            attributes.put("Comment", comment);
+        } else {
+            attributes.put("Comment", "");
+        }
+
+        return new Key(ecPrivateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.OPENSSH, attributes);
+    }
+
+    private static ECPoint getEcPoint(final byte[] bytes) {
+        if (bytes.length == 0) {
+            throw new IllegalStateException("Key data is truncated");
+        }
+
+        if (bytes[0] != (byte) 0x04) {
+            final byte[] format = {bytes[0]};
+            throw new UnsupportedOperationException("Only uncompressed EC points are supported.  Found EC point compression format of " + Hex.toString(format) + " (hex)");
+        }
+
+        final int length = bytes.length - 1;
+        final int elements = length / 2; /* x, y */
+
+        if (length != (elements * 2)) { // make sure length is not odd
+            throw new IllegalArgumentException(String.format("Invalid EC point data: expected %s bytes, found %s bytes", (2 * elements), length));
+        }
+
+        byte[] xp = new byte[elements];
+        byte[] yp = new byte[elements];
+        System.arraycopy(bytes, 1, xp, 0, elements);
+        System.arraycopy(bytes, 1 + elements, yp, 0, elements);
+
+        BigInteger x = new BigInteger(1, xp);
+        BigInteger y = new BigInteger(1, yp);
+        return new ECPoint(x, y);
     }
 
     public static void assertString(final String name, final String expected, final String actual) {
