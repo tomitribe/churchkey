@@ -18,6 +18,7 @@ package org.tomitribe.churchkey.pem;
 
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.asn1.Asn1Object;
+import org.tomitribe.churchkey.asn1.Asn1Type;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.rsa.Rsa;
 
@@ -34,17 +35,17 @@ public class BeginRsaPublicKey {
         try {
             final DerParser parser = new DerParser(bytes);
 
-            final Asn1Object sequence = parser.read();
-            if (sequence.getType() != DerParser.SEQUENCE) {
+            final Asn1Object sequence = parser.readObject();
+            if (sequence.getType() != Asn1Type.SEQUENCE) {
                 throw new IllegalArgumentException("Invalid DER: not a sequence");
             }
 
             // Parse inside the sequence
-            final DerParser p = sequence.getParser();
+            final DerParser p = sequence.createParser();
 
             final RSAPublicKey publicKey = Rsa.Public.builder()
-                    .modulus(p.read().getInteger())
-                    .publicExponent(p.read().getInteger())
+                    .modulus(p.readObject().asInteger())
+                    .publicExponent(p.readObject().asInteger())
                     .build()
                     .toKey();
 

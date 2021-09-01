@@ -18,6 +18,7 @@ package org.tomitribe.churchkey.pem;
 
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.asn1.Asn1Object;
+import org.tomitribe.churchkey.asn1.Asn1Type;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.dsa.Dsa;
 
@@ -34,21 +35,21 @@ public class BeginDsaPrivateKey {
         try {
             final DerParser parser = new DerParser(bytes);
 
-            final Asn1Object sequence = parser.read();
-            if (sequence.getType() != DerParser.SEQUENCE) {
+            final Asn1Object sequence = parser.readObject();
+            if (sequence.getType() != Asn1Type.SEQUENCE) {
                 throw new IllegalArgumentException("Invalid DER: not a sequence");
             }
 
             // Parse inside the sequence
-            final DerParser parser1 = sequence.getParser();
+            final DerParser parser1 = sequence.createParser();
 
-            parser1.read(); // Skip version
+            parser1.readObject(); // Skip version
             final DSAPrivateKey privateKey = Dsa.Private.builder()
-                    .p(parser1.read().getInteger())
-                    .q(parser1.read().getInteger())
-                    .g(parser1.read().getInteger())
-                    .y(parser1.read().getInteger())
-                    .x(parser1.read().getInteger())
+                    .p(parser1.readObject().asInteger())
+                    .q(parser1.readObject().asInteger())
+                    .g(parser1.readObject().asInteger())
+                    .y(parser1.readObject().asInteger())
+                    .x(parser1.readObject().asInteger())
                     .build()
                     .toKey();
 

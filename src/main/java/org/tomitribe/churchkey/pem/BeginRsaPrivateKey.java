@@ -18,6 +18,7 @@ package org.tomitribe.churchkey.pem;
 
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.asn1.Asn1Object;
+import org.tomitribe.churchkey.asn1.Asn1Type;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.rsa.Rsa;
 
@@ -34,25 +35,25 @@ public class BeginRsaPrivateKey {
         try {
             final DerParser parser = new DerParser(bytes);
 
-            final Asn1Object sequence = parser.read();
-            if (sequence.getType() != DerParser.SEQUENCE) {
+            final Asn1Object sequence = parser.readObject();
+            if (sequence.getType() != Asn1Type.SEQUENCE) {
                 throw new IllegalArgumentException("Invalid DER: not a sequence");
             }
 
             // Parse inside the sequence
-            final DerParser p = sequence.getParser();
+            final DerParser p = sequence.createParser();
 
-            p.read(); // Skip version
+            p.readObject(); // Skip version
 
             final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
-                    .modulus(p.read().getInteger())
-                    .publicExponent(p.read().getInteger())
-                    .privateExponent(p.read().getInteger())
-                    .primeP(p.read().getInteger())
-                    .primeQ(p.read().getInteger())
-                    .primeExponentP(p.read().getInteger())
-                    .primeExponentQ(p.read().getInteger())
-                    .crtCoefficient(p.read().getInteger())
+                    .modulus(p.readObject().asInteger())
+                    .publicExponent(p.readObject().asInteger())
+                    .privateExponent(p.readObject().asInteger())
+                    .primeP(p.readObject().asInteger())
+                    .primeQ(p.readObject().asInteger())
+                    .primeExponentP(p.readObject().asInteger())
+                    .primeExponentQ(p.readObject().asInteger())
+                    .crtCoefficient(p.readObject().asInteger())
                     .build()
                     .toKey();
 

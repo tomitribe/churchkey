@@ -57,6 +57,7 @@ public class BeginPrivateKey {
             final ECPrivateKey privateKey = (ECPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(bytes));
             return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.PEM);
         } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
             // continue trying other algorithms
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);

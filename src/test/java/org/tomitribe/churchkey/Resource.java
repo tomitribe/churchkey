@@ -37,6 +37,10 @@ public class Resource {
         return new Resource(Resource.class, String.format("%s%s-sha%s/%s", algorithm, rsaBits, shaBits, "data.txt"));
     }
 
+    public static Resource resource(final String dir) {
+        return new Resource(Resource.class, String.format("%s/%s", dir, "data.txt"));
+    }
+
     public byte[] bytes(final String name) throws IOException {
         final URL privateDerUrl = new URL(base, name);
         requireResource(privateDerUrl, name);

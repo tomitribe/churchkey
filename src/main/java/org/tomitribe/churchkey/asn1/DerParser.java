@@ -1,169 +1,154 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
 package org.tomitribe.churchkey.asn1;
 
 import java.io.ByteArrayInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StreamCorruptedException;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 /**
- * A bare-minimum ASN.1 DER decoder, just having enough functions to decode
- * PKCS#1 private keys. Especially, it doesn't handle explicitly tagged types
- * with an outer tag.
+ * A bare minimum DER parser - just enough to be able to decode signatures and private keys
  *
- * <p>
- * This parser can only handle one layer. To parse nested constructs, get a new
- * parser for each layer using <code>Asn1Object.getParser()</code>.
- *
- * <p>
- * There are many DER decoders in JRE but using them will tie this program to a
- * specific JCE/JVM.
- *
- * @author zhang
+ * @author <a href="mailto:dev@mina.apache.org">Apache MINA SSHD Project</a>
  */
-public class DerParser {
-    // Classes
-    public final static int UNIVERSAL = 0x00;
-    public final static int APPLICATION = 0x40;
-    public final static int CONTEXT = 0x80;
-    public final static int PRIVATE = 0xC0;
-
-    // Constructed Flag
-    public final static int CONSTRUCTED = 0x20;
-
-    // Tag and data types
-    public final static int ANY = 0x00;
-    public final static int BOOLEAN = 0x01;
-    public final static int INTEGER = 0x02;
-    public final static int BIT_STRING = 0x03;
-    public final static int OCTET_STRING = 0x04;
-    public final static int NULL = 0x05;
-    public final static int OBJECT_IDENTIFIER = 0x06;
-    public final static int REAL = 0x09;
-    public final static int ENUMERATED = 0x0a;
-    public final static int RELATIVE_OID = 0x0d;
-
-    public final static int SEQUENCE = 0x10;
-    public final static int SET = 0x11;
-
-    public final static int NUMERIC_STRING = 0x12;
-    public final static int PRINTABLE_STRING = 0x13;
-    public final static int T61_STRING = 0x14;
-    public final static int VIDEOTEX_STRING = 0x15;
-    public final static int IA5_STRING = 0x16;
-    public final static int GRAPHIC_STRING = 0x19;
-    public final static int ISO646_STRING = 0x1A;
-    public final static int GENERAL_STRING = 0x1B;
-
-    public final static int UTF8_STRING = 0x0C;
-    public final static int UNIVERSAL_STRING = 0x1C;
-    public final static int BMP_STRING = 0x1E;
-
-    public final static int UTC_TIME = 0x17;
-    public final static int GENERALIZED_TIME = 0x18;
-
-    protected final InputStream in;
-
+public class DerParser extends FilterInputStream {
     /**
-     * Create a new DER decoder from an input stream.
-     *
-     * @param in
-     *            The DER encoded stream
+     * Maximum size of data allowed by {@link #readLength()} - it is a bit arbitrary since one can encode 32-bit length
+     * data, but it is good enough for the keys
      */
-    public DerParser(final InputStream in) throws IOException {
-        this.in = in;
+    public static final int MAX_DER_VALUE_LENGTH = 2 * Short.MAX_VALUE;
+
+    private final byte[] lenBytes = new byte[Integer.BYTES];
+
+    public DerParser(byte... bytes) {
+        this(bytes, 0, Utils.length(bytes));
+    }
+
+    public DerParser(byte[] bytes, int offset, int len) {
+        this(new ByteArrayInputStream(bytes, offset, len));
+    }
+
+    public DerParser(InputStream s) {
+        super(s);
     }
 
     /**
-     * Create a new DER decoder from a byte array.
-     *
-     * @param bytes the encoded bytes
-     */
-    public DerParser(final byte[] bytes) throws IOException {
-        this(new ByteArrayInputStream(bytes));
-    }
-
-    /**
-     * Read next object. If it's constructed, the value holds encoded content
-     * and it should be parsed by a new parser from
-     * <code>Asn1Object.getParser</code>.
-     */
-    public Asn1Object read() throws IOException {
-        final int tag = in.read();
-
-        if (tag == -1) {
-            throw new IOException("Invalid DER: stream too short, missing tag");
-        }
-
-        final int length = getLength();
-
-        final byte[] value = new byte[length];
-        final int n = in.read(value);
-
-        if (n < length) {
-            throw new IOException("Invalid DER: stream too short, missing value");
-        }
-
-        return new Asn1Object(tag, length, value);
-    }
-
-    /**
-     * Decode the length of the field. Can only support length encoding up to 4
-     * octets.
-     *
-     * <p/>
-     * In BER/DER encoding, length can be encoded in 2 forms,
+     * Decode the length of the field. Can only support length encoding up to 4 octets. In BER/DER encoding, length can
+     * be encoded in 2 forms:
      * <ul>
-     * <li>Short form. One octet. Bit 8 has value "0" and bits 7-1 give the
-     * length.
-     * <li>Long form. Two to 127 octets (only 4 is supported here). Bit 8 of
-     * first octet has value "1" and bits 7-1 give the number of additional
-     * length octets. Second and following octets give the length, base 256,
-     * most significant digit first.
+     * <li>
+     * <p>
+     * Short form - One octet. Bit 8 has value "0" and bits 7-1 give the length.
+     * </p>
+     * </li>
+     *
+     * <li>
+     * <p>
+     * Long form - Two to 127 octets (only 4 is supported here). Bit 8 of first octet has value "1" and bits 7-1 give
+     * the number of additional length octets. Second and following octets give the length, base 256, most significant
+     * digit first.
+     * </p>
+     * </li>
      * </ul>
      *
-     * @return The length as integer
+     * @return             The length as integer
+     * @throws IOException If invalid format found
      */
-    private int getLength() throws IOException {
-
-        final int i = in.read();
-
+    public int readLength() throws IOException {
+        int i = read();
         if (i == -1) {
-            throw new IOException("Invalid DER: length missing");
+            throw new StreamCorruptedException("Invalid DER: length missing");
         }
 
         // A single byte short length
-        if ((i & ~0x7F) == 0) return i;
-
-        final int num = i & 0x7F;
-
-        // We can't handle length longer than 4 bytes
-        if (i >= 0xFF || num > 4) {
-            throw new IOException("Invalid DER: length field too big (" + i + ")");
+        if ((i & ~0x7F) == 0) {
+            return i;
         }
 
-        final byte[] bytes = new byte[num];
-        final int n = in.read(bytes);
+        int num = i & 0x7F;
+        // TODO We can't handle length longer than 4 bytes
+        if ((i >= 0xFF) || (num > lenBytes.length)) {
+            throw new StreamCorruptedException("Invalid DER: length field too big: " + i);
+        }
 
+        // place the read bytes last so that the 1st ones are zeroes as big endian
+        Arrays.fill(lenBytes, (byte) 0);
+        int n = read(lenBytes, 4 - num, num);
         if (n < num) {
-            throw new IOException("Invalid DER: length too short");
+            throw new StreamCorruptedException("Invalid DER: length data too short: expected=" + num + ", actual=" + n);
         }
 
-        return new BigInteger(1, bytes).intValue();
+        long len = Utils.getUInt(lenBytes);
+        if (len < 0x7FL) { // according to standard: "the shortest possible length encoding must be used"
+            throw new StreamCorruptedException("Invalid DER: length not in shortest form: " + len);
+        }
+
+        if (len > MAX_DER_VALUE_LENGTH) {
+            throw new StreamCorruptedException(
+                    "Invalid DER: data length too big: " + len + " (max=" + MAX_DER_VALUE_LENGTH + ")");
+        }
+
+        // we know the cast is safe since it is less than MAX_DER_VALUE_LENGTH which is ~64K
+        return (int) len;
+    }
+
+    public Asn1Object readObject() throws IOException {
+        int tag = read();
+        if (tag == -1) {
+            return null;
+        }
+
+        Asn1Type objType = Asn1Type.fromDERValue(tag);
+        if (objType == Asn1Type.NULL) {
+            return new Asn1Object((byte) tag, 0, Utils.EMPTY_BYTE_ARRAY);
+        }
+
+        int length = readLength();
+        byte[] value = new byte[length];
+        int n = read(value);
+        if (n < length) {
+            throw new StreamCorruptedException(
+                    "Invalid DER: stream too short, missing value: read " + n + " out of required " + length);
+        }
+
+        return new Asn1Object((byte) tag, length, value);
+    }
+
+    public BigInteger readBigInteger() throws IOException {
+        int type = read();
+        if (type != 0x02) {
+            throw new StreamCorruptedException("Invalid DER: data type is not an INTEGER: 0x" + Integer.toHexString(type));
+        }
+
+        int len = readLength();
+        byte[] value = new byte[len];
+        int n = read(value);
+        if (n < len) {
+            throw new StreamCorruptedException(
+                    "Invalid DER: stream too short, missing value: read " + n + " out of required " + len);
+        }
+
+        return new BigInteger(value);
     }
 }
