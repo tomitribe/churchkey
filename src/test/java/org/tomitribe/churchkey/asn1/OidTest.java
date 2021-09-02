@@ -16,12 +16,13 @@
 package org.tomitribe.churchkey.asn1;
 
 import org.junit.Test;
+import org.tomitribe.util.Hex;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 public class OidTest {
@@ -40,91 +41,94 @@ public class OidTest {
     }
 
     @Test
-    public void shifting() throws Exception {
-        final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        int elem = 840;
-        bytes.write(elem & 0x7F);
-        elem = elem >> 7;
-        while (elem > 0) {
-            bytes.write((byte) (elem | 0x80));
-            elem = elem >> 7;
-        }
-
+    public void toBytes() {
+        final Oid oid = new Oid(1, 2, 127, 128);
+        final byte[] bytes = oid.toBytes();
+        final String s = Hex.toString(bytes);
+        assertEquals("2a7f8100", s);
     }
 
     @Test
-    public void shifting2() throws Exception {
-        final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        int elem = 840;
-
-        byte b4 = (byte) (elem & 0x7F);
-
-        elem = elem >> 7;
-        byte b3 = (byte) (elem | 0x80);
-
-        elem = elem >> 7;
-        if (elem <= 0) {
-            bytes.write(b3);
-            bytes.write(b4);
-            return;
-        }
-
-        byte b2 = (byte) (elem | 0x80);
-        elem = elem >> 7;
-        if (elem <= 0) {
-            bytes.write(b2);
-            bytes.write(b3);
-            bytes.write(b4);
-            return;
-        }
-
-        byte b1 = (byte) (elem | 0x80);
-        elem = elem >> 7;
-        if (elem <= 0) {
-            bytes.write(b1);
-            bytes.write(b2);
-            bytes.write(b3);
-            bytes.write(b4);
-            return;
-        }
-
-        byte b0 = (byte) (elem | 0x80);
-        elem = elem >> 7;
-        if (elem <= 0) {
-            bytes.write(b0);
-            bytes.write(b1);
-            bytes.write(b2);
-            bytes.write(b3);
-            bytes.write(b4);
-            return;
-        }
-
-        System.out.println();
+    public void toBytes2() {
+        final Oid oid = new Oid(1, 2, 8192, 16383);
+        final byte[] bytes = oid.toBytes();
+        final String s = Hex.toString(bytes);
+        assertEquals("2ac000ff7f", s);
     }
 
     @Test
-    public void shifting3() throws Exception {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final byte[] bytes = new byte[5];
-        int pos = bytes.length - 1;
-        int elem = 840;
+    public void toHex() {
+        final Oid oid = new Oid(1, 2, 8192, 16383);
+        final String s = oid.toHex();
+        assertEquals("2ac000ff7f", s);
+    }
 
-        bytes[pos--] = (byte) (elem & 0x7F);
-        elem = elem >> 7;
-        while (elem > 0) {
-            bytes[pos--] = (byte) (elem | 0x80);
-            elem = elem >> 7;
+    @Test
+    public void equals() {
+        {
+            final Oid a = new Oid(1, 3, 8192, 16383);
+            final Oid b = new Oid(1, 3, 8192, 16383);
+            assertEquals(a, b);
         }
-        pos++;
-        final int length = bytes.length - pos;
-        out.write(bytes, pos, length);
-        System.out.println();
+        {
+            final Oid a = new Oid(1, 2, 8192, 16383);
+            final Oid b = new Oid(1, 2, 8192, 16383, 1);
+            assertNotEquals(a, b);
+        }
+        {
+            final Oid a = new Oid();
+            final Oid b = new Oid(1, 2, 8192, 16383, 1);
+            assertNotEquals(a, b);
+        }
+        {
+            final Oid a = new Oid();
+            assertNotEquals(a, null);
+        }
+        {
+            final Oid a = new Oid();
+            assertNotEquals(a, "other type");
+        }
+    }
+
+    @Test
+    public void hashcode() {
+        {
+            final Oid a = new Oid(1, 2, 8192, 16383);
+            final Oid b = new Oid(1, 2, 8192, 16383);
+            assertEquals(a.hashCode(), b.hashCode());
+        }
+        {
+            final Oid a = new Oid(1, 2, 8192, 16383);
+            final Oid b = new Oid(1, 2, 8192, 16383, 1);
+            assertNotEquals(a.hashCode(), b.hashCode());
+        }
+        {
+            final Oid a = new Oid();
+            final Oid b = new Oid(1, 2, 8192, 16383, 1);
+            assertNotEquals(a.hashCode(), b.hashCode());
+        }
+    }
+
+
+    @Test
+    public void fromString() throws IOException {
+        final Oid expected = new Oid(1, 2, 840, 113549, 1, 1, 1);
+        final Oid actual = Oid.fromString("1.2.840.113549.1.1.1");
+        assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void fromHex() throws IOException {
+        final Oid expected = new Oid(1, 2, 8192, 16383);
+        final Oid actual = Oid.fromHex("2ac000ff7f");
+        assertEquals(expected, actual);
     }
 
     @Test
     public void fromBytes() throws IOException {
         //1.2.840.113549.1.1.1
-        final Oid oid = Oid.from(new byte[]{42, -122, 72, -122, -9, 13, 1, 1, 1});
+        final Oid oid = Oid.fromBytes(new byte[]{42, -122, 72, -122, -9, 13, 1, 1, 1});
 
         int i = 0;
         assertEquals(1, oid.get(i++));
@@ -142,6 +146,4 @@ public class OidTest {
             // pass
         }
     }
-
-
 }

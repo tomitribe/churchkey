@@ -15,6 +15,7 @@
  */
 package org.tomitribe.churchkey.asn1;
 
+import org.tomitribe.util.Hex;
 import org.tomitribe.util.Join;
 
 import java.io.ByteArrayOutputStream;
@@ -25,7 +26,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+/**
+ * OIDs are encoded using Variable-Length Quantity.
+ *
+ * Good resources for understanding OID encoding
+ *
+ * https://en.wikipedia.org/wiki/Variable-length_quantity
+ * https://docs.microsoft.com/en-us/windows/win32/seccertenroll/about-object-identifier?redirectedfrom=MSDN
+ */
 public class Oid {
 
     final List<Integer> oid = new ArrayList<>();
@@ -55,6 +66,10 @@ public class Oid {
     @Override
     public String toString() {
         return Join.join(".", oid);
+    }
+
+    public String toHex() {
+        return Hex.toString(toBytes());
     }
 
     // (0x100+val1) % 0x100
@@ -92,7 +107,20 @@ public class Oid {
         return out.toByteArray();
     }
 
-    public static Oid from(final byte[] bytes) throws IOException {
+    public static Oid fromString(final String dottedIntegers) throws IOException {
+        final String[] strings = dottedIntegers.split("\\.");
+        final List<Integer> integers = Stream.of(strings)
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
+        return new Oid(integers);
+    }
+
+    public static Oid fromHex(final String hex) throws IOException {
+        final byte[] bytes = Hex.fromString(hex);
+        return fromBytes(bytes);
+    }
+
+    public static Oid fromBytes(final byte[] bytes) throws IOException {
         int vLen = bytes.length;
         if (vLen <= 0) {
             throw new EOFException("Not enough data for an OID");
@@ -137,5 +165,22 @@ public class Oid {
         }
 
         return new Oid(oid);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final Oid oid1 = (Oid) o;
+
+        if (!oid.equals(oid1.oid)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return oid.hashCode();
     }
 }
