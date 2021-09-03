@@ -41,7 +41,6 @@ import static org.tomitribe.churchkey.ec.Curve.getEnumName;
 public class CurveGenerator {
 
     public static void main(String[] args) throws Exception {
-//        final ECFieldF2m m = new ECFieldF2m(191, new int[]{190, 188, 184, 176, 160, 128, 64, 63, 62, 60, 56, 48, 32});
         new CurveGenerator().generate();
     }
 
@@ -55,6 +54,10 @@ public class CurveGenerator {
                 .map(file -> readCurves(jsonb, file))
                 .map(Curves::getCurves)
                 .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        final List<Curve> noOid = list.stream()
+                .filter(curve -> curve.getOid() == null)
                 .collect(Collectors.toList());
 
         final Map<String, Curve> aliases = new HashMap<>();
@@ -103,6 +106,7 @@ public class CurveGenerator {
         final String y = hex(curve.getGenerator().getY());
         final String n = hex(curve.getOrder());
         final String cofactor = curve.getCofactor();
+        final String oid = curve.getOid();
 
         if (curve.getField().getPoly() == null) {
             final String p = hex(curve.getField().getP());
@@ -113,7 +117,7 @@ public class CurveGenerator {
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
-                    "            %s)),\n", enumName, p, a, b, x, y, n, cofactor);
+                    "            %s), \"%s\"),\n", enumName, p, a, b, x, y, n, cofactor, oid);
         } else {
             final List<Integer> terms = getMiddleTerms(curve);
             final int degree = curve.getField().getDegree();
@@ -123,7 +127,7 @@ public class CurveGenerator {
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
-                    "            %s)),\n", enumName, degree, Join.join(", ", terms), a, b, x, y, n, cofactor);
+                    "            %s), \"%s\"),\n", enumName, degree, Join.join(", ", terms), a, b, x, y, n, cofactor, oid);
         }
     }
 
@@ -285,5 +289,47 @@ public class CurveGenerator {
     public static class UnsupportableBinaryCurveException extends IllegalArgumentException {
         public UnsupportableBinaryCurveException(final String s) {
         }
+    }
+
+    static final Map<String, String> oids = new HashMap<String, String>();
+
+    static {
+        oids.put("23", "1.3.132.0.23");
+        oids.put("ansip160k1", "1.3.132.0.9");
+        oids.put("ansip160r1", "1.3.132.0.8");
+        oids.put("ansip160r2", "1.3.132.0.30");
+        oids.put("ansip192k1", "1.3.132.0.31");
+        oids.put("ansip224k1", "1.3.132.0.32");
+        oids.put("ansip224r1", "1.3.132.0.33");
+        oids.put("ansip256k1", "1.3.132.0.10");
+        oids.put("ansip384r1", "1.3.132.0.34");
+        oids.put("ansip521r1", "1.3.132.0.35");
+        oids.put("ansit163k1", "1.3.132.0.1");
+        oids.put("ansit163r1", "1.3.132.0.2");
+        oids.put("ansit163r2", "1.3.132.0.15");
+        oids.put("ansit193r1", "1.3.132.0.24");
+        oids.put("ansit193r2", "1.3.132.0.25");
+        oids.put("ansit233k1", "1.3.132.0.26");
+        oids.put("ansit233r1", "1.3.132.0.27");
+        oids.put("ansit239k1", "1.3.132.0.3");
+        oids.put("ansit283k1", "1.3.132.0.16");
+        oids.put("ansit283r1", "1.3.132.0.17");
+        oids.put("ansit409k1", "1.3.132.0.36");
+        oids.put("ansit409r1", "1.3.132.0.37");
+        oids.put("ansit571k1", "1.3.132.0.38");
+        oids.put("ansit571r1", "1.3.132.0.39");
+        oids.put("prime192v1", "1.2.840.10045.3.1.1");
+        oids.put("prime192v2", "1.2.840.10045.3.1.2");
+        oids.put("prime192v3", "1.2.840.10045.3.1.3");
+        oids.put("prime239v1", "1.2.840.10045.3.1.4");
+        oids.put("prime239v2", "1.2.840.10045.3.1.5");
+        oids.put("prime239v3", "1.2.840.10045.3.1.6");
+        oids.put("secp112r1", "1.3.132.0.6");
+        oids.put("secp112r2", "1.3.132.0.7");
+        oids.put("secp128r1", "1.3.132.0.28");
+        oids.put("secp128r2", "1.3.132.0.29");
+        oids.put("sect113r1", "1.3.132.0.4");
+        oids.put("sect113r2", "1.3.132.0.5");
+        oids.put("sect131r1", "1.3.132.0.22");
     }
 }
