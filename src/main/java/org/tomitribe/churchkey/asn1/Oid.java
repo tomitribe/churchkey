@@ -72,7 +72,6 @@ public class Oid {
         return Hex.toString(toBytes());
     }
 
-    // (0x100+val1) % 0x100
     public byte[] toBytes() {
 
         final Iterator<Integer> values = oid.iterator();
@@ -87,16 +86,16 @@ public class Oid {
         while (values.hasNext()) {
             int elem = values.next();
 
-            if (elem <= 0x7F) {
+            if (elem <= 0b1111111) {
                 out.write(elem);
             } else {
                 final byte[] bytes = new byte[5];
                 int pos = bytes.length - 1;
 
-                bytes[pos--] = (byte) (elem & 0x7F);
+                bytes[pos--] = (byte) (elem & 0b1111111);
                 elem = elem >> 7;
                 while (elem > 0) {
-                    bytes[pos--] = (byte) (elem | 0x80);
+                    bytes[pos--] = (byte) (elem | 0b10000000);
                     elem = elem >> 7;
                 }
                 pos++;
@@ -121,28 +120,67 @@ public class Oid {
     }
 
     public static Oid fromBytes(final byte[] bytes) throws IOException {
-        int vLen = bytes.length;
-        if (vLen <= 0) {
+        final int length = bytes.length;
+        if (length <= 0) {
             throw new EOFException("Not enough data for an OID");
         }
 
-        List<Integer> oid = new ArrayList<>(vLen + 1);
-        int val1 = bytes[0] & 0xFF;
-        oid.add(Integer.valueOf(val1 / 40));
-        oid.add(Integer.valueOf(val1 % 40));
+        /*
+         * Java bytes are signed (-128 to 127).
+         * We need unsigned values (0 to 255)
+         */
+        final int toPositiveNumber = 0b11111111;
 
-        for (int curPos = 1; curPos < vLen; curPos++) {
-            int v = bytes[curPos] & 0xFF;
-            if (v <= 0x7F) { // short form
-                oid.add(Integer.valueOf(v));
+        /*
+         * Anything 7 bits or under is valid as a
+         * short form (not encoded) number
+         */
+        final int shortForm = 0b01111111;
+
+        final List<Integer> oid = new ArrayList<>(length + 1);
+
+        /*
+         * The first value is treated specially.  The first
+         * to values of the OID are encoded in it using
+         * the rule below.  This only works because there
+         * are limits on how big these two numbers can be.
+         */
+        final int firstValue = bytes[0] & toPositiveNumber;
+        oid.add(Integer.valueOf(firstValue / 40));
+        oid.add(Integer.valueOf(firstValue % 40));
+
+        /*
+         * Now read each subsequent OID value from the remaining bytes
+         */
+        for (int position = 1; position < length; position++) {
+            int b = bytes[position] & toPositiveNumber;
+
+            /*
+             * If the value can fit into 7 bits, we can simply
+             * use it as-is.
+             */
+            if (b <= shortForm) { // short form
+                oid.add(Integer.valueOf(b));
                 continue;
             }
 
-            long curVal = v & 0x7F;
-            curPos++;
+            /*
+             * The value cannot fit into 7 bits, so we need
+             * to read the next byte, chop off the 8th bit
+             * so it is also 7 bits, then shift those 7
+             * bits onto the value we just read.
+             *
+             * This can happen at most 5 times (for 5 bytes)
+             * because OID numbers can only be 32 bits max.
+             *
+             * Basically we'll build the number 7 bits at a time
+             * reading at most 5 bytes in the process.
+             */
+            long value = b & shortForm;
+            position++;
 
-            for (int subLen = 1; ; subLen++, curPos++) {
-                if (curPos >= vLen) {
+            for (int subLen = 1; ; subLen++, position++) {
+                if (position >= length) {
                     throw new EOFException("Incomplete OID value");
                 }
 
@@ -150,18 +188,20 @@ public class Oid {
                     throw new StreamCorruptedException("OID component encoding beyond 5 bytes");
                 }
 
-                v = bytes[curPos] & 0xFF;
-                curVal = ((curVal << 7) & 0xFFFFFFFF80L) | (v & 0x7FL);
-                if (curVal > Integer.MAX_VALUE) {
-                    throw new StreamCorruptedException("OID value exceeds 32 bits: " + curVal);
+                b = bytes[position] & toPositiveNumber;
+                value = (value << 7) | b;
+                if (value > Integer.MAX_VALUE) {
+                    // 7 * 5 = 35
+                    // This means we could potentially get a 35-bit number
+                    throw new StreamCorruptedException("OID value exceeds 32 bits: " + value);
                 }
 
-                if (v <= 0x7F) { // found last octet ?
+                if (b <= shortForm) { // found last octet ?
                     break;
                 }
             }
 
-            oid.add(Integer.valueOf((int) (curVal & 0x7FFFFFFFL)));
+            oid.add(Integer.valueOf((int) value));
         }
 
         return new Oid(oid);

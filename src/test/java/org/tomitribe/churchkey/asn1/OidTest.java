@@ -146,4 +146,15 @@ public class OidTest {
             // pass
         }
     }
+
+    @Test
+    public void maxInt() throws IOException {
+        final Oid oid = new Oid(1, 4, Integer.MAX_VALUE, 1);
+
+        final byte[] bytes = oid.toBytes();
+        assertEquals("2c87ffffff7f01", Hex.toString(bytes));
+        final Oid actualOid = Oid.fromBytes(bytes);
+
+        assertEquals(oid, actualOid);
+    }
 }
