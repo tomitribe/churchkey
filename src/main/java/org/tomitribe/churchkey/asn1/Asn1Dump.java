@@ -23,6 +23,9 @@ import java.io.IOException;
 
 public class Asn1Dump {
 
+    private Asn1Dump() {
+    }
+
     public static void print(final byte[] bytes) throws IOException {
         final File der = File.createTempFile("der", ".dump");
         IO.copy(bytes, der);

@@ -18,77 +18,47 @@
  */
 package org.tomitribe.churchkey.asn1;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-/**
- * @author <a href="mailto:dev@mina.apache.org">Apache MINA SSHD Project</a>
- */
 public enum Asn1Class {
-    // NOTE: order is crucial, so DON'T change it
-    UNIVERSAL((byte) 0x00),
-    APPLICATION((byte) 0x01),
-    CONTEXT((byte) 0x02),
-    PRIVATE((byte) 0x03);
-
-    public static final List<Asn1Class> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
-
-    private final byte byteValue;
-
-    Asn1Class(byte classValue) {
-        byteValue = classValue;
-    }
-
-    public byte getClassValue() {
-        return byteValue;
-    }
-
-    public static Asn1Class fromName(String s) {
-        if (Utils.isEmpty(s)) {
-            return null;
-        }
-
-        for (Asn1Class c : VALUES) {
-            if (s.equalsIgnoreCase(c.name())) {
-                return c;
-            }
-        }
-
-        return null;
-    }
+    /**
+     * The type is native to ASN.1
+     */
+    UNIVERSAL(0),
 
     /**
-     * <P>
-     * The first byte in DER encoding is made of following fields
-     * </P>
-     *
-     * <pre>
-     *-------------------------------------------------
-     *|Bit 8|Bit 7|Bit 6|Bit 5|Bit 4|Bit 3|Bit 2|Bit 1|
-     *-------------------------------------------------
-     *|  Class    | CF  |        Type                 |
-     *-------------------------------------------------
-     * </pre>
-     *
-     * @param  value The original DER encoded byte
-     * @return The {@link Asn1Class} value - {@code null} if no match found
-     * @see          #fromTypeValue(int)
+     * The type is only valid for one specific application
      */
-    public static Asn1Class fromDERValue(int value) {
-        return fromTypeValue((value >> 6) & 0x03);
-    }
+    APPLICATION(1),
 
     /**
-     * @param  value The &quot;pure&quot; value - unshifted and with no extras
-     * @return The {@link Asn1Class} value - {@code null} if no match found
+     * Meaning of this type depends on the context (such as within a sequence, set or choice)
      */
-    public static Asn1Class fromTypeValue(int value) {
+    CONTEXT(2),
+
+    /**
+     * Defined in private specifications
+     */
+    PRIVATE(3);
+
+    Asn1Class(final int constant) {
+        /*
+         * We rely on the order of the enum values being consistent
+         * with their corresponding constants in byte code form
+         */
+        if (this.ordinal() != constant) {
+            throw new IllegalStateException("The enum order was improperly changed in source code");
+        }
+    }
+
+    public byte getConstant() {
+        return (byte) ordinal();
+    }
+
+    public static Asn1Class fromConstant(int value) {
         // all 4 values are defined
-        if ((value < 0) || (value >= VALUES.size())) {
+        if ((value < 0) || (value >= values().length)) {
             return null;
         }
 
-        return VALUES.get(value);
+        return values()[value];
     }
 }

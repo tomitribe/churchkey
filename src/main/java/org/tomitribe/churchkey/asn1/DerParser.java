@@ -72,7 +72,7 @@ public class DerParser extends FilterInputStream {
      * </li>
      * </ul>
      *
-     * @return             The length as integer
+     * @return The length as integer
      * @throws IOException If invalid format found
      */
     public int readLength() throws IOException {
@@ -114,14 +114,15 @@ public class DerParser extends FilterInputStream {
     }
 
     public Asn1Object readObject() throws IOException {
-        int tag = read();
-        if (tag == -1) {
+        int tagDer = read();
+        if (tagDer == -1) {
             return null;
         }
 
-        Asn1Type objType = Asn1Type.fromDERValue(tag);
-        if (objType == Asn1Type.NULL) {
-            return new Asn1Object((byte) tag, 0, Utils.EMPTY_BYTE_ARRAY);
+        final Tag tag = Tag.fromDer(tagDer);
+
+        if (tag.getType() == Asn1Type.NULL) {
+            return new Asn1Object((byte) tagDer, 0, Utils.EMPTY_BYTE_ARRAY);
         }
 
         int length = readLength();
@@ -132,7 +133,7 @@ public class DerParser extends FilterInputStream {
                     "Invalid DER: stream too short, missing value: read " + n + " out of required " + length);
         }
 
-        return new Asn1Object((byte) tag, length, value);
+        return new Asn1Object(tag, length, value);
     }
 
     public BigInteger readBigInteger() throws IOException {

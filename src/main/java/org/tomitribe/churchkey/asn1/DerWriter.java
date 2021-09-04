@@ -116,11 +116,7 @@ public class DerWriter extends FilterOutputStream {
     public void writeObject(Asn1Object obj) throws IOException {
         Objects.requireNonNull(obj, "No ASN.1 object");
 
-        Asn1Type type = obj.getType();
-        byte typeValue = type.getTypeValue();
-        Asn1Class clazz = obj.getAsn1Class();
-        byte classValue = clazz.getClassValue();
-        byte tagValue = (byte) (((classValue << 6) & 0xC0) | (typeValue & 0x1F));
+        final byte tagValue = obj.getTag().toDer();
         writeObject(tagValue, obj.getLength(), obj.getValue());
     }
 

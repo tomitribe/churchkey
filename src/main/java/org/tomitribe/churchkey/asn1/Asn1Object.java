@@ -20,80 +20,62 @@ package org.tomitribe.churchkey.asn1;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * @author <a href="mailto:dev@mina.apache.org">Apache MINA SSHD Project</a>
- */
-public class Asn1Object implements Serializable, Cloneable {
-    // Constructed Flag
-    public static final byte CONSTRUCTED = 0x20;
+public class Asn1Object {
 
-    private static final long serialVersionUID = 4687581744706127265L;
+    private final Tag tag;
+    private final int length;
+    private final byte[] value;
 
-    private Asn1Class objClass;
-    private Asn1Type objType;
-    private boolean constructed;
-    private int length;
-    private byte[] value;
-
-    public Asn1Object() {
-        super();
+    public Asn1Object(final byte tag, final int len, final byte... data) {
+        this(Tag.fromDer(tag), len, data);
     }
 
-    /*
-     * <P>The first byte in DER encoding is made of following fields</P> <pre>
-     * ------------------------------------------------- |Bit 8|Bit 7|Bit 6|Bit 5|Bit 4|Bit 3|Bit 2|Bit 1|
-     * ------------------------------------------------- | Class | CF | Type |
-     * ------------------------------------------------- </pre>
-     */
-    public Asn1Object(byte tag, int len, byte... data) {
-        this(Asn1Class.fromDERValue(tag), Asn1Type.fromDERValue(tag), (tag & CONSTRUCTED) == CONSTRUCTED, len, data);
+    public Asn1Object(final Asn1Class c, final Asn1Type t, final boolean ctored, final int len, final byte... data) {
+        this(new Tag(c, ctored ? Asn1Construction.CONSTRUCTED : Asn1Construction.PRIMITIVE, t), len, data);
     }
 
-    public Asn1Object(Asn1Class c, Asn1Type t, boolean ctored, int len, byte... data) {
-        objClass = c;
-        objType = t;
-        constructed = ctored;
+    public Asn1Object(final Tag tag, final int len, final byte... data) {
+        this.tag = tag;
         length = len;
         value = data;
+//        System.out.println(this);
+    }
+
+    public Tag getTag() {
+        return tag;
     }
 
     public Asn1Class getAsn1Class() {
-        return objClass;
-    }
-
-    public void setAsn1Class(Asn1Class c) {
-        objClass = c;
+        return tag.getClazz();
     }
 
     public Asn1Type getType() {
-        return objType;
+        return tag.getType();
     }
 
-    public void setType(Asn1Type y) {
-        objType = y;
+    public boolean isType(final Asn1Type type) {
+        return this.tag.getType().equals(type);
+    }
+
+    public Asn1Object assertType(final Asn1Type type) {
+        if (!isType(type)) {
+            throw new IllegalStateException(String.format("Expected type %s, found %s", type, this.tag.getType()));
+        }
+        return this;
     }
 
     public boolean isConstructed() {
-        return constructed;
-    }
-
-    public void setConstructed(boolean c) {
-        constructed = c;
+        return tag.getConstruction().equals(Asn1Construction.CONSTRUCTED);
     }
 
     public int getLength() {
         return length;
-    }
-
-    public void setLength(int l) {
-        length = l;
     }
 
     public byte[] getValue() {
@@ -118,10 +100,6 @@ public class Asn1Object implements Serializable, Cloneable {
         return pure;
     }
 
-    public void setValue(byte[] v) {
-        value = v;
-    }
-
     public DerParser createParser() {
         return new DerParser(getValue(), 0, getLength());
     }
@@ -141,7 +119,7 @@ public class Asn1Object implements Serializable, Cloneable {
             case VIDEOTEX_STRING:
             case IA5_STRING:
             case GRAPHIC_STRING:
-            case ISO646_STRING:
+            case VISIBLE_STRING:
             case GENERAL_STRING:
             case BMP_STRING:
             case UTF8_STRING:
@@ -160,8 +138,8 @@ public class Asn1Object implements Serializable, Cloneable {
 
     /**
      * Get the value as {@link BigInteger}
-     * 
-     * @return             BigInteger
+     *
+     * @return BigInteger
      * @throws IOException if type not an {@link Asn1Type#INTEGER}
      */
     public BigInteger asInteger() throws IOException {
@@ -180,8 +158,8 @@ public class Asn1Object implements Serializable, Cloneable {
 
     /**
      * Get value as string. Most strings are treated as Latin-1.
-     * 
-     * @return             Java string
+     *
+     * @return Java string
      * @throws IOException if
      */
     public String asString() throws IOException {
@@ -198,7 +176,7 @@ public class Asn1Object implements Serializable, Cloneable {
             case VIDEOTEX_STRING:
             case IA5_STRING:
             case GRAPHIC_STRING:
-            case ISO646_STRING:
+            case VISIBLE_STRING:
             case GENERAL_STRING:
                 encoding = "ISO-8859-1";
                 break;
@@ -253,7 +231,7 @@ public class Asn1Object implements Serializable, Cloneable {
             long curVal = v & 0x7F;
             curPos++;
 
-            for (int subLen = 1;; subLen++, curPos++) {
+            for (int subLen = 1; ; subLen++, curPos++) {
                 if (curPos >= vLen) {
                     throw new EOFException("Incomplete OID value");
                 }
@@ -282,9 +260,9 @@ public class Asn1Object implements Serializable, Cloneable {
     @Override
     public int hashCode() {
         return Objects.hash(getAsn1Class(), getType())
-               + Boolean.hashCode(isConstructed())
-               + getLength()
-               + Utils.hashCode(getValue(), 0, getLength());
+                + Boolean.hashCode(isConstructed())
+                + getLength()
+                + Utils.hashCode(getValue(), 0, getLength());
     }
 
     @Override
@@ -307,26 +285,30 @@ public class Asn1Object implements Serializable, Cloneable {
                 && (Utils.diffOffset(this.getValue(), 0, other.getValue(), 0, this.getLength()) < 0);
     }
 
-    @Override
-    public Asn1Object clone() {
-        try {
-            Asn1Object cpy = getClass().cast(super.clone());
-            byte[] data = cpy.getValue();
-            if (data != null) {
-                cpy.setValue(data.clone());
-            }
-            return cpy;
-        } catch (CloneNotSupportedException e) {
-            throw new IllegalStateException("Unexpected clone failure: " + e.getMessage(), e);
-        }
+    public static Asn1Object sequence(final byte[] bytes) {
+        return new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.SEQUENCE, true, bytes.length, bytes);
     }
+
+    public static Asn1Object octetString(final byte[] bytes) {
+        return new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.OCTET_STRING, false, bytes.length, bytes);
+    }
+
+    public static Asn1Object nill() {
+        return new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.NULL, false, 0);
+    }
+
+    public static Asn1Object objectIdentifier(final Oid oid) {
+        final byte[] bytes = oid.toBytes();
+        return new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.OBJECT_IDENTIFIER, false, bytes.length, bytes);
+    }
+
 
     @Override
     public String toString() {
         return Objects.toString(getAsn1Class())
-               + "/" + getType()
-               + "/" + isConstructed()
-               + "[" + getLength() + "]"
-               + ": " + Utils.toHex(getValue(), 0, getLength(), ':');
+                + "/" + getType()
+                + "/" + isConstructed()
+                + "[" + getLength() + "]"
+                + ": " + Utils.toHex(getValue(), 0, getLength(), ':');
     }
 }

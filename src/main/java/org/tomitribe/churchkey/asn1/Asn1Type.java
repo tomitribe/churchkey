@@ -18,102 +18,125 @@
  */
 package org.tomitribe.churchkey.asn1;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
-
-/**
- * @author <a href="mailto:dev@mina.apache.org">Apache MINA SSHD Project</a>
- */
 public enum Asn1Type {
-    ANY((byte) 0x00),
-    BOOLEAN((byte) 0x01),
-    INTEGER((byte) 0x02),
-    BIT_STRING((byte) 0x03),
-    OCTET_STRING((byte) 0x04),
-    NULL((byte) 0x05),
-    OBJECT_IDENTIFIER((byte) 0x06),
-    REAL((byte) 0x09),
-    ENUMERATED((byte) 0x0a),
-    RELATIVE_OID((byte) 0x0d),
-    SEQUENCE((byte) 0x10),
-    SET((byte) 0x11),
-    NUMERIC_STRING((byte) 0x12),
-    PRINTABLE_STRING((byte) 0x13),
-    T61_STRING((byte) 0x14),
-    VIDEOTEX_STRING((byte) 0x15),
-    IA5_STRING((byte) 0x16),
-    GRAPHIC_STRING((byte) 0x19),
-    ISO646_STRING((byte) 0x1A),
-    GENERAL_STRING((byte) 0x1B),
-    UTF8_STRING((byte) 0x0C),
-    UNIVERSAL_STRING((byte) 0x1C),
-    BMP_STRING((byte) 0x1E),
-    UTC_TIME((byte) 0x17),
-    GENERALIZED_TIME((byte) 0x18);
-
-    public static final Set<Asn1Type> VALUES = Collections.unmodifiableSet(EnumSet.allOf(Asn1Type.class));
-
-    private final byte typeValue;
-
-    Asn1Type(byte typeVal) {
-        typeValue = typeVal;
-    }
-
-    public byte getTypeValue() {
-        return typeValue;
-    }
-
-    public static Asn1Type fromName(String s) {
-        if (s == null || s.length() == 0) {
-            return null;
-        }
-
-        for (Asn1Type t : VALUES) {
-            if (s.equalsIgnoreCase(t.name())) {
-                return t;
-            }
-        }
-
-        return null;
-    }
-
+    ANY(0),
     /**
-     * <P>
-     * The first byte in DER encoding is made of following fields
-     * </P>
-     *
-     * <pre>
-     *-------------------------------------------------
-     *|Bit 8|Bit 7|Bit 6|Bit 5|Bit 4|Bit 3|Bit 2|Bit 1|
-     *-------------------------------------------------
-     *|  Class    | CF  |        Type                 |
-     *-------------------------------------------------
-     * </pre>
-     *
-     * @param  value The original DER encoded byte
-     * @return The {@link Asn1Type} value - {@code null} if no match found
-     * @see          #fromTypeValue(int)
+     * Model logical, two-state variable values
      */
-    public static Asn1Type fromDERValue(int value) {
-        return fromTypeValue(value & 0x1F);
+    BOOLEAN(1),
+    /**
+     * Model integer variable values
+     */
+    INTEGER(2),
+    /**
+     * Model binary data of arbitrary length
+     */
+    BIT_STRING(3),
+    /**
+     * Model binary data whose length is a multiple of eight
+     */
+    OCTET_STRING(4),
+    /**
+     * Indicate effective absence of a sequence element
+     */
+    NULL(5),
+    /**
+     * Name information objects
+     */
+    OBJECT_IDENTIFIER(6),
+    
+    OBJECT_DESCRIPTOR(7),
+    EXTERNAL(8),
+    /**
+     * Model real variable values (floats)
+     */
+    REAL(9),
+    /**
+     * Model values of variables with at least three states
+     */
+    ENUMERATED(10),
+    EMBEDDED_PDV(11),
+    UTF8_STRING(12),
+    RELATIVE_OID(13),
+    TIME(14),
+    RESERVED(15),
+    /**
+     * SEQUENCE Models an ordered collection of variables of different type
+     * SEQUENCE OF Models an ordered collection of variables of the same type
+     * Both use the same constant 16
+     */
+    SEQUENCE(16),
+    /**
+     * SET Model an unordered collection of variables of different types
+     * SET OF Model an unordered collection of variables of the same type
+     */
+    SET(17),
+    /**
+     * 0,1,2,3,4,5,6,7,8,9, and space
+     */
+    NUMERIC_STRING(18),
+    /**
+     * Upper and lower case letters, digits, space, apostrophe,
+     * left/right parenthesis, plus sign, comma, hyphen, full stop,
+     * solidus, colon, equal sign, question mark
+     */
+    PRINTABLE_STRING(19),
+    /**
+     * The Teletex character set in CCITT's T61, space, and delete. Aka T61String
+     */
+    TELETEX_STRING(20),
+    /**
+     * The Videotex character set in CCITT's T.100 and T.101, space, and delete
+     */
+    VIDEOTEX_STRING(21),
+    /**
+     * International Alphabet 5 (International ASCII)
+     */
+    IA5_STRING(22),
+    UTCTIME(23),
+    GENERALIZEDTIME(24),
+    /**
+     * All registered G sets, and space
+     */
+    GRAPHIC_STRING(25),
+    /**
+     * Printing character sets of international ASCII, and space. Aka ISO646String
+     */
+    VISIBLE_STRING(26),
+    /**
+     * All registered C and G sets, space and delete
+     */
+    GENERAL_STRING(27),
+    UNIVERSAL_STRING(28),
+    /**
+     * Models values that are strings of characters from a specified characterset
+     */
+    CHARACTER_STRING(29),
+    BMP_STRING(30);
+
+    Asn1Type(final int constant) {
+        /*
+         * We rely on the order of the enum values being consistent
+         * with their corresponding constants in byte code form
+         */
+        if (this.ordinal() != constant) {
+            throw new IllegalStateException("The enum order was improperly changed in source code");
+        }
+    }
+
+    public byte getConstant() {
+        return (byte) ordinal();
     }
 
     /**
      * @param  value The &quot;pure&quot; type value - with no extra bits set
      * @return The {@link Asn1Type} value - {@code null} if no match found
      */
-    public static Asn1Type fromTypeValue(int value) {
-        if ((value < 0) || (value > 0x1F)) { // only 5 bits are used
+    public static Asn1Type fromConstant(int value) {
+        if ((value < 0) || (value > values().length)) {
             return null;
         }
 
-        for (Asn1Type t : VALUES) {
-            if (t.getTypeValue() == value) {
-                return t;
-            }
-        }
-
-        return null;
+        return values()[value];
     }
 }
