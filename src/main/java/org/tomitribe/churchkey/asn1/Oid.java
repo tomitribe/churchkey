@@ -189,7 +189,7 @@ public class Oid {
                 }
 
                 b = bytes[position] & toPositiveNumber;
-                value = (value << 7) | b;
+                value = ((value << 7) & 0xFFFFFFFF80L) | (b & 0x7FL);
                 if (value > Integer.MAX_VALUE) {
                     // 7 * 5 = 35
                     // This means we could potentially get a 35-bit number
@@ -201,7 +201,7 @@ public class Oid {
                 }
             }
 
-            oid.add(Integer.valueOf((int) value));
+            oid.add(Integer.valueOf((int) (value & 0x7FFFFFFFL)));
         }
 
         return new Oid(oid);
