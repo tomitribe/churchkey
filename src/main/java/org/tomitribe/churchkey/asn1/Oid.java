@@ -106,7 +106,7 @@ public class Oid {
         return out.toByteArray();
     }
 
-    public static Oid fromString(final String dottedIntegers) throws IOException {
+    public static Oid fromString(final String dottedIntegers) {
         final String[] strings = dottedIntegers.split("\\.");
         final List<Integer> integers = Stream.of(strings)
                 .map(Integer::valueOf)

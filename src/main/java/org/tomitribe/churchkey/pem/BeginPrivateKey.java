@@ -17,31 +17,89 @@
 package org.tomitribe.churchkey.pem;
 
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.asn1.Asn1Object;
+import org.tomitribe.churchkey.asn1.Asn1Type;
+import org.tomitribe.churchkey.asn1.DerParser;
+import org.tomitribe.churchkey.asn1.Oid;
+import org.tomitribe.churchkey.rsa.Rsa;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.List;
+
+import static org.tomitribe.churchkey.Key.Algorithm.RSA;
+import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
 
 public class BeginPrivateKey {
+
+    private static final Oid RSA_OID = Oid.fromString("1.2.840.113549.1.1.1");
+    private static final Oid dsaKey = Oid.fromString("1.2.840.10040.4.1");
+    private static final Oid ecKey = Oid.fromString("1.2.840.10045.2.1");
 
     private BeginPrivateKey() {
     }
 
     public static Key decode(final byte[] bytes) {
         try {
-            final KeyFactory factory = KeyFactory.getInstance("RSA");
-            final RSAPrivateKey privateKey = (RSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(bytes));
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.PEM);
-        } catch (InvalidKeySpecException e) {
-            // continue trying other algorithms
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
+            final DerParser der = new DerParser(bytes);
+            final DerParser asymmetricKeyPackage = der.readSequence();
+
+            asymmetricKeyPackage.readObject().assertType(Asn1Type.INTEGER);
+            final DerParser asymmetricKey = asymmetricKeyPackage.readSequence();
+            final List<Integer> integers = asymmetricKey.readObject().asOID();
+            final Oid keyTypeOid = new Oid(integers);
+
+            if (RSA_OID.equals(keyTypeOid)) {
+                final Asn1Object asn1Object = asymmetricKey.readObject();
+                asn1Object.assertType(Asn1Type.NULL);
+
+                final Asn1Object octetString = asymmetricKeyPackage.readObject();
+                final DerParser key = octetString
+                        .assertType(OCTET_STRING)
+                        .createParser()
+                        .readSequence();
+
+                // version - ignored
+                key.readBigInteger();
+
+                final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
+                        .modulus(key.readBigInteger())
+                        .publicExponent(key.readBigInteger())
+                        .privateExponent(key.readBigInteger())
+                        .primeP(key.readBigInteger())
+                        .primeQ(key.readBigInteger())
+                        .primeExponentP(key.readBigInteger())
+                        .primeExponentQ(key.readBigInteger())
+                        .crtCoefficient(key.readBigInteger())
+                        .build()
+                        .toKey();
+
+                return new Key(privateKey, Key.Type.PRIVATE, RSA, Key.Format.PEM);
+            }
+
+            if (dsaKey.equals(keyTypeOid)) {
+                return oldDecode(bytes);
+            }
+
+            if (ecKey.equals(keyTypeOid)) {
+                return oldDecode(bytes);
+            }
+
+            throw new UnsupportedOperationException("Unsupported key type oid: " + keyTypeOid);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
+    }
+
+    public static Key oldDecode(final byte[] bytes) {
         try {
             final KeyFactory factory = KeyFactory.getInstance("DSA");
             final DSAPrivateKey privateKey = (DSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(bytes));

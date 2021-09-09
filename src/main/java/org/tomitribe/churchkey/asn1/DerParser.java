@@ -113,6 +113,12 @@ public class DerParser extends FilterInputStream {
         return (int) len;
     }
 
+    public DerParser readSequence() throws IOException {
+        final Asn1Object asn1Object = readObject();
+        asn1Object.assertType(Asn1Type.SEQUENCE);
+        return asn1Object.createParser();
+    }
+
     public Asn1Object readObject() throws IOException {
         int tagDer = read();
         if (tagDer == -1) {

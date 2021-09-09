@@ -15,6 +15,7 @@
  */
 package org.tomitribe.churchkey.pem;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
@@ -40,6 +41,7 @@ import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
 
 public class FooTest {
 
+    @Ignore
     @Test
     public void test() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -56,6 +58,7 @@ public class FooTest {
         Asn1Dump.print(baos.toByteArray());
     }
 
+    @Ignore
     @Test
     public void test2() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -79,6 +82,7 @@ public class FooTest {
         Asn1Dump.print(baos.toByteArray());
     }
 
+    @Ignore
     @Test
     public void test3() throws Exception {
         final Resource resource = Resource.resource(BeginPrivateKeyTest.class.getSimpleName());
@@ -124,6 +128,7 @@ public class FooTest {
         }
     }
 
+    @Ignore
     @Test
     public void test4() throws Exception {
         final Resource resource = Resource.resource(BeginPrivateKeyTest.class.getSimpleName());
@@ -169,6 +174,7 @@ public class FooTest {
         Asn1Dump.print(d1.bytes());
     }
 
+    @Ignore
     @Test
     public void test5() throws Exception {
         final Resource resource = Resource.resource(BeginPrivateKeyTest.class.getSimpleName());
@@ -231,6 +237,7 @@ public class FooTest {
                         .bytes()).bytes());
     }
 
+    @Ignore
     @Test
     public void test6() throws Exception {
         final Resource resource = Resource.resource(BeginPrivateKeyTest.class.getSimpleName());
