@@ -21,6 +21,7 @@ import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.util.Hex;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.interfaces.DSAPrivateKey;
 
@@ -121,4 +122,26 @@ public class BeginPrivateKeyDsaTest {
         return Hex.toString(bigInteger.toByteArray()).toUpperCase().replaceAll("^00", "");
     }
 
+    @Test
+    public void javaDsaPrivateKeyEncode() throws Exception {
+        assertEncode("java-dsaprivatekey-3072.pem");
+    }
+
+    @Test
+    public void opensslDsaPrivateKeyEncode() throws Exception {
+        assertEncode("openssl-dsaprivatekey-3072.pem");
+    }
+
+    private void assertEncode(final String name) throws IOException {
+        final Resource resources = Resource.resource(this.getClass().getSimpleName());
+        final byte[] bytes = resources.bytes(name);
+
+        final Key key = Keys.decode(bytes);
+        final byte[] encoded = key.encode(Key.Format.PEM);
+
+        /*
+         * Assert we get the same bytes back when we encode the key
+         */
+        assertEquals(new String(bytes), new String(encoded));
+    }
 }

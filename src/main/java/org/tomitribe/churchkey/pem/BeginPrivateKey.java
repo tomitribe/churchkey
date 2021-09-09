@@ -21,6 +21,7 @@ import org.tomitribe.churchkey.asn1.Asn1Object;
 import org.tomitribe.churchkey.asn1.Asn1Type;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.asn1.Oid;
+import org.tomitribe.churchkey.dsa.Dsa;
 import org.tomitribe.churchkey.rsa.Rsa;
 import org.tomitribe.churchkey.util.Pem;
 
@@ -36,6 +37,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import static java.math.BigInteger.ZERO;
+import static org.tomitribe.churchkey.Key.Algorithm.DSA;
 import static org.tomitribe.churchkey.Key.Algorithm.RSA;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
 import static org.tomitribe.churchkey.asn1.DerWriter.write;
@@ -92,7 +94,33 @@ public class BeginPrivateKey {
             }
 
             if (dsaKey.equals(keyTypeOid)) {
-                return oldDecode(bytes);
+                final Dsa.Private.Builder dsa = Dsa.Private.builder();
+                final DerParser d1 = new DerParser(bytes);
+                final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
+                {
+                    final DerParser d2 = new DerParser(d1o1.getValue());
+                    final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
+                    final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
+                    {
+                        final DerParser d3 = new DerParser(d2o2.getValue());
+                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
+                        final Asn1Object d3o2 = d3.readObject().assertType(Asn1Type.SEQUENCE);
+                        {
+                            final DerParser d4 = new DerParser(d3o2.getValue());
+                            dsa.p(d4.readBigInteger());
+                            dsa.q(d4.readBigInteger());
+                            dsa.g(d4.readBigInteger());
+                        }
+                    }
+                    final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
+                    {
+                        final DerParser d3 = new DerParser(d2o3.getValue());
+                        dsa.x(d3.readBigInteger());
+
+                        final DSAPrivateKey privateKey = dsa.build().toKey();
+                        return new Key(privateKey, Key.Type.PRIVATE, DSA, Key.Format.PEM);
+                    }
+                }
             }
 
             if (ecKey.equals(keyTypeOid)) {
@@ -148,13 +176,24 @@ public class BeginPrivateKey {
     }
 
     public static byte[] encode(final Key key) {
+        final byte[] derEncodedBytes = toDer(key);
+
+        return Pem.builder()
+                .type("PRIVATE KEY")
+                .data(derEncodedBytes)
+                .wrap(64)
+                .format()
+                .getBytes();
+    }
+
+    public static byte[] toDer(final Key key) {
         if (key.getAlgorithm() == RSA) {
             final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
-            final byte[] encoded = write()
+            return write()
                     .sequence(write()
                             .bigInteger(ZERO)
                             .sequence(write()
-                                    .objectIdentifier(Oid.fromString("1.2.840.113549.1.1.1"))
+                                    .objectIdentifier(rsaKey)
                                     .nill())
                             .octetString(write()
                                     .sequence(write()
@@ -168,13 +207,22 @@ public class BeginPrivateKey {
                                             .bigInteger(privateKey.getPrimeExponentQ())
                                             .bigInteger(privateKey.getCrtCoefficient()))))
                     .bytes();
+        }
 
-            return Pem.builder()
-                    .type("PRIVATE KEY")
-                    .data(encoded)
-                    .wrap(64)
-                    .format()
-                    .getBytes();
+        if (key.getAlgorithm() == DSA) {
+            final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
+            return write()
+                    .sequence(write()
+                            .bigInteger(ZERO)
+                            .sequence(write()
+                                    .objectIdentifier(dsaKey)
+                                    .sequence(write()
+                                            .bigInteger(privateKey.getParams().getP())
+                                            .bigInteger(privateKey.getParams().getQ())
+                                            .bigInteger(privateKey.getParams().getG())))
+                            .octetString(write()
+                                    .bigInteger(privateKey.getX())))
+                    .bytes();
         }
 
         return null;
