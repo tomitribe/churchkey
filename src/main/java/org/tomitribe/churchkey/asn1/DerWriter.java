@@ -24,6 +24,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StreamCorruptedException;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,26 +49,22 @@ public class DerWriter extends FilterOutputStream {
         super(Objects.requireNonNull(stream, "No output stream"));
     }
 
-    public DerWriter startSequence() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        AtomicBoolean dataWritten = new AtomicBoolean(false);
-        @SuppressWarnings("resource")
-        DerWriter encloser = this;
-        return new DerWriter(baos) {
-            @Override
-            public void close() throws IOException {
-                baos.close();
-
-                if (!dataWritten.getAndSet(true)) { // detect repeated calls and write this only once
-                    encloser.writeObject(
-                            new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.SEQUENCE, false, baos.size(), baos.toByteArray()));
-                }
-            }
-        };
+    public static DerWriter write() {
+        return new DerWriter();
     }
 
-    public void writeBigInteger(BigInteger value) throws IOException {
-        writeBigInteger(Objects.requireNonNull(value, "No value").toByteArray());
+    public DerWriter bigInteger(final BigInteger value) {
+        bigInteger(Objects.requireNonNull(value, "No value").toByteArray());
+        return this;
+    }
+
+    public DerWriter sequence(final DerWriter derWriter) {
+        return sequence(derWriter.bytes());
+    }
+
+    public DerWriter sequence(final byte[] bytes) {
+        writeObject(Asn1Object.sequence(bytes));
+        return this;
     }
 
     /**
@@ -75,10 +72,9 @@ public class DerWriter extends FilterOutputStream {
      * positive
      *
      * @param  bytes       {@link BigInteger} bytes
-     * @throws IOException If failed to write the bytes
      */
-    public void writeBigInteger(byte... bytes) throws IOException {
-        writeBigInteger(bytes, 0, Utils.length(bytes));
+    public void bigInteger(byte... bytes) {
+        bigInteger(bytes, 0, Utils.length(bytes));
     }
 
     /**
@@ -90,40 +86,65 @@ public class DerWriter extends FilterOutputStream {
      * @param  len         Number of bytes to write
      * @throws IOException If failed to write the bytes
      */
-    public void writeBigInteger(byte[] bytes, int off, int len) throws IOException {
-        // Strip leading zeroes
-        while (len > 1 && bytes[off] == 0 && isPositive(bytes[off + 1])) {
-            off++;
-            len--;
+    public void bigInteger(byte[] bytes, int off, int len) {
+        try {
+            // Strip leading zeroes
+            while (len > 1 && bytes[off] == 0 && isPositive(bytes[off + 1])) {
+                off++;
+                len--;
+            }
+            // indicate it is an INTEGER
+            write(0x02);
+            // Pad with a zero if needed
+            if (isPositive(bytes[off])) {
+                writeLength(len);
+            } else {
+                writeLength(len + 1);
+                write(0);
+            }
+            // Write data
+            write(bytes, off, len);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        // indicate it is an INTEGER
-        write(0x02);
-        // Pad with a zero if needed
-        if (isPositive(bytes[off])) {
-            writeLength(len);
-        } else {
-            writeLength(len + 1);
-            write(0);
-        }
-        // Write data
-        write(bytes, off, len);
     }
 
     private boolean isPositive(byte b) {
         return (b & 0x80) == 0;
     }
 
-    public void writeObject(Asn1Object obj) throws IOException {
+    public DerWriter octetString(final DerWriter derWriter) {
+        return octetString(derWriter.bytes());
+    }
+
+    public DerWriter octetString(final byte[] bytes) {
+        return writeObject(Asn1Object.octetString(bytes));
+    }
+
+    public DerWriter objectIdentifier(final Oid oid) {
+        return writeObject(Asn1Object.objectIdentifier(oid));
+    }
+
+    public DerWriter nill() {
+        return writeObject(Asn1Object.nill());
+    }
+
+    public DerWriter writeObject(Asn1Object obj) {
         Objects.requireNonNull(obj, "No ASN.1 object");
 
         final byte tagValue = obj.getTag().toDer();
-        writeObject(tagValue, obj.getLength(), obj.getValue());
+        return writeObject(tagValue, obj.getLength(), obj.getValue());
     }
 
-    public void writeObject(byte tag, int len, byte... data) throws IOException {
-        write(tag & 0xFF);
-        writeLength(len);
-        write(data, 0, len);
+    public DerWriter writeObject(byte tag, int len, byte... data) {
+        try {
+            write(tag & 0xFF);
+            writeLength(len);
+            write(data, 0, len);
+            return this;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public void writeLength(int len) throws IOException {
@@ -153,11 +174,11 @@ public class DerWriter extends FilterOutputStream {
         write(lenBytes, nonZeroPos, bytesLen);
     }
 
-    public byte[] toByteArray() throws IOException {
+    public byte[] bytes() {
         if (this.out instanceof ByteArrayOutputStream) {
             return ((ByteArrayOutputStream) this.out).toByteArray();
         } else {
-            throw new IOException("The underlying stream is not a byte[] stream");
+            throw new UncheckedIOException(new IOException("The underlying stream is not a byte[] stream"));
         }
     }
 }

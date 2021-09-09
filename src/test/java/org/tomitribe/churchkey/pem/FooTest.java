@@ -244,7 +244,6 @@ public class FooTest {
         final byte[] bytes = resource.bytes("openssl-rsaprivatekey-3072.pem");
         final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Keys.decode(bytes).getKey();
 
-
         final byte[] encoded = write()
                 .sequence(write()
                         .bigInteger(ZERO)
@@ -263,8 +262,6 @@ public class FooTest {
                                         .bigInteger(key.getPrimeExponentQ())
                                         .bigInteger(key.getCrtCoefficient()))))
                 .bytes();
-
-        printOctets(encoded);
 
         final String private_key = Pem.builder()
                 .type("PRIVATE KEY")

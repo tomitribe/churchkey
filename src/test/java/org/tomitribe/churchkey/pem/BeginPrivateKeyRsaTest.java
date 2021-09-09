@@ -21,6 +21,7 @@ import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.util.Hex;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.interfaces.RSAPrivateCrtKey;
 
@@ -168,6 +169,33 @@ public class BeginPrivateKeyRsaTest {
                 "FFC373821E5380673047A5E2744E7D805E55ED5F1B75096AC19007A0611F73C9" +
                 "747BB34F147547498C9852AEAD4E4A6DCE1336CC219E800FC889CB682BC7B11D" +
                 "3D04AE8D471D253407BFB62CFEDD907531ECB888135ED7968D6CE099886616BB");
+
+        // Assert we can write the
+        final byte[] encoded = key.encode(Key.Format.PEM);
+        assertEquals(new String(bytes), new String(encoded));
+    }
+
+    @Test
+    public void javaRsaPrivateKeyEncode() throws Exception {
+        assertEncode("java-rsaprivatekey-3072.pem");
+    }
+
+    @Test
+    public void opensslRsaPrivateKeyEncode() throws Exception {
+        assertEncode("openssl-rsaprivatekey-3072.pem");
+    }
+
+    private void assertEncode(final String name) throws IOException {
+        final Resource resources = Resource.resource(this.getClass().getSimpleName());
+        final byte[] bytes = resources.bytes(name);
+
+        final Key key = Keys.decode(bytes);
+        final byte[] encoded = key.encode(Key.Format.PEM);
+
+        /*
+         * Assert we get the same bytes back when we encode the key
+         */
+        assertEquals(new String(bytes), new String(encoded));
     }
 
     private void assertBigInteger(final String name, final BigInteger actual, final String expected) {

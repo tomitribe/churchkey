@@ -22,6 +22,7 @@ import org.tomitribe.churchkey.asn1.Asn1Type;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.rsa.Rsa;
+import org.tomitribe.churchkey.util.Pem;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -34,8 +35,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
+import static java.math.BigInteger.ZERO;
 import static org.tomitribe.churchkey.Key.Algorithm.RSA;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
+import static org.tomitribe.churchkey.asn1.DerWriter.write;
 
 public class BeginPrivateKey {
 
@@ -125,6 +128,35 @@ public class BeginPrivateKey {
     }
 
     public static byte[] encode(final Key key) {
+        if (key.getAlgorithm() == RSA) {
+            final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
+            final byte[] encoded = write()
+                    .sequence(write()
+                            .bigInteger(ZERO)
+                            .sequence(write()
+                                    .objectIdentifier(Oid.fromString("1.2.840.113549.1.1.1"))
+                                    .nill())
+                            .octetString(write()
+                                    .sequence(write()
+                                            .bigInteger(ZERO)
+                                            .bigInteger(privateKey.getModulus())
+                                            .bigInteger(privateKey.getPublicExponent())
+                                            .bigInteger(privateKey.getPrivateExponent())
+                                            .bigInteger(privateKey.getPrimeP())
+                                            .bigInteger(privateKey.getPrimeQ())
+                                            .bigInteger(privateKey.getPrimeExponentP())
+                                            .bigInteger(privateKey.getPrimeExponentQ())
+                                            .bigInteger(privateKey.getCrtCoefficient()))))
+                    .bytes();
+
+            return Pem.builder()
+                    .type("PRIVATE KEY")
+                    .data(encoded)
+                    .wrap(64)
+                    .format()
+                    .getBytes();
+        }
+        
         return null;
     }
 
