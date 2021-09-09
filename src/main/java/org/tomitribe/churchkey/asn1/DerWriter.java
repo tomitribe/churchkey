@@ -27,7 +27,6 @@ import java.io.StreamCorruptedException;
 import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A bare-minimum DER encoder - just enough so we can encoder signatures and keys data
