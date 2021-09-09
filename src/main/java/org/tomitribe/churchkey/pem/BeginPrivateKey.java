@@ -26,6 +26,7 @@ import org.tomitribe.churchkey.util.Pem;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.DSAPrivateKey;
@@ -33,7 +34,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.List;
 
 import static java.math.BigInteger.ZERO;
 import static org.tomitribe.churchkey.Key.Algorithm.RSA;
@@ -42,7 +42,7 @@ import static org.tomitribe.churchkey.asn1.DerWriter.write;
 
 public class BeginPrivateKey {
 
-    private static final Oid RSA_OID = Oid.fromString("1.2.840.113549.1.1.1");
+    private static final Oid rsaKey = Oid.fromString("1.2.840.113549.1.1.1");
     private static final Oid dsaKey = Oid.fromString("1.2.840.10040.4.1");
     private static final Oid ecKey = Oid.fromString("1.2.840.10045.2.1");
 
@@ -51,40 +51,44 @@ public class BeginPrivateKey {
 
     public static Key decode(final byte[] bytes) {
         try {
-            final DerParser der = new DerParser(bytes);
-            final DerParser asymmetricKeyPackage = der.readSequence();
 
-            asymmetricKeyPackage.readObject().assertType(Asn1Type.INTEGER);
-            final DerParser asymmetricKey = asymmetricKeyPackage.readSequence();
-            final List<Integer> integers = asymmetricKey.readObject().asOID();
-            final Oid keyTypeOid = new Oid(integers);
+            final Oid keyTypeOid = readKeyType(bytes);
 
-            if (RSA_OID.equals(keyTypeOid)) {
-                final Asn1Object asn1Object = asymmetricKey.readObject();
-                asn1Object.assertType(Asn1Type.NULL);
+            if (rsaKey.equals(keyTypeOid)) {
+                final DerParser d1 = new DerParser(bytes);
+                final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
+                {
+                    final DerParser d2 = new DerParser(d1o1.getValue());
+                    final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
+                    final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
+                    {
+                        final DerParser d3 = new DerParser(d2o2.getValue());
+                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
+                        final Asn1Object d3o2 = d3.readObject().assertType(Asn1Type.NULL);
+                    }
+                    final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
+                    {
+                        final DerParser d3 = new DerParser(d2o3.getValue());
+                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.SEQUENCE);
+                        {
+                            final DerParser d4 = new DerParser(d3o1.getValue());
+                            final BigInteger version = d4.readBigInteger();
+                            final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
+                                    .modulus(d4.readBigInteger())
+                                    .publicExponent(d4.readBigInteger())
+                                    .privateExponent(d4.readBigInteger())
+                                    .primeP(d4.readBigInteger())
+                                    .primeQ(d4.readBigInteger())
+                                    .primeExponentP(d4.readBigInteger())
+                                    .primeExponentQ(d4.readBigInteger())
+                                    .crtCoefficient(d4.readBigInteger())
+                                    .build()
+                                    .toKey();
 
-                final Asn1Object octetString = asymmetricKeyPackage.readObject();
-                final DerParser key = octetString
-                        .assertType(OCTET_STRING)
-                        .createParser()
-                        .readSequence();
-
-                // version - ignored
-                key.readBigInteger();
-
-                final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
-                        .modulus(key.readBigInteger())
-                        .publicExponent(key.readBigInteger())
-                        .privateExponent(key.readBigInteger())
-                        .primeP(key.readBigInteger())
-                        .primeQ(key.readBigInteger())
-                        .primeExponentP(key.readBigInteger())
-                        .primeExponentQ(key.readBigInteger())
-                        .crtCoefficient(key.readBigInteger())
-                        .build()
-                        .toKey();
-
-                return new Key(privateKey, Key.Type.PRIVATE, RSA, Key.Format.PEM);
+                            return new Key(privateKey, Key.Type.PRIVATE, RSA, Key.Format.PEM);
+                        }
+                    }
+                }
             }
 
             if (dsaKey.equals(keyTypeOid)) {
@@ -100,6 +104,22 @@ public class BeginPrivateKey {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private static Oid readKeyType(final byte[] bytes) throws IOException {
+        final DerParser d1 = new DerParser(bytes);
+        final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
+        {
+            final DerParser d2 = new DerParser(d1o1.getValue());
+            final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
+            final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
+            {
+                final DerParser d3 = new DerParser(d2o2.getValue());
+                final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
+
+                return new Oid(d3o1.asOID());
+            }
+        }
     }
 
     public static Key oldDecode(final byte[] bytes) {
@@ -156,7 +176,7 @@ public class BeginPrivateKey {
                     .format()
                     .getBytes();
         }
-        
+
         return null;
     }
 
