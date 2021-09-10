@@ -15,6 +15,10 @@
  */
 package org.tomitribe.churchkey.ec;
 
+import org.tomitribe.churchkey.asn1.Oid;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.math.BigInteger;
 import java.security.spec.ECFieldF2m;
 import java.security.spec.ECFieldFp;
@@ -23,8 +27,10 @@ import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -606,6 +612,15 @@ public enum Curve {
     ansip521r1(secp521r1),
     ;
 
+    private static final Map<String, Curve> oids = new HashMap<>();
+
+    static {
+        for (final Curve curve : Curve.values()) {
+            oids.putIfAbsent(curve.oid, curve);
+        }
+    }
+
+
     private final Supplier<ECParameterSpec> spec;
     private volatile ECParameterSpec instance;
     private final List<Curve> aliases = new ArrayList<>();
@@ -653,6 +668,11 @@ public enum Curve {
         return instance;
     }
 
+    public static Curve resolve(final Oid oid) {
+        final String oidString = oid.toString();
+        return oids.get(oidString);
+    }
+
     public static Curve resolve(final String curveName) {
         final String enumName = getEnumName(curveName);
 
@@ -692,5 +712,18 @@ public enum Curve {
 
     private static BigInteger bi(final String s) {
         return new BigInteger(s, 16);
+    }
+
+    @Target(ElementType.FIELD)
+    public static @interface OpenSSL {
+
+    }
+
+    public static enum Foo {
+        @OpenSSL
+        RED,
+        GREEN,
+        BLUE
+        ;
     }
 }

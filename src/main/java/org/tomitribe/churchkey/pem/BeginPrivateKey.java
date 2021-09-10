@@ -22,6 +22,9 @@ import org.tomitribe.churchkey.asn1.Asn1Type;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.dsa.Dsa;
+import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.Ecdsa;
+import org.tomitribe.churchkey.ec.UnsupportedCurveException;
 import org.tomitribe.churchkey.rsa.Rsa;
 import org.tomitribe.churchkey.util.Pem;
 
@@ -38,8 +41,11 @@ import java.security.spec.PKCS8EncodedKeySpec;
 
 import static java.math.BigInteger.ZERO;
 import static org.tomitribe.churchkey.Key.Algorithm.DSA;
+import static org.tomitribe.churchkey.Key.Algorithm.EC;
 import static org.tomitribe.churchkey.Key.Algorithm.RSA;
+import static org.tomitribe.churchkey.asn1.Asn1Type.INTEGER;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
+import static org.tomitribe.churchkey.asn1.Asn1Type.SEQUENCE;
 import static org.tomitribe.churchkey.asn1.DerWriter.write;
 
 public class BeginPrivateKey {
@@ -124,7 +130,46 @@ public class BeginPrivateKey {
             }
 
             if (ecKey.equals(keyTypeOid)) {
-                return oldDecode(bytes);
+                final Ecdsa.Private.Builder ecdsa = Ecdsa.Private.builder();
+                final DerParser d1 = new DerParser(bytes);
+                final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
+                {
+                    final DerParser d2 = new DerParser(d1o1.getValue());
+                    final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
+                    final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
+                    {
+                        final DerParser d3 = new DerParser(d2o2.getValue());
+                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
+                        final Asn1Object d3o2 = d3.readObject();
+
+                        if (d3o2.isType(Asn1Type.OBJECT_IDENTIFIER)) {
+                            final Oid oid = new Oid(d3o2.asOID());
+                            final Curve curve = Curve.resolve(oid);
+                            if (curve == null) {
+                                throw new UnsupportedCurveException(oid.toString());
+                            }
+                            ecdsa.curve(curve);
+                        } else if (d3o2.isType(SEQUENCE)) {
+                            // TODO implement this rather than throw an exception
+                            throw new UnsupportedOperationException("Explicit parameters in EC keys is not supported");
+                        }
+                    }
+                    final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
+                    {
+                        final DerParser d3 = new DerParser(d2o3.getValue());
+                        final Asn1Object d3o1 = d3.readObject().assertType(SEQUENCE);
+                        {
+                            final DerParser d4 = new DerParser(d3o1.getValue());
+                            final Asn1Object d4o1 = d4.readObject().assertType(INTEGER);
+                            final Asn1Object d4o2 = d4.readObject().assertType(OCTET_STRING);
+
+                            ecdsa.d(new BigInteger(d4o2.getValue()));
+                            
+                            final ECPrivateKey privateKey = ecdsa.build().toKey();
+                            return new Key(privateKey, Key.Type.PRIVATE, EC, Key.Format.PEM);
+                        }
+                    }
+                }
             }
 
             throw new UnsupportedOperationException("Unsupported key type oid: " + keyTypeOid);
