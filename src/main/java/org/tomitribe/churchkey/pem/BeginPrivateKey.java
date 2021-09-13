@@ -31,13 +31,9 @@ import org.tomitribe.churchkey.util.Pem;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 
 import static java.math.BigInteger.ZERO;
 import static org.tomitribe.churchkey.Key.Algorithm.DSA;
@@ -63,113 +59,15 @@ public class BeginPrivateKey {
             final Oid keyTypeOid = readKeyType(bytes);
 
             if (rsaKey.equals(keyTypeOid)) {
-                final DerParser d1 = new DerParser(bytes);
-                final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
-                {
-                    final DerParser d2 = new DerParser(d1o1.getValue());
-                    final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
-                    final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
-                    {
-                        final DerParser d3 = new DerParser(d2o2.getValue());
-                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
-                        final Asn1Object d3o2 = d3.readObject().assertType(Asn1Type.NULL);
-                    }
-                    final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
-                    {
-                        final DerParser d3 = new DerParser(d2o3.getValue());
-                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.SEQUENCE);
-                        {
-                            final DerParser d4 = new DerParser(d3o1.getValue());
-                            final BigInteger version = d4.readBigInteger();
-                            final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
-                                    .modulus(d4.readBigInteger())
-                                    .publicExponent(d4.readBigInteger())
-                                    .privateExponent(d4.readBigInteger())
-                                    .primeP(d4.readBigInteger())
-                                    .primeQ(d4.readBigInteger())
-                                    .primeExponentP(d4.readBigInteger())
-                                    .primeExponentQ(d4.readBigInteger())
-                                    .crtCoefficient(d4.readBigInteger())
-                                    .build()
-                                    .toKey();
-
-                            return new Key(privateKey, Key.Type.PRIVATE, RSA, Key.Format.PEM);
-                        }
-                    }
-                }
+                return decodeRsaKey(bytes);
             }
 
             if (dsaKey.equals(keyTypeOid)) {
-                final Dsa.Private.Builder dsa = Dsa.Private.builder();
-                final DerParser d1 = new DerParser(bytes);
-                final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
-                {
-                    final DerParser d2 = new DerParser(d1o1.getValue());
-                    final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
-                    final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
-                    {
-                        final DerParser d3 = new DerParser(d2o2.getValue());
-                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
-                        final Asn1Object d3o2 = d3.readObject().assertType(Asn1Type.SEQUENCE);
-                        {
-                            final DerParser d4 = new DerParser(d3o2.getValue());
-                            dsa.p(d4.readBigInteger());
-                            dsa.q(d4.readBigInteger());
-                            dsa.g(d4.readBigInteger());
-                        }
-                    }
-                    final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
-                    {
-                        final DerParser d3 = new DerParser(d2o3.getValue());
-                        dsa.x(d3.readBigInteger());
-
-                        final DSAPrivateKey privateKey = dsa.build().toKey();
-                        return new Key(privateKey, Key.Type.PRIVATE, DSA, Key.Format.PEM);
-                    }
-                }
+                return decodeDsaKey(bytes);
             }
 
             if (ecKey.equals(keyTypeOid)) {
-                final Ecdsa.Private.Builder ecdsa = Ecdsa.Private.builder();
-                final DerParser d1 = new DerParser(bytes);
-                final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
-                {
-                    final DerParser d2 = new DerParser(d1o1.getValue());
-                    final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
-                    final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
-                    {
-                        final DerParser d3 = new DerParser(d2o2.getValue());
-                        final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
-                        final Asn1Object d3o2 = d3.readObject();
-
-                        if (d3o2.isType(Asn1Type.OBJECT_IDENTIFIER)) {
-                            final Oid oid = new Oid(d3o2.asOID());
-                            final Curve curve = Curve.resolve(oid);
-                            if (curve == null) {
-                                throw new UnsupportedCurveException(oid.toString());
-                            }
-                            ecdsa.curve(curve);
-                        } else if (d3o2.isType(SEQUENCE)) {
-                            // TODO implement this rather than throw an exception
-                            throw new UnsupportedOperationException("Explicit parameters in EC keys is not supported");
-                        }
-                    }
-                    final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
-                    {
-                        final DerParser d3 = new DerParser(d2o3.getValue());
-                        final Asn1Object d3o1 = d3.readObject().assertType(SEQUENCE);
-                        {
-                            final DerParser d4 = new DerParser(d3o1.getValue());
-                            final Asn1Object d4o1 = d4.readObject().assertType(INTEGER);
-                            final Asn1Object d4o2 = d4.readObject().assertType(OCTET_STRING);
-
-                            ecdsa.d(new BigInteger(d4o2.getValue()));
-                            
-                            final ECPrivateKey privateKey = ecdsa.build().toKey();
-                            return new Key(privateKey, Key.Type.PRIVATE, EC, Key.Format.PEM);
-                        }
-                    }
-                }
+                return decodeEcKey(bytes);
             }
 
             throw new UnsupportedOperationException("Unsupported key type oid: " + keyTypeOid);
@@ -177,6 +75,116 @@ public class BeginPrivateKey {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private static Key decodeRsaKey(final byte[] bytes) throws IOException {
+        final DerParser d1 = new DerParser(bytes);
+        final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
+        {
+            final DerParser d2 = new DerParser(d1o1.getValue());
+            final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
+            final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
+            {
+                final DerParser d3 = new DerParser(d2o2.getValue());
+                final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
+                final Asn1Object d3o2 = d3.readObject().assertType(Asn1Type.NULL);
+            }
+            final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
+            {
+                final DerParser d3 = new DerParser(d2o3.getValue());
+                final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.SEQUENCE);
+                {
+                    final DerParser d4 = new DerParser(d3o1.getValue());
+                    final BigInteger version = d4.readBigInteger();
+                    final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
+                            .modulus(d4.readBigInteger())
+                            .publicExponent(d4.readBigInteger())
+                            .privateExponent(d4.readBigInteger())
+                            .primeP(d4.readBigInteger())
+                            .primeQ(d4.readBigInteger())
+                            .primeExponentP(d4.readBigInteger())
+                            .primeExponentQ(d4.readBigInteger())
+                            .crtCoefficient(d4.readBigInteger())
+                            .build()
+                            .toKey();
+
+                    return new Key(privateKey, Key.Type.PRIVATE, RSA, Key.Format.PEM);
+                }
+            }
+        }
+    }
+
+    private static Key decodeDsaKey(final byte[] bytes) throws IOException {
+        final Dsa.Private.Builder dsa = Dsa.Private.builder();
+        final DerParser d1 = new DerParser(bytes);
+        final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
+        {
+            final DerParser d2 = new DerParser(d1o1.getValue());
+            final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
+            final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
+            {
+                final DerParser d3 = new DerParser(d2o2.getValue());
+                final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
+                final Asn1Object d3o2 = d3.readObject().assertType(Asn1Type.SEQUENCE);
+                {
+                    final DerParser d4 = new DerParser(d3o2.getValue());
+                    dsa.p(d4.readBigInteger());
+                    dsa.q(d4.readBigInteger());
+                    dsa.g(d4.readBigInteger());
+                }
+            }
+            final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
+            {
+                final DerParser d3 = new DerParser(d2o3.getValue());
+                dsa.x(d3.readBigInteger());
+
+                final DSAPrivateKey privateKey = dsa.build().toKey();
+                return new Key(privateKey, Key.Type.PRIVATE, DSA, Key.Format.PEM);
+            }
+        }
+    }
+
+    private static Key decodeEcKey(final byte[] bytes) throws IOException {
+        final Ecdsa.Private.Builder ecdsa = Ecdsa.Private.builder();
+        final DerParser d1 = new DerParser(bytes);
+        final Asn1Object d1o1 = d1.readObject().assertType(Asn1Type.SEQUENCE);
+        {
+            final DerParser d2 = new DerParser(d1o1.getValue());
+            final Asn1Object d2o1 = d2.readObject().assertType(Asn1Type.INTEGER);
+            final Asn1Object d2o2 = d2.readObject().assertType(Asn1Type.SEQUENCE);
+            {
+                final DerParser d3 = new DerParser(d2o2.getValue());
+                final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
+                final Asn1Object d3o2 = d3.readObject();
+
+                if (d3o2.isType(Asn1Type.OBJECT_IDENTIFIER)) {
+                    final Oid oid = new Oid(d3o2.asOID());
+                    final Curve curve = Curve.resolve(oid);
+                    if (curve == null) {
+                        throw new UnsupportedCurveException(oid.toString());
+                    }
+                    ecdsa.curve(curve);
+                } else if (d3o2.isType(SEQUENCE)) {
+                    // TODO implement this rather than throw an exception
+                    throw new UnsupportedOperationException("Explicit parameters in EC keys is not supported");
+                }
+            }
+            final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);
+            {
+                final DerParser d3 = new DerParser(d2o3.getValue());
+                final Asn1Object d3o1 = d3.readObject().assertType(SEQUENCE);
+                {
+                    final DerParser d4 = new DerParser(d3o1.getValue());
+                    final Asn1Object d4o1 = d4.readObject().assertType(INTEGER);
+                    final Asn1Object d4o2 = d4.readObject().assertType(OCTET_STRING);
+
+                    ecdsa.d(new BigInteger(d4o2.getValue()));
+
+                    final ECPrivateKey privateKey = ecdsa.build().toKey();
+                    return new Key(privateKey, Key.Type.PRIVATE, EC, Key.Format.PEM);
+                }
+            }
+        }
     }
 
     private static Oid readKeyType(final byte[] bytes) throws IOException {
@@ -193,31 +201,6 @@ public class BeginPrivateKey {
                 return new Oid(d3o1.asOID());
             }
         }
-    }
-
-    public static Key oldDecode(final byte[] bytes) {
-        try {
-            final KeyFactory factory = KeyFactory.getInstance("DSA");
-            final DSAPrivateKey privateKey = (DSAPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(bytes));
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.PEM);
-        } catch (InvalidKeySpecException e) {
-            // continue trying other algorithms
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-
-        try {
-            final KeyFactory factory = KeyFactory.getInstance("EC");
-            final ECPrivateKey privateKey = (ECPrivateKey) factory.generatePrivate(new PKCS8EncodedKeySpec(bytes));
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.PEM);
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-            // continue trying other algorithms
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-
-        throw new UnsupportedOperationException("Unsupported algorithm or invalid PKCS#8 key spec");
     }
 
     public static byte[] encode(final Key key) {
