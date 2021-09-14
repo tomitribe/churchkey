@@ -5,6 +5,18 @@ for n in $(openssl ecparam -list_curves | tr ':' '\t' | cut -f 1 ); do
 j=$(lc "$n" | perl -pe 's,-,,g')
 cat <<EOF
     @Test
+    public void ${j}Oid() throws Exception {
+        assertCurveOid("${n}", Curve.${j});
+    }
+
+EOF
+
+done
+exit
+
+j=$(lc "$n" | perl -pe 's,-,,g')
+cat <<EOF
+    @Test
     public void ${j}ParameterSpec() throws Exception {
         assertCurveParameterSpec("${n}", Curve.${j});
     }
