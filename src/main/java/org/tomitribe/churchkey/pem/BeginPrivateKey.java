@@ -158,7 +158,7 @@ public class BeginPrivateKey {
                 final Asn1Object d3o2 = d3.readObject();
 
                 if (d3o2.isType(Asn1Type.OBJECT_IDENTIFIER)) {
-                    final Oid oid = new Oid(d3o2.asOID());
+                    final Oid oid = d3o2.asOID();
                     final Curve curve = Curve.resolve(oid);
                     if (curve == null) {
                         throw new UnsupportedCurveException(oid.toString());
@@ -198,7 +198,7 @@ public class BeginPrivateKey {
                 final DerParser d3 = new DerParser(d2o2.getValue());
                 final Asn1Object d3o1 = d3.readObject().assertType(Asn1Type.OBJECT_IDENTIFIER);
 
-                return new Oid(d3o1.asOID());
+                return d3o1.asOID();
             }
         }
     }

@@ -16,13 +16,8 @@
 package org.tomitribe.churchkey.ec;
 
 import org.junit.Test;
-import org.tomitribe.util.Hex;
 import org.tomitribe.util.Join;
 
-import java.math.BigInteger;
-import java.security.spec.ECFieldF2m;
-import java.security.spec.ECFieldFp;
-import java.security.spec.ECParameterSpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -657,29 +652,8 @@ public class CurveAliasesTest {
     private void assertAliases(final Curve expected, final String... aliases) {
         for (final String alias : aliases) {
             final Curve actual = Curve.resolve(alias);
-            assertParamSpec(expected.getParameterSpec(), actual.getParameterSpec());
+            CurveAsserts.assertParamSpec(expected.getParameterSpec(), actual.getParameterSpec());
         }
-    }
-
-    public static void assertParamSpec(final ECParameterSpec expected, final ECParameterSpec actual) {
-        assertEquals(expected.getCofactor(), actual.getCofactor());
-        assertBigInt(expected.getOrder(), actual.getOrder());
-        assertBigInt(expected.getCurve().getA(), actual.getCurve().getA());
-        assertBigInt(expected.getCurve().getB(), actual.getCurve().getB());
-        assertBigInt(expected.getGenerator().getAffineX(), actual.getGenerator().getAffineX());
-        assertBigInt(expected.getGenerator().getAffineY(), actual.getGenerator().getAffineY());
-
-        if (expected.getCurve().getField() instanceof ECFieldFp) {
-            assertBigInt(((ECFieldFp) expected.getCurve().getField()).getP(), ((ECFieldFp) actual.getCurve().getField()).getP());
-        }
-        if (expected.getCurve().getField() instanceof ECFieldF2m) {
-            assertBigInt(((ECFieldF2m) expected.getCurve().getField()).getReductionPolynomial(), ((ECFieldF2m) actual.getCurve().getField()).getReductionPolynomial());
-        }
-
-    }
-
-    public static void assertBigInt(final BigInteger expected, final BigInteger actual) {
-        assertEquals(Hex.toString(expected.toByteArray()), Hex.toString(actual.toByteArray()));
     }
 
     public static class Generate {
@@ -715,7 +689,7 @@ public class CurveAliasesTest {
 
         private static boolean isAlias(final Curve curve, final Curve other) {
             try {
-                assertParamSpec(curve.getParameterSpec(), other.getParameterSpec());
+                CurveAsserts.assertParamSpec(curve.getParameterSpec(), other.getParameterSpec());
                 return true;
             } catch (Throwable ignored) {
                 return false;

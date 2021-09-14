@@ -199,7 +199,7 @@ public class Asn1Object {
         return new String(getValue(), 0, getLength(), encoding);
     }
 
-    public List<Integer> asOID() throws IOException {
+    public Oid asOID() throws IOException {
         Asn1Type typeValue = getType();
         if (Asn1Type.OBJECT_IDENTIFIER.equals(typeValue)) {
             return toOID();
@@ -209,7 +209,7 @@ public class Asn1Object {
     }
 
     // Does not check that type is OID
-    public List<Integer> toOID() throws IOException {
+    public Oid toOID() throws IOException {
         int vLen = getLength();
         if (vLen <= 0) {
             throw new EOFException("Not enough data for an OID");
@@ -254,7 +254,7 @@ public class Asn1Object {
             oid.add(Integer.valueOf((int) (curVal & 0x7FFFFFFFL)));
         }
 
-        return oid;
+        return new Oid(oid);
     }
 
     @Override

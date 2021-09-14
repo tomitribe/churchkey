@@ -25,7 +25,7 @@ public class Resource {
 
     private final URL base;
 
-    public Resource(final Class base, final String string) {
+    public Resource(final Class<?> base, final String string) {
         this.base = requireResource(base.getClassLoader().getResource(string), string);
     }
 
@@ -39,6 +39,10 @@ public class Resource {
 
     public static Resource resource(final String dir) {
         return new Resource(Resource.class, String.format("%s/%s", dir, "data.txt"));
+    }
+
+    public static Resource resource(final Class<?> clazz) {
+        return new Resource(clazz, String.format("%s/%s", clazz.getSimpleName(), "data.txt"));
     }
 
     public byte[] bytes(final String name) throws IOException {

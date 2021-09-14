@@ -166,7 +166,7 @@ public class OpenSSHPrivateKey {
         return new Key(ecPrivateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.OPENSSH, attributes);
     }
 
-    private static ECPoint getEcPoint(final byte[] bytes) {
+    public static ECPoint getEcPoint(final byte[] bytes) {
         if (bytes.length == 0) {
             throw new IllegalStateException("Key data is truncated");
         }
