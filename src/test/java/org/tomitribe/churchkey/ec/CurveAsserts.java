@@ -44,6 +44,8 @@ public class CurveAsserts {
     }
 
     public static void assertBigInt(final BigInteger expected, final BigInteger actual) {
-        assertEquals(Hex.toString(expected.toByteArray()), Hex.toString(actual.toByteArray()));
+        final String e1 = Hex.toString(expected.toByteArray()).replaceFirst("^00", "");
+        final String a1 = Hex.toString(actual.toByteArray()).replaceFirst("^00", "");
+        assertEquals(e1, a1);
     }
 }

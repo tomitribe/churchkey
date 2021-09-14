@@ -1,6 +1,20 @@
 #!/bin/bash
 
 for n in $(openssl ecparam -list_curves | tr ':' '\t' | cut -f 1 ); do
+
+j=$(lc "$n" | perl -pe 's,-,,g')
+cat <<EOF
+    @Test
+    public void ${j}ParameterSpec() throws Exception {
+        assertCurveParameterSpec("${n}", Curve.${j});
+    }
+
+EOF
+
+done
+exit
+
+for n in $(openssl ecparam -list_curves | tr ':' '\t' | cut -f 1 ); do
     echo $n;
     echo export the parameters
     openssl ecparam -name $n -out $n-params.pem -param_enc explicit

@@ -21,19 +21,21 @@ import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.ssh.OpenSSHPrivateKey;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.spec.ECField;
 import java.security.spec.ECFieldF2m;
+import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
 
-import static org.tomitribe.churchkey.asn1.Asn1Type.BIT_STRING;
 import static org.tomitribe.churchkey.asn1.Asn1Type.INTEGER;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OBJECT_IDENTIFIER;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
 import static org.tomitribe.churchkey.asn1.Asn1Type.SEQUENCE;
 
 public class EcCurveParams {
+    private static final Oid primeField = new Oid(1, 2, 840, 10045, 1, 1);
     private static final Oid characteristicTwoField = new Oid(1, 2, 840, 10045, 1, 2);
     private static final Oid tpBasis = new Oid(1, 2, 840, 10045, 1, 2, 3, 2);
     private static final Oid ppBasis = new Oid(1, 2, 840, 10045, 1, 2, 3, 3);
@@ -56,7 +58,10 @@ public class EcCurveParams {
                 final Asn1Object d3o1 = d3.readObject().assertType(OBJECT_IDENTIFIER);
                 final Oid oid = d3o1.asOID();
 
-                if (characteristicTwoField.equals(oid)) {
+                if (primeField.equals(oid)) {
+                    final Asn1Object d3o2 = d3.readObject().assertType(INTEGER);
+                    field = new ECFieldFp(d3o2.toInteger());
+                } else if (characteristicTwoField.equals(oid)) {
                     final Asn1Object d3o2 = d3.readObject().assertType(SEQUENCE);
                     {
                         final DerParser d4 = new DerParser(d3o2.getValue());
@@ -97,9 +102,16 @@ public class EcCurveParams {
                 final DerParser d3 = new DerParser(d2o3.getValue());
                 final Asn1Object d3o1 = d3.readObject().assertType(OCTET_STRING);
                 final Asn1Object d3o2 = d3.readObject().assertType(OCTET_STRING);
-                final Asn1Object d3o3 = d3.readObject().assertType(BIT_STRING);
+                final Asn1Object d3o3 = d3.readObject();
 
-                ellipticCurve = new EllipticCurve(field, d3o1.toInteger(), d3o2.toInteger());
+                final BigInteger a = d3o1.toInteger();
+                final BigInteger b = d3o2.toInteger();
+
+                if (d3o3 == null) {
+                    ellipticCurve = new EllipticCurve(field, a, b);
+                } else {
+                    ellipticCurve = new EllipticCurve(field, a, b, d3o3.getPureValueBytes());
+                }
             }
 
             final Asn1Object d2o4 = d2.readObject().assertType(OCTET_STRING);
