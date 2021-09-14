@@ -18,8 +18,6 @@
  */
 package org.tomitribe.churchkey.asn1;
 
-import org.tomitribe.util.Hex;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
@@ -156,9 +154,7 @@ public class Asn1Object {
     // does not check if this is an integer
     public BigInteger toInteger() {
         if (isType(Asn1Type.OCTET_STRING)) {
-            // it doesn't seem like this should be necessary, but
-            // we occasionally get negative numbers otherwise
-            return new BigInteger(Hex.toString(getPureValueBytes()), 16);
+            return new BigInteger(1, getPureValueBytes());
         }
         return new BigInteger(getPureValueBytes());
     }
