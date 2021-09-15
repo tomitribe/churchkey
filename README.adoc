@@ -175,7 +175,7 @@ wHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q==
 <dependency>
   <groupId>org.tomitribe</groupId>
   <artifactId>churchkey</artifactId>
-  <version>0.1</version>
+  <version>0.9</version>
 </dependency>
 ----
 
