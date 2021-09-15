@@ -1,19 +1,42 @@
 # Churchkey
 
-Churchkey is a Java library designed for those who aren't security experts and just need something that works.  It will guess the kind of key specified in the given file and automatically parse it into one of the following JCE key types:
-
-  - java.security.interfaces.RSAPrivateKey
-  - java.security.interfaces.RSAPublicKey
-  - java.security.interfaces.DSAPrivateKey
-  - java.security.interfaces.DSAPublicKey
-
-Churchkey can parse public and private key files in several formats including created by other programs
-such as OpenSSL, OpenSSH and more:
+Churchkey is a Java library that can parse public and private key files in several formats including:
 
   - JSON Web Key (JWK)
   - PEM
   - OpenSSH
   - SSH2
+
+*Step 1* Pass the bytes of the key file to Churchkey. No need to tell Churchkey what kind of key it is.
+
+[source,java]
+----
+final String pemFile = "" +
+        "-----BEGIN PUBLIC KEY-----\n" +
+        "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyzNurU19lqnYhx5QI72sIX1lh\n" +
+        "8cTehTmboC+DLG7UuaUHqs096M754HtP2IiHFcIQqwYNzHgKmjmfGdbk9JBkz/DN\n" +
+        "eDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht\n" +
+        "0OtHgJIlIaGxK7mY/QIDAQAB\n" +
+        "-----END PUBLIC KEY-----\n";
+
+final Key key = Keys.decode(pemFile.getBytes());
+----
+
+*Step 2* Churchkey will parse the contents of the key file and tell you what kind of key it found!
+
+[source,java]
+----
+Assert.assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+Assert.assertEquals(Key.Format.PEM, key.getFormat());
+Assert.assertEquals(Key.Type.PUBLIC, key.getType());
+----
+
+*Step 3*  You can then cast the key to the correct java.security interface
+
+[source,java]
+----
+Assert.assertTrue(key.getKey() instanceof RSAPublicKey);
+----
 
 ## Java Sample
 
@@ -50,10 +73,10 @@ public class ExampleTest {
 }
 ----
 
-# Supported Key Formats
+## Supported Key Formats
 Churchkey is a Java library that can read RSA and DSA that look like any of the following:
 
-## JSON Web Key (JWK)
+### JSON Web Key (JWK)
 
 [source,json]
 ----
@@ -70,7 +93,7 @@ Churchkey is a Java library that can read RSA and DSA that look like any of the 
 }
 ----
 
-## Various PEM Files
+### Various PEM Files
 ----
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG7UuaUHqs09
@@ -117,7 +140,7 @@ eDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht
 -----END PUBLIC KEY-----
 ----
 
-## OpenSSH
+### OpenSSH
 
 Common locations for these would be in:
 
@@ -132,7 +155,7 @@ ssh-dss AAAAB3NzaC1kc3MAAACBAN9w84QLHWmzl/gY2Xh/CnM7hfTsUl6Z89NUmhOFfs/wzO54Pl84
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG7UuaUHqs096M754HtP2IiHFcIQqwYNzHgKmjmfGdbk9JBkz/DNeDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q== dblevins@mingus.lan
 ----
 
-## SSH2
+### SSH2
 
 Commonly mistaken for PEM, but different.
 
@@ -145,14 +168,14 @@ wHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q==
 ---- END SSH2 PUBLIC KEY ----
 ----
 
-# Maven Coordinates
+## Maven Coordinates
 
 [source,xml]
 ----
 <dependency>
   <groupId>org.tomitribe</groupId>
   <artifactId>churchkey</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
 </dependency>
 ----
 
