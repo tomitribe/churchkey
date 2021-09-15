@@ -47,7 +47,7 @@ public class CurveGenerator {
     public void generate() throws Exception {
         final Jsonb jsonb = JsonbBuilder.newBuilder().build();
 
-        final List<String> categories = Arrays.asList("secg", "nist", "brainpool", "anssi", "x962", "x963");
+        final List<String> categories = Arrays.asList("secg", "nist", "brainpool", "anssi", "x962", "x963", "wtls");
 
         final List<Curve> list = categories.stream()
                 .map(s -> new File("/Users/dblevins/work/J08nY/std-curves/" + s + "/curves.json"))
@@ -62,12 +62,19 @@ public class CurveGenerator {
 
         final Map<String, Curve> aliases = new HashMap<>();
         for (final Curve curve : list) {
+
+            final String enumName = getEnumName(curve.getName());
+
+            if (!enumName.equals(curve.getName())) {
+                System.out.printf("\n    @Name(\"%s\")%n", curve.getName());
+            }
+
             /*
              * If this is an alias for another curve, construct it as a reference
              */
             if (aliases.containsKey(curve.getName())) {
                 final Curve actual = aliases.get(curve.getName());
-                System.out.printf("    %s(%s),\n", getEnumName(curve.getName()), getEnumName(actual.getName()));
+                System.out.printf("    %s(%s),\n", enumName, getEnumName(actual.getName()));
                 continue;
             }
 
@@ -86,6 +93,10 @@ public class CurveGenerator {
                 // skip this curve
             } catch (Exception e) {
                 throw new IllegalStateException(curve.getName(), e);
+            }
+
+            if (curve.getName().equals("sect571r1")) {
+                System.out.print(aliases());
             }
         }
     }
@@ -106,7 +117,7 @@ public class CurveGenerator {
         final String y = hex(curve.getGenerator().getY());
         final String n = hex(curve.getOrder());
         final String cofactor = curve.getCofactor();
-        final String oid = curve.getOid();
+        final String oid = curve.getOid() == null ? "null" : String.format("oid(%s)", curve.getOid().replace(".", ", "));
 
         if (curve.getField().getPoly() == null) {
             final String p = hex(curve.getField().getP());
@@ -117,7 +128,7 @@ public class CurveGenerator {
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
-                    "            %s), \"%s\"),\n", enumName, p, a, b, x, y, n, cofactor, oid);
+                    "            %s), %s),\n", enumName, p, a, b, x, y, n, cofactor, oid);
         } else {
             final List<Integer> terms = getMiddleTerms(curve);
             final int degree = curve.getField().getDegree();
@@ -127,7 +138,7 @@ public class CurveGenerator {
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
                     "            \"%s\",\n" +
-                    "            %s), \"%s\"),\n", enumName, degree, Join.join(", ", terms), a, b, x, y, n, cofactor, oid);
+                    "            %s), %s),\n", enumName, degree, Join.join(", ", terms), a, b, x, y, n, cofactor, oid);
         }
     }
 
@@ -152,7 +163,27 @@ public class CurveGenerator {
     }
 
     private String hex(final String raw) {
-        return raw.replaceAll("^0x", "").toUpperCase();
+        return raw.replaceAll("^0x", "")
+//                .replaceAll("^00", "")
+                .toUpperCase();
+    }
+
+    private String aliases() {
+        return "    nistp192(secp192r1),\n" +
+                "    nistp224(secp224r1),\n" +
+                "    nistp256(secp256r1),\n" +
+                "    nistp384(secp384r1),\n" +
+                "    nistp521(secp521r1),\n" +
+                "    nistk163(sect163k1),\n" +
+                "    nistb163(sect163r2),\n" +
+                "    nistk233(sect233k1),\n" +
+                "    nistb233(sect233r1),\n" +
+                "    nistk283(sect283k1),\n" +
+                "    nistb283(sect283r1),\n" +
+                "    nistk409(sect409k1),\n" +
+                "    nistb409(sect409r1),\n" +
+                "    nistk571(sect571k1),\n" +
+                "    nistb571(sect571r1),\n";
     }
 
 

@@ -119,6 +119,10 @@ public class Oid {
         return fromBytes(bytes);
     }
 
+    public static Oid oid(final int... oid) {
+        return new Oid(oid);
+    }
+
     public static Oid fromBytes(final byte[] bytes) throws IOException {
         final int length = bytes.length;
         if (length <= 0) {

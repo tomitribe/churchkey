@@ -15,16 +15,28 @@
  */
 package org.tomitribe.churchkey.pem;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.ec.Curve;
 import org.tomitribe.churchkey.util.Pem;
+import org.tomitribe.util.Hex;
+import org.tomitribe.util.Join;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.spec.ECField;
+import java.security.spec.ECFieldF2m;
+import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.tomitribe.churchkey.ec.Curve.getEnumName;
 import static org.tomitribe.churchkey.ec.CurveAsserts.assertParamSpec;
 
 /**
@@ -241,10 +253,10 @@ public class OpenSslEcCurvesTest {
         assertCurveParameterSpec("c2pnb163v3", Curve.c2pnb163v3);
     }
 
-//    @Test
-//    public void c2pnb176v1ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("c2pnb176v1", Curve.c2pnb176v1);
-//    }
+    @Test
+    public void c2pnb176v1ParameterSpec() throws Exception {
+        assertCurveParameterSpec("c2pnb176v1", Curve.c2pnb176v1);
+    }
 
     @Test
     public void c2tnb191v1ParameterSpec() throws Exception {
@@ -306,71 +318,72 @@ public class OpenSslEcCurvesTest {
         assertCurveParameterSpec("c2tnb431r1", Curve.c2tnb431r1);
     }
 
-    //    @Test
-//    public void wapwsgidmecidwtls1ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls1", Curve.wapwsgidmecidwtls1);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls3ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls3", Curve.wapwsgidmecidwtls3);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls4ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls4", Curve.wapwsgidmecidwtls4);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls5ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls5", Curve.wapwsgidmecidwtls5);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls6ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls6", Curve.wapwsgidmecidwtls6);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls7ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls7", Curve.wapwsgidmecidwtls7);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls8ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls8", Curve.wapwsgidmecidwtls8);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls9ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls9", Curve.wapwsgidmecidwtls9);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls10ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls10", Curve.wapwsgidmecidwtls10);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls11ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls11", Curve.wapwsgidmecidwtls11);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls12ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls12", Curve.wapwsgidmecidwtls12);
-//    }
-//
-//    @Test
-//    public void oakleyec2n3ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("Oakley-EC2N-3", Curve.oakleyec2n3);
-//    }
-//
-//    @Test
-//    public void oakleyec2n4ParameterSpec() throws Exception {
-//        assertCurveParameterSpec("Oakley-EC2N-4", Curve.oakleyec2n4);
-//    }
-//
+    @Test
+    public void wapwsgidmecidwtls1ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls1", Curve.wapwsgidmecidwtls1);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls3ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls3", Curve.wapwsgidmecidwtls3);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls4ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls4", Curve.wapwsgidmecidwtls4);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls5ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls5", Curve.wapwsgidmecidwtls5);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls6ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls6", Curve.wapwsgidmecidwtls6);
+    }
+
+    @Test
+    @Ignore("Bug in OpenSSL https://github.com/openssl/openssl/issues/6317")
+    public void wapwsgidmecidwtls7ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls7", Curve.wapwsgidmecidwtls7);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls8ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls8", Curve.wapwsgidmecidwtls8);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls9ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls9", Curve.wapwsgidmecidwtls9);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls10ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls10", Curve.wapwsgidmecidwtls10);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls11ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls11", Curve.wapwsgidmecidwtls11);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls12ParameterSpec() throws Exception {
+        assertCurveParameterSpec("wap-wsg-idm-ecid-wtls12", Curve.wapwsgidmecidwtls12);
+    }
+
+    @Test
+    public void oakleyec2n3ParameterSpec() throws Exception {
+        assertCurveParameterSpec("Oakley-EC2N-3", Curve.oakleyec2n3);
+    }
+
+    @Test
+    public void oakleyec2n4ParameterSpec() throws Exception {
+        assertCurveParameterSpec("Oakley-EC2N-4", Curve.oakleyec2n4);
+    }
+
     @Test
     public void brainpoolp160r1ParameterSpec() throws Exception {
         assertCurveParameterSpec("brainpoolP160r1", Curve.brainpoolp160r1);
@@ -446,46 +459,46 @@ public class OpenSslEcCurvesTest {
         assertCurveParameterSpec("FRP256v1", Curve.frp256v1);
     }
 
-//    @Test
-//    public void idgostr34102001testparamsetParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-GostR3410-2001-TestParamSet", Curve.idgostr34102001testparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoproaparamsetParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-A-ParamSet", Curve.idgostr34102001cryptoproaparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoprobparamsetParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-B-ParamSet", Curve.idgostr34102001cryptoprobparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoprocparamsetParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-C-ParamSet", Curve.idgostr34102001cryptoprocparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoproxchaparamsetParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-XchA-ParamSet", Curve.idgostr34102001cryptoproxchaparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoproxchbparamsetParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-XchB-ParamSet", Curve.idgostr34102001cryptoproxchbparamset);
-//    }
-//
-//    @Test
-//    public void idtc26gost34102012512paramsetaParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-tc26-gost-3410-2012-512-paramSetA", Curve.idtc26gost34102012512paramseta);
-//    }
-//
-//    @Test
-//    public void idtc26gost34102012512paramsetbParameterSpec() throws Exception {
-//        assertCurveParameterSpec("id-tc26-gost-3410-2012-512-paramSetB", Curve.idtc26gost34102012512paramsetb);
-//    }
-//
+    @Test
+    public void idgostr34102001testparamsetParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-GostR3410-2001-TestParamSet", Curve.idgostr34102001testparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoproaparamsetParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-A-ParamSet", Curve.idgostr34102001cryptoproaparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoprobparamsetParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-B-ParamSet", Curve.idgostr34102001cryptoprobparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoprocparamsetParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-C-ParamSet", Curve.idgostr34102001cryptoprocparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoproxchaparamsetParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-XchA-ParamSet", Curve.idgostr34102001cryptoproxchaparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoproxchbparamsetParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-GostR3410-2001-CryptoPro-XchB-ParamSet", Curve.idgostr34102001cryptoproxchbparamset);
+    }
+
+    @Test
+    public void idtc26gost34102012512paramsetaParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-tc26-gost-3410-2012-512-paramSetA", Curve.idtc26gost34102012512paramseta);
+    }
+
+    @Test
+    public void idtc26gost34102012512paramsetbParameterSpec() throws Exception {
+        assertCurveParameterSpec("id-tc26-gost-3410-2012-512-paramSetB", Curve.idtc26gost34102012512paramsetb);
+    }
+
 
     @Test
     public void secp112r1Oid() throws Exception {
@@ -553,7 +566,6 @@ public class OpenSslEcCurvesTest {
     }
 
     @Test
-//    @Ignore
     public void prime192v1Oid() throws Exception {
         assertCurveOid("prime192v1", Curve.prime192v1);
     }
@@ -584,7 +596,6 @@ public class OpenSslEcCurvesTest {
     }
 
     @Test
-//    @Ignore
     public void prime256v1Oid() throws Exception {
         assertCurveOid("prime256v1", Curve.prime256v1);
     }
@@ -694,10 +705,10 @@ public class OpenSslEcCurvesTest {
         assertCurveOid("c2pnb163v3", Curve.c2pnb163v3);
     }
 
-//    @Test
-//    public void c2pnb176v1Oid() throws Exception {
-//        assertCurveOid("c2pnb176v1", Curve.c2pnb176v1);
-//    }
+    @Test
+    public void c2pnb176v1Oid() throws Exception {
+        assertCurveOid("c2pnb176v1", Curve.c2pnb176v1);
+    }
 
     @Test
     public void c2tnb191v1Oid() throws Exception {
@@ -759,70 +770,72 @@ public class OpenSslEcCurvesTest {
         assertCurveOid("c2tnb431r1", Curve.c2tnb431r1);
     }
 
-//    @Test
-//    public void wapwsgidmecidwtls1Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls1", Curve.wapwsgidmecidwtls1);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls3Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls3", Curve.wapwsgidmecidwtls3);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls4Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls4", Curve.wapwsgidmecidwtls4);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls5Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls5", Curve.wapwsgidmecidwtls5);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls6Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls6", Curve.wapwsgidmecidwtls6);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls7Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls7", Curve.wapwsgidmecidwtls7);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls8Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls8", Curve.wapwsgidmecidwtls8);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls9Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls9", Curve.wapwsgidmecidwtls9);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls10Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls10", Curve.wapwsgidmecidwtls10);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls11Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls11", Curve.wapwsgidmecidwtls11);
-//    }
-//
-//    @Test
-//    public void wapwsgidmecidwtls12Oid() throws Exception {
-//        assertCurveOid("wap-wsg-idm-ecid-wtls12", Curve.wapwsgidmecidwtls12);
-//    }
-//
-//    @Test
-//    public void oakleyec2n3Oid() throws Exception {
-//        assertCurveOid("Oakley-EC2N-3", Curve.oakleyec2n3);
-//    }
-//
-//    @Test
-//    public void oakleyec2n4Oid() throws Exception {
-//        assertCurveOid("Oakley-EC2N-4", Curve.oakleyec2n4);
-//    }
+    @Test
+    public void wapwsgidmecidwtls1Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls1", Curve.wapwsgidmecidwtls1);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls3Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls3", Curve.wapwsgidmecidwtls3);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls4Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls4", Curve.wapwsgidmecidwtls4);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls5Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls5", Curve.wapwsgidmecidwtls5);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls6Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls6", Curve.wapwsgidmecidwtls6);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls7Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls7", Curve.wapwsgidmecidwtls7);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls8Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls8", Curve.wapwsgidmecidwtls8);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls9Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls9", Curve.wapwsgidmecidwtls9);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls10Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls10", Curve.wapwsgidmecidwtls10);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls11Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls11", Curve.wapwsgidmecidwtls11);
+    }
+
+    @Test
+    public void wapwsgidmecidwtls12Oid() throws Exception {
+        assertCurveOid("wap-wsg-idm-ecid-wtls12", Curve.wapwsgidmecidwtls12);
+    }
+
+    @Test
+    @Ignore("Does not have an OID")
+    public void oakleyec2n3Oid() throws Exception {
+        assertCurveOid("Oakley-EC2N-3", Curve.oakleyec2n3);
+    }
+
+    @Test
+    @Ignore("Does not have an OID")
+    public void oakleyec2n4Oid() throws Exception {
+        assertCurveOid("Oakley-EC2N-4", Curve.oakleyec2n4);
+    }
 
     @Test
     public void brainpoolp160r1Oid() throws Exception {
@@ -899,45 +912,45 @@ public class OpenSslEcCurvesTest {
         assertCurveOid("FRP256v1", Curve.frp256v1);
     }
 
-//    @Test
-//    public void idgostr34102001testparamsetOid() throws Exception {
-//        assertCurveOid("id-GostR3410-2001-TestParamSet", Curve.idgostr34102001testparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoproaparamsetOid() throws Exception {
-//        assertCurveOid("id-GostR3410-2001-CryptoPro-A-ParamSet", Curve.idgostr34102001cryptoproaparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoprobparamsetOid() throws Exception {
-//        assertCurveOid("id-GostR3410-2001-CryptoPro-B-ParamSet", Curve.idgostr34102001cryptoprobparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoprocparamsetOid() throws Exception {
-//        assertCurveOid("id-GostR3410-2001-CryptoPro-C-ParamSet", Curve.idgostr34102001cryptoprocparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoproxchaparamsetOid() throws Exception {
-//        assertCurveOid("id-GostR3410-2001-CryptoPro-XchA-ParamSet", Curve.idgostr34102001cryptoproxchaparamset);
-//    }
-//
-//    @Test
-//    public void idgostr34102001cryptoproxchbparamsetOid() throws Exception {
-//        assertCurveOid("id-GostR3410-2001-CryptoPro-XchB-ParamSet", Curve.idgostr34102001cryptoproxchbparamset);
-//    }
-//
-//    @Test
-//    public void idtc26gost34102012512paramsetaOid() throws Exception {
-//        assertCurveOid("id-tc26-gost-3410-2012-512-paramSetA", Curve.idtc26gost34102012512paramseta);
-//    }
-//
-//    @Test
-//    public void idtc26gost34102012512paramsetbOid() throws Exception {
-//        assertCurveOid("id-tc26-gost-3410-2012-512-paramSetB", Curve.idtc26gost34102012512paramsetb);
-//    }
+    @Test
+    public void idgostr34102001testparamsetOid() throws Exception {
+        assertCurveOid("id-GostR3410-2001-TestParamSet", Curve.idgostr34102001testparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoproaparamsetOid() throws Exception {
+        assertCurveOid("id-GostR3410-2001-CryptoPro-A-ParamSet", Curve.idgostr34102001cryptoproaparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoprobparamsetOid() throws Exception {
+        assertCurveOid("id-GostR3410-2001-CryptoPro-B-ParamSet", Curve.idgostr34102001cryptoprobparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoprocparamsetOid() throws Exception {
+        assertCurveOid("id-GostR3410-2001-CryptoPro-C-ParamSet", Curve.idgostr34102001cryptoprocparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoproxchaparamsetOid() throws Exception {
+        assertCurveOid("id-GostR3410-2001-CryptoPro-XchA-ParamSet", Curve.idgostr34102001cryptoproxchaparamset);
+    }
+
+    @Test
+    public void idgostr34102001cryptoproxchbparamsetOid() throws Exception {
+        assertCurveOid("id-GostR3410-2001-CryptoPro-XchB-ParamSet", Curve.idgostr34102001cryptoproxchbparamset);
+    }
+
+    @Test
+    public void idtc26gost34102012512paramsetaOid() throws Exception {
+        assertCurveOid("id-tc26-gost-3410-2012-512-paramSetA", Curve.idtc26gost34102012512paramseta);
+    }
+
+    @Test
+    public void idtc26gost34102012512paramsetbOid() throws Exception {
+        assertCurveOid("id-tc26-gost-3410-2012-512-paramSetB", Curve.idtc26gost34102012512paramsetb);
+    }
 
     private void assertCurveOid(final String curveName, final Curve expected) throws IOException {
         final byte[] bytes = resource.bytes(curveName + "-oid.pem");
@@ -945,10 +958,117 @@ public class OpenSslEcCurvesTest {
 
         final Oid oid = EcCurveParams.parseOid(data);
         final Curve actual = Curve.resolve(oid);
-
+        assertNotNull("OID could not be resolved " + oid, actual);
         if (!expected.equals(actual) && !expected.getAliases().contains(actual) && !actual.getAliases().contains(expected)) {
             fail("Expected: " + expected + ", found: " + actual);
         }
+    }
+
+    public void generate() throws IOException {
+        final List<String> list = Arrays.asList("c2pnb176v1", "wap-wsg-idm-ecid-wtls1",
+                "wap-wsg-idm-ecid-wtls3",
+                "wap-wsg-idm-ecid-wtls4",
+                "wap-wsg-idm-ecid-wtls5",
+                "wap-wsg-idm-ecid-wtls6",
+                "wap-wsg-idm-ecid-wtls7",
+                "wap-wsg-idm-ecid-wtls8",
+                "wap-wsg-idm-ecid-wtls9",
+                "wap-wsg-idm-ecid-wtls10",
+                "wap-wsg-idm-ecid-wtls11",
+                "wap-wsg-idm-ecid-wtls12",
+                "Oakley-EC2N-3",
+                "Oakley-EC2N-4",
+                "id-GostR3410-2001-TestParamSet",
+                "id-GostR3410-2001-CryptoPro-A-ParamSet",
+                "id-GostR3410-2001-CryptoPro-B-ParamSet",
+                "id-GostR3410-2001-CryptoPro-C-ParamSet",
+                "id-GostR3410-2001-CryptoPro-XchA-ParamSet",
+                "id-GostR3410-2001-CryptoPro-XchB-ParamSet",
+                "id-tc26-gost-3410-2012-512-paramSetA",
+                "id-tc26-gost-3410-2012-512-paramSetB"
+        );
+        for (final String name : list) {
+            try {
+                printEnum(name);
+            } catch (Exception e) {
+                System.out.println(name);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void printEnum(final String name) throws IOException {
+        final String enumName = getEnumName(name);
+
+        final String oid = getOid(name);
+        final ECParameterSpec spec = EcCurveParams.parse(Pem.parse(resource.bytes(name + "-params.pem")).getData());
+
+        if (!enumName.equals(name)) {
+            System.out.printf("\n    @Name(\"%s\")\n", name);
+        }
+
+        for (final Curve curve : Curve.values()) {
+            try {
+                assertCurveParameterSpec(name, curve);
+
+                System.out.printf("    %s(%s),\n", enumName, curve.name());
+                return;
+            } catch (Throwable ignored) {
+            }
+        }
+
+        final String x = hex(spec.getGenerator().getAffineX());
+        final String y = hex(spec.getGenerator().getAffineY());
+        final String a = hex(spec.getCurve().getA());
+        final String b = hex(spec.getCurve().getB());
+        final String n = hex(spec.getOrder());
+        final int cofactor = spec.getCofactor();
+
+        final ECField field = spec.getCurve().getField();
+
+
+        if (field instanceof ECFieldFp) {
+            final ECFieldFp fp = (ECFieldFp) field;
+            final String p = hex(fp.getP());
+            System.out.printf("    %s(() -> prime(\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            %s), %s),\n", enumName, p, a, b, x, y, n, cofactor, oid);
+        } else if (field instanceof ECFieldF2m) {
+            final ECFieldF2m binary = (ECFieldF2m) field;
+
+            final int m = binary.getM();
+            final List<Integer> terms = new ArrayList<Integer>();
+            for (final int i : binary.getMidTermsOfReductionPolynomial()) {
+                terms.add(i);
+            }
+
+            System.out.printf("    %s(() -> binary(%s, new int[]{%s},\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            \"%s\",\n" +
+                    "            %s), %s),\n", enumName, m, Join.join(", ", terms), a, b, x, y, n, cofactor, oid);
+        }
+
+    }
+
+    private String getOid(final String name) {
+        try {
+            final Oid oid = EcCurveParams.parseOid(Pem.parse(resource.bytes(name + "-oid.pem")).getData());
+            return String.format("oid(%s)", oid.toString().replace(".", ", "));
+        } catch (Exception e) {
+            return "null";
+        }
+    }
+
+    public String hex(final BigInteger bi) {
+        return Hex.toString(bi.toByteArray()).toUpperCase();
     }
 
     private void assertCurveParameterSpec(final String curveName, final Curve curve) throws IOException {
