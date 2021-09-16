@@ -21,22 +21,12 @@ import org.tomitribe.churchkey.Resource;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.ec.Curve;
 import org.tomitribe.churchkey.util.Pem;
-import org.tomitribe.util.Hex;
-import org.tomitribe.util.Join;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.spec.ECField;
-import java.security.spec.ECFieldF2m;
-import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.tomitribe.churchkey.ec.Curve.getEnumName;
 import static org.tomitribe.churchkey.ec.CurveAsserts.assertParamSpec;
 
 /**
@@ -962,113 +952,6 @@ public class OpenSslEcCurvesTest {
         if (!expected.equals(actual) && !expected.getAliases().contains(actual) && !actual.getAliases().contains(expected)) {
             fail("Expected: " + expected + ", found: " + actual);
         }
-    }
-
-    public void generate() throws IOException {
-        final List<String> list = Arrays.asList("c2pnb176v1", "wap-wsg-idm-ecid-wtls1",
-                "wap-wsg-idm-ecid-wtls3",
-                "wap-wsg-idm-ecid-wtls4",
-                "wap-wsg-idm-ecid-wtls5",
-                "wap-wsg-idm-ecid-wtls6",
-                "wap-wsg-idm-ecid-wtls7",
-                "wap-wsg-idm-ecid-wtls8",
-                "wap-wsg-idm-ecid-wtls9",
-                "wap-wsg-idm-ecid-wtls10",
-                "wap-wsg-idm-ecid-wtls11",
-                "wap-wsg-idm-ecid-wtls12",
-                "Oakley-EC2N-3",
-                "Oakley-EC2N-4",
-                "id-GostR3410-2001-TestParamSet",
-                "id-GostR3410-2001-CryptoPro-A-ParamSet",
-                "id-GostR3410-2001-CryptoPro-B-ParamSet",
-                "id-GostR3410-2001-CryptoPro-C-ParamSet",
-                "id-GostR3410-2001-CryptoPro-XchA-ParamSet",
-                "id-GostR3410-2001-CryptoPro-XchB-ParamSet",
-                "id-tc26-gost-3410-2012-512-paramSetA",
-                "id-tc26-gost-3410-2012-512-paramSetB"
-        );
-        for (final String name : list) {
-            try {
-                printEnum(name);
-            } catch (Exception e) {
-                System.out.println(name);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void printEnum(final String name) throws IOException {
-        final String enumName = getEnumName(name);
-
-        final String oid = getOid(name);
-        final ECParameterSpec spec = EcCurveParams.parse(Pem.parse(resource.bytes(name + "-params.pem")).getData());
-
-        if (!enumName.equals(name)) {
-            System.out.printf("\n    @Name(\"%s\")\n", name);
-        }
-
-        for (final Curve curve : Curve.values()) {
-            try {
-                assertCurveParameterSpec(name, curve);
-
-                System.out.printf("    %s(%s),\n", enumName, curve.name());
-                return;
-            } catch (Throwable ignored) {
-            }
-        }
-
-        final String x = hex(spec.getGenerator().getAffineX());
-        final String y = hex(spec.getGenerator().getAffineY());
-        final String a = hex(spec.getCurve().getA());
-        final String b = hex(spec.getCurve().getB());
-        final String n = hex(spec.getOrder());
-        final int cofactor = spec.getCofactor();
-
-        final ECField field = spec.getCurve().getField();
-
-
-        if (field instanceof ECFieldFp) {
-            final ECFieldFp fp = (ECFieldFp) field;
-            final String p = hex(fp.getP());
-            System.out.printf("    %s(() -> prime(\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            %s), %s),\n", enumName, p, a, b, x, y, n, cofactor, oid);
-        } else if (field instanceof ECFieldF2m) {
-            final ECFieldF2m binary = (ECFieldF2m) field;
-
-            final int m = binary.getM();
-            final List<Integer> terms = new ArrayList<Integer>();
-            for (final int i : binary.getMidTermsOfReductionPolynomial()) {
-                terms.add(i);
-            }
-
-            System.out.printf("    %s(() -> binary(%s, new int[]{%s},\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            \"%s\",\n" +
-                    "            %s), %s),\n", enumName, m, Join.join(", ", terms), a, b, x, y, n, cofactor, oid);
-        }
-
-    }
-
-    private String getOid(final String name) {
-        try {
-            final Oid oid = EcCurveParams.parseOid(Pem.parse(resource.bytes(name + "-oid.pem")).getData());
-            return String.format("oid(%s)", oid.toString().replace(".", ", "));
-        } catch (Exception e) {
-            return "null";
-        }
-    }
-
-    public String hex(final BigInteger bi) {
-        return Hex.toString(bi.toByteArray()).toUpperCase();
     }
 
     private void assertCurveParameterSpec(final String curveName, final Curve curve) throws IOException {
