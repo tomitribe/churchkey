@@ -864,8 +864,9 @@ public enum Curve {
     }
 
     /**
-     * This curve is an alias for the supplied curve
+     * This curve is an alias for the supplied curve, but has a different OID
      * @param curve the curve for which this enum is an alias
+     * @param oid the oid for this curve name
      */
     Curve(final Curve curve, final Oid oid) {
         this.spec = curve.spec;
@@ -873,18 +874,6 @@ public enum Curve {
         this.alias = true;
         this.oid = oid;
         curve.aliases.add(this);
-    }
-
-    Curve(final Supplier<ECParameterSpec> spec, final String oid) {
-        this.spec = spec;
-        this.alias = false;
-        this.oid = Oid.fromString(oid);
-    }
-
-    Curve(final Supplier<ECParameterSpec> spec, final int... oid) {
-        this.spec = spec;
-        this.alias = false;
-        this.oid = new Oid(oid);
     }
 
     Curve(final Supplier<ECParameterSpec> spec, final Oid oid) {
@@ -965,18 +954,5 @@ public enum Curve {
     @Target(ElementType.FIELD)
     public static @interface Name {
         String value();
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
-    public static @interface OpenSSL {
-
-    }
-
-    public static enum Foo {
-        @OpenSSL
-        RED,
-        GREEN,
-        BLUE;
     }
 }
