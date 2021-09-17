@@ -29,6 +29,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Key {
 
@@ -43,6 +44,11 @@ public class Key {
     }
 
     public Key(final java.security.Key key, final Type type, final Algorithm algorithm, final Format format, final Map<String, String> attributes) {
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(type);
+        Objects.requireNonNull(algorithm);
+        Objects.requireNonNull(format);
+        Objects.requireNonNull(attributes);
         this.key = key;
         this.type = type;
         this.algorithm = algorithm;
