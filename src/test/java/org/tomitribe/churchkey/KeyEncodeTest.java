@@ -15,21 +15,285 @@
  */
 package org.tomitribe.churchkey;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateCrtKey;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Intentionally simplistic test for the purposes of tracking
+ * which encoding scenarios are implemented and which are not.
+ *
+ * More exhaustive tests for each scenario are elsewhere.
+ */
 public class KeyEncodeTest {
 
     @Test
-    public void rsaPem() throws Exception {
+    public void rsaPublicPem() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
-        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
 
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
 
+        assertNotNull(content);
+        assertTrue(content.startsWith("-----BEGIN PUBLIC KEY-----"));
+        assertTrue(content.endsWith("-----END PUBLIC KEY-----\n"));
     }
 
+    @Test
+    public void rsaPublicOpenSsh() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+        assertNotNull(content);
+        assertTrue(content.startsWith("ssh-rsa "));
+    }
+
+    @Test
+    public void rsaPublicSsh2() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void rsaPublicJwk() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void rsaPrivatePem() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+
+        assertNotNull(content);
+        assertTrue(content.startsWith("-----BEGIN PRIVATE KEY-----"));
+        assertTrue(content.endsWith("-----END PRIVATE KEY-----\n"));
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void rsaPrivateOpenSsh() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPair pair = generator.generateKeyPair();
+        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPublic();
+
+        final String content = new String(Keys.of(expected).encode(Key.Format.OPENSSH));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void rsaPrivateSsh2() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPair pair = generator.generateKeyPair();
+        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPublic();
+
+        final String content = new String(Keys.of(expected).encode(Key.Format.SSH2));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void rsaPrivateJwk() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPair pair = generator.generateKeyPair();
+        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPublic();
+
+        final String content = new String(Keys.of(expected).encode(Key.Format.JWK));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void dsaPublicPem() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+
+        assertNotNull(content);
+        assertTrue(content.startsWith("-----BEGIN PUBLIC KEY-----"));
+        assertTrue(content.endsWith("-----END PUBLIC KEY-----\n"));
+    }
+
+    @Test
+    public void dsaPublicOpenSsh() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void dsaPublicSsh2() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void dsaPublicJwk() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void dsaPrivatePem() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void dsaPrivateOpenSsh() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void dsaPrivateSsh2() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void dsaPrivateJwk() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void ecPublicPem() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+
+        assertNotNull(content);
+        assertTrue(content.startsWith("-----BEGIN PUBLIC KEY-----"));
+        assertTrue(content.endsWith("-----END PUBLIC KEY-----\n"));
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void ecPublicOpenSsh() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void ecPublicSsh2() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void ecPublicJwk() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void ecPrivatePem() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+
+        assertNotNull(content);
+        assertTrue(content.startsWith("-----BEGIN PRIVATE KEY-----"));
+        assertTrue(content.endsWith("-----END PRIVATE KEY-----\n"));
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void ecPrivateOpenSsh() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    public void ecPrivateSsh2() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+
+        assertNotNull(content);
+    }
+
+    @Test
+    @Ignore("Not yet implemented")
+    public void ecPrivateJwk() throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        final KeyPair pair = generator.generateKeyPair();
+
+        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+
+        assertNotNull(content);
+    }
 }
