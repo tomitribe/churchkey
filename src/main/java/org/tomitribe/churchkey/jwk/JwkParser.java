@@ -201,6 +201,26 @@ public class JwkParser implements Key.Format.Parser {
         jwk.add("kty", "RSA");
     }
 
+    private void toDsaKey(final Key key, final JsonObjectBuilder jwk) {
+
+        if (key.getKey() instanceof DSAPrivateKey) {
+            final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
+            jwk.add("x", encode(privateKey.getX()));
+            jwk.add("p", encode(privateKey.getParams().getP()));
+            jwk.add("q", encode(privateKey.getParams().getQ()));
+            jwk.add("g", encode(privateKey.getParams().getG()));
+        } else if (key.getKey() instanceof DSAPublicKey) {
+            final DSAPublicKey privateKey = (DSAPublicKey) key.getKey();
+            jwk.add("y", encode(privateKey.getY()));
+            jwk.add("p", encode(privateKey.getParams().getP()));
+            jwk.add("q", encode(privateKey.getParams().getQ()));
+            jwk.add("g", encode(privateKey.getParams().getG()));
+        } else {
+            throw new UnsupportedOperationException("Unkown DSA Key type: " + key.getKey().getClass().getName());
+        }
+        jwk.add("kty", "DSA");
+    }
+
     private Key asOctKey(final JsonObject jwkObject) {
         final Jwk jwk = new Jwk(jwkObject);
 
@@ -400,6 +420,10 @@ public class JwkParser implements Key.Format.Parser {
         switch (key.getAlgorithm()) {
             case RSA:
                 toRsaKey(key, builder);
+                break;
+
+            case DSA:
+                toDsaKey(key, builder);
                 break;
 
             case OCT:

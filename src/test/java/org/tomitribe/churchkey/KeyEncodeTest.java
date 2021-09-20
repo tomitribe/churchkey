@@ -157,7 +157,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void dsaPublicJwk() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
@@ -198,7 +197,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void dsaPrivateJwk() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
