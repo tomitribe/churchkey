@@ -17,6 +17,7 @@
 package org.tomitribe.churchkey.jwk;
 
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.dsa.Dsa;
 import org.tomitribe.churchkey.util.Utils;
 import org.tomitribe.util.IO;
 
@@ -34,6 +35,8 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -82,9 +85,9 @@ public class JwkParser implements Key.Format.Parser {
                 return asOctKey(jwk);
             }
 
-//            if ("DSA".equals(kty)) {
-//                return asDsaKey(jwk);
-//            }
+            if ("DSA".equals(kty)) {
+                return asDsaKey(jwk);
+            }
 //
 //            if ("EC".equals(kty)) {
 //                return asEcKey(jwk);
@@ -97,8 +100,52 @@ public class JwkParser implements Key.Format.Parser {
         }
     }
 
-    private Key asRsaKey(final JsonObject jwkObject) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        final Jwk jwk = new Jwk(jwkObject);
+    private Key asDsaKey(final JsonObject jsonObject) {
+        final Jwk jwk = new Jwk(jsonObject);
+
+        final BigInteger p = jwk.getBigInteger("p");
+        final BigInteger q = jwk.getBigInteger("q");
+        final BigInteger g = jwk.getBigInteger("g");
+        final BigInteger x = jwk.getBigInteger("x");
+        final BigInteger y = jwk.getBigInteger("y");
+
+        final List<String> missing = new ArrayList<>();
+        if (p == null) missing.add("p");
+        if (q == null) missing.add("q");
+        if (g == null) missing.add("g");
+        if (missing.size() != 0) {
+            throw new InvalidJwkKeySpecException("DSA", missing);
+        }
+
+        if (x != null) {
+            final DSAPrivateKey privateKey = Dsa.Private.builder()
+                    .p(p)
+                    .q(q)
+                    .g(g)
+                    .x(x)
+                    .build()
+                    .toKey();
+            final Map<String, String> attributes = getAttributes(jsonObject, "kty", "p", "q", "q", "x", "y");
+            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.JWK, attributes);
+        }
+
+        if (y != null) {
+            final DSAPublicKey publicKey = Dsa.Public.builder()
+                    .p(p)
+                    .q(q)
+                    .g(g)
+                    .y(y)
+                    .build()
+                    .toKey();
+            final Map<String, String> attributes = getAttributes(jsonObject, "kty", "p", "q", "q", "x", "y");
+            return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.JWK, attributes);
+        }
+
+        throw new InvalidJwkKeySpecException("DSA", "x", "y");
+    }
+
+    private Key asRsaKey(final JsonObject jsonObject) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        final Jwk jwk = new Jwk(jsonObject);
 
         final BigInteger modulus = jwk.getBigInteger("n");
         final BigInteger publicExp = jwk.getBigInteger("e");
@@ -119,12 +166,12 @@ public class JwkParser implements Key.Format.Parser {
 
         if (privateExp != null) {
             final PrivateKey privateKey = result.generatePrivate(rsaPrivateKeySpec);
-            final Map<String, String> attributes = getAttributes(jwkObject, "kty", "n", "e", "d", "p", "q", "dp", "dq", "qi");
+            final Map<String, String> attributes = getAttributes(jsonObject, "kty", "n", "e", "d", "p", "q", "dp", "dq", "qi");
             return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.JWK, attributes);
         }
 
         final PublicKey publicKey = result.generatePublic(rsaPublicKeySpec);
-        final Map<String, String> attributes = getAttributes(jwkObject, "kty", "n", "e");
+        final Map<String, String> attributes = getAttributes(jsonObject, "kty", "n", "e");
         return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.JWK, attributes);
     }
 

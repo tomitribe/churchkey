@@ -163,7 +163,6 @@ public class KeyDecodeTest {
     }
 
     @Test
-    @Ignore("Implement")
     public void dsaPublicJwk() throws Exception {
         final Key key = Keys.decode(resource.bytes("dsaPublicJwk.jwk"));
         assertNotNull(key);
@@ -210,7 +209,6 @@ public class KeyDecodeTest {
     }
 
     @Test
-    @Ignore("Implement")
     public void dsaPrivateJwk() throws Exception {
         final Key key = Keys.decode(resource.bytes("dsaPrivateJwk.jwk"));
         assertNotNull(key);

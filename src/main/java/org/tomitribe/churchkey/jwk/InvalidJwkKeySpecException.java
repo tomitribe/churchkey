@@ -18,12 +18,17 @@ package org.tomitribe.churchkey.jwk;
 
 import org.tomitribe.util.Join;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class InvalidJwkKeySpecException extends IllegalArgumentException {
 
     private final String kty;
     private final List<String> missing;
+
+    public InvalidJwkKeySpecException(final String kty, final String... missing) {
+        this(kty, Arrays.asList(missing));
+    }
 
     public InvalidJwkKeySpecException(final String kty, final List<String> missing) {
         this.kty = kty;
