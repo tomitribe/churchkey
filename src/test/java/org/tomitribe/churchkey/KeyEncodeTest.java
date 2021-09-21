@@ -76,12 +76,11 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void rsaPrivatePem() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.PEM));
 
         assertNotNull(content);
         assertTrue(content.startsWith("-----BEGIN PRIVATE KEY-----"));
@@ -93,7 +92,7 @@ public class KeyEncodeTest {
     public void rsaPrivateOpenSsh() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
-        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPublic();
+        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
 
         final String content = new String(Keys.of(expected).encode(Key.Format.OPENSSH));
 
@@ -101,11 +100,10 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void rsaPrivateSsh2() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
-        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPublic();
+        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
 
         final String content = new String(Keys.of(expected).encode(Key.Format.SSH2));
 
@@ -113,11 +111,10 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void rsaPrivateJwk() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
-        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPublic();
+        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
 
         final String content = new String(Keys.of(expected).encode(Key.Format.JWK));
 
@@ -171,17 +168,18 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.PEM));
 
         assertNotNull(content);
     }
 
     @Test
+    @Ignore("Not yet implemented")
     public void dsaPrivateOpenSsh() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
     }
@@ -191,7 +189,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -201,7 +199,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }
@@ -256,7 +254,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.PEM));
 
         assertNotNull(content);
         assertTrue(content.startsWith("-----BEGIN PRIVATE KEY-----"));
@@ -269,7 +267,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
     }
@@ -279,7 +277,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -290,7 +288,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }
