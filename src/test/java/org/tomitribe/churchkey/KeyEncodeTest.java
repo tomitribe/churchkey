@@ -238,7 +238,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void ecPublicJwk() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
@@ -283,7 +282,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void ecPrivateJwk() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();

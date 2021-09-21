@@ -19,7 +19,9 @@ package org.tomitribe.churchkey.jwk;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.dsa.Dsa;
 import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.churchkey.ec.Ecdsa;
+import org.tomitribe.churchkey.ec.UnsupportedCurveException;
 import org.tomitribe.churchkey.util.Utils;
 import org.tomitribe.util.IO;
 
@@ -44,6 +46,8 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -275,6 +279,42 @@ public class JwkParser implements Key.Format.Parser {
         jwk.add("kty", "DSA");
     }
 
+    private void toEcKey(final Key key, final JsonObjectBuilder jwk) {
+
+        if (key.getKey() instanceof ECPrivateKey) {
+            final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
+            jwk.add("d", encode(privateKey.getS()));
+            jwk.add("crv", curveName(privateKey.getParams()));
+        } else if (key.getKey() instanceof ECPublicKey) {
+            final ECPublicKey publicKey = (ECPublicKey) key.getKey();
+            final ECPoint point = publicKey.getW();
+            jwk.add("y", encode(point.getAffineY()));
+            jwk.add("x", encode(point.getAffineX()));
+            jwk.add("crv", curveName(publicKey.getParams()));
+        } else {
+            throw new UnsupportedOperationException("Unkown EC Key type: " + key.getKey().getClass().getName());
+        }
+        jwk.add("kty", "EC");
+    }
+
+    private String curveName(final ECParameterSpec spec) {
+        // Try the most common cases first
+        if (Curve.p256.isEqual(spec)) return "P-256";
+        if (Curve.p384.isEqual(spec)) return "P-384";
+        if (Curve.p521.isEqual(spec)) return "P-521";
+
+        for (final Curve curve : Curve.values()) {
+            if (!curve.isEqual(spec)) continue;
+
+            return curve.getName();
+        }
+
+        // Unsupported curve
+        // Print the curve information in the exception
+        final String s = ECParameterSpecs.toString(spec);
+        throw new UnsupportedCurveException(String.format("The specified ECParameterSpec has no known name.  Params:%n%s", s));
+    }
+
     private Key asOctKey(final JsonObject jwkObject) {
         final Jwk jwk = new Jwk(jwkObject);
 
@@ -478,6 +518,10 @@ public class JwkParser implements Key.Format.Parser {
 
             case DSA:
                 toDsaKey(key, builder);
+                break;
+
+            case EC:
+                toEcKey(key, builder);
                 break;
 
             case OCT:

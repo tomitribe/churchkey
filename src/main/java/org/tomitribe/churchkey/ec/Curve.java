@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.security.spec.ECFieldF2m;
 import java.security.spec.ECFieldFp;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.tomitribe.churchkey.asn1.Oid.oid;
 
@@ -891,7 +893,7 @@ public enum Curve {
     }
 
     public boolean isAlias() {
-        return !alias;
+        return alias;
     }
 
     public ECParameterSpec getParameterSpec() {
@@ -903,6 +905,23 @@ public enum Curve {
             }
         }
         return instance;
+    }
+
+    public boolean isEqual(final ECParameterSpec spec) {
+        return ECParameterSpecs.equals(this.getParameterSpec(), spec);
+    }
+
+    public String getName() {
+        // TODO rewrite this so name is just a field
+        final Field enumField = Stream.of(this.getClass().getFields())
+                .filter(field -> field.getName().equals(name()))
+                .findFirst().get();
+
+        if (enumField.isAnnotationPresent(Curve.Name.class)) {
+            return enumField.getAnnotation(Curve.Name.class).value();
+        } else {
+            return this.name();
+        }
     }
 
     public static Curve resolve(final Oid oid) {
@@ -955,4 +974,5 @@ public enum Curve {
     public static @interface Name {
         String value();
     }
+
 }
