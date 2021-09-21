@@ -16,20 +16,24 @@
  */
 package org.tomitribe.churchkey.ssh;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
+import org.tomitribe.churchkey.ec.ECParameterSpecs;
 
 import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class OpenSSHPublicKeyTest {
 
@@ -76,6 +80,35 @@ public class OpenSSHPublicKeyTest {
         assertDecodeDsaPublicKey(1024, 256);
     }
 
+
+    @Test
+    @Ignore
+    public void testECDecode() throws Exception {
+        final Resource resource = Resource.resource("ecdsa-nistp256");
+
+        final ECPublicKey expected = (ECPublicKey) Keys.decode(resource.bytes("public.pkcs8.pem")).getKey();
+
+        final Key key = Keys.decode(resource.bytes("public.openssh"));
+        assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+        assertEquals(Key.Type.PUBLIC, key.getType());
+        assertEquals(Key.Format.OPENSSH, key.getFormat());
+
+        final ECPublicKey actual = (ECPublicKey) key.getKey();
+
+        assertEquals(expected.getW(), actual.getW());
+        assertTrue(ECParameterSpecs.equals(expected.getParams(), actual.getParams()));
+
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(new String(resource.bytes("public.openssh")), exported);
+        }
+    }
+
     private void assertDecodeDsaPublicKey(final int rsaBits, final int shaBits) throws Exception {
         final Resource resource = Resource.resource("dsa", rsaBits, shaBits);
 
@@ -93,6 +126,33 @@ public class OpenSSHPublicKeyTest {
         assertEquals(expected.getParams().getG(), actual.getParams().getG());
         assertEquals(expected.getParams().getQ(), actual.getParams().getQ());
         assertEquals(expected.getParams().getP(), actual.getParams().getP());
+
+        { // Export to PEM
+            final String exported = new String(key.encode(Key.Format.PEM));
+            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
+        }
+        { // Export to OPENSSH
+            // PEM Public Keys do not have comments, so remove the comment from the expected output
+            final String exported = new String(key.encode(Key.Format.OPENSSH));
+            assertEquals(new String(resource.bytes("public.openssh")), exported);
+        }
+    }
+
+    private void assertDecodeEcPublicKey(final int rsaBits, final int shaBits) throws Exception {
+        final Resource resource = Resource.resource("ec", rsaBits, shaBits);
+
+        final KeyFactory rsa = KeyFactory.getInstance("EC");
+        final ECPublicKey expected = (ECPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
+
+        final Key key = Keys.decode(resource.bytes("public.openssh"));
+        assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+        assertEquals(Key.Type.PUBLIC, key.getType());
+        assertEquals(Key.Format.OPENSSH, key.getFormat());
+
+        final ECPublicKey actual = (ECPublicKey) key.getKey();
+
+        assertEquals(expected.getW(), actual.getW());
+        assertTrue(ECParameterSpecs.equals(expected.getParams(), actual.getParams()));
 
         { // Export to PEM
             final String exported = new String(key.encode(Key.Format.PEM));

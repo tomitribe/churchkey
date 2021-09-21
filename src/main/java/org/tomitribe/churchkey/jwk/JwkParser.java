@@ -500,6 +500,8 @@ public class JwkParser implements Key.Format.Parser {
         // unencoded form.  If it doesn't start with 'e' then it
         // isn't base64 encoded or isn't a jwk.
         if (!Utils.startsWith("e", bytes)) return bytes;
+        // But don't try to convert ecdsa SSH keys
+        if (Utils.startsWith("ecdsa", bytes)) return bytes;
 
         return java.util.Base64.getUrlDecoder().decode(bytes);
     }

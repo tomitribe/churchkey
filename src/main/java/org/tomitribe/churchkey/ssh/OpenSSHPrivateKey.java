@@ -193,6 +193,28 @@ public class OpenSSHPrivateKey {
         return new ECPoint(x, y);
     }
 
+    public static byte[] fromEcPoint(final ECPoint point) {
+        final byte[] xp = normalize(point.getAffineX().toByteArray());
+        final byte[] yp = normalize(point.getAffineY().toByteArray());
+
+        final byte[] bytes = new byte[1 + xp.length + yp.length];
+        bytes[0] = 4;
+        System.arraycopy(xp, 0, bytes, 1, xp.length);
+        System.arraycopy(yp, 0, bytes, 1 + xp.length, yp.length);
+
+        return bytes;
+    }
+
+    private static byte[] normalize(final byte[] bytes) {
+        if (bytes.length % 8 == 0) return bytes;
+        if (bytes[0] != 0) {
+            throw new IllegalStateException();
+        }
+        final byte[] trim = new byte[bytes.length - 1];
+        System.arraycopy(bytes, 1, trim, 0, trim.length);
+        return normalize(trim);
+    }
+
     public static void assertString(final String name, final String expected, final String actual) {
         if (!expected.equals(actual)) {
             throw new IllegalArgumentException(String.format("Expected %s of '%s'. Found '%s'", name, expected, actual));

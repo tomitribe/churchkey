@@ -42,7 +42,7 @@ public class OpenSSHParser implements Key.Format.Parser {
     @Override
     public Key decode(final byte[] bytes) {
 
-        if (Utils.startsWith("ssh-", bytes)) {
+        if (Utils.startsWith("ssh-", bytes) || Utils.startsWith("ecdsa-", bytes)) {
             return new OpenSSHPublicKey().decode(bytes);
         }
 

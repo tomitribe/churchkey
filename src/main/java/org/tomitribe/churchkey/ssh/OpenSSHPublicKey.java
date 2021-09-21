@@ -17,6 +17,10 @@ package org.tomitribe.churchkey.ssh;
 
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.dsa.Dsa;
+import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.ECParameterSpecs;
+import org.tomitribe.churchkey.ec.Ecdsa;
+import org.tomitribe.churchkey.ec.UnsupportedCurveException;
 import org.tomitribe.churchkey.rsa.Rsa;
 import org.tomitribe.churchkey.util.Utils;
 
@@ -25,16 +29,20 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class OpenSSHPublicKey implements Key.Format.Parser {
 
     @Override
     public Key decode(final byte[] bytes) {
-        if (!Utils.startsWith("ssh-", bytes)) return null;
+        if (!Utils.startsWith("ssh-", bytes) && !Utils.startsWith("ecdsa-", bytes)) return null;
         try {
 
             final String[] parts = new String(bytes, StandardCharsets.UTF_8).split(" +");
@@ -58,6 +66,10 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
             } else if (algorithm.equals("ssh-dss")) {
 
                 return new Key(DsaPublic.read(reader), Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.OPENSSH, attributes);
+
+            } else if (algorithm.startsWith("ecdsa-sha2-")) {
+
+                return new Key(EcPublic.read(reader), Key.Type.PUBLIC, Key.Algorithm.EC, Key.Format.OPENSSH, attributes);
 
             } else {
                 throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
@@ -92,6 +104,14 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
                 final DSAPublicKey dSAPublicKey = (DSAPublicKey) publicKey;
                 final String encodedKey = OpenSSHParser.base64(DsaPublic.write(dSAPublicKey));
                 return String.format("ssh-dss %s%s%n", encodedKey, comment).getBytes();
+
+            } else if (publicKey instanceof ECPublicKey) {
+
+                final ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
+                final String curveName = EcPublic.curveName(ecPublicKey.getParams());
+                final String encodedKey = OpenSSHParser.base64(EcPublic.write(ecPublicKey, curveName));
+                return String.format("ecdsa-sha2-%s %s%s%n", curveName, encodedKey, comment).getBytes();
+                
             }
         } catch (IOException e) {
             throw new IllegalStateException("Failed to encode key", e);
@@ -162,5 +182,54 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
             out.writeBigInteger(key.getY());
             return out.toByteArray();
         }
+    }
+
+    /**
+     * Format documented by https://coolaj86.com/articles/the-ssh-public-key-format/
+     */
+    static class EcPublic {
+        static PublicKey read(final KeyInput key) throws IOException {
+            final String curveName = key.readString();
+            final Curve curve = Curve.resolve(curveName);
+            final byte[] bytes = key.readBytes();
+            final ECPoint point = OpenSSHPrivateKey.getEcPoint(bytes);
+            return Ecdsa.Public.builder()
+                    .curve(curve)
+                    .y(point.getAffineY())
+                    .x(point.getAffineX())
+                    .build()
+                    .toKey();
+        }
+
+        static byte[] write(final ECPublicKey key, final String curveName) throws IOException {
+            final KeyOutput out = new KeyOutput();
+            out.writeString(curveName);
+            out.writeBytes(OpenSSHPrivateKey.fromEcPoint(key.getW()));
+            return out.toByteArray();
+        }
+
+        private static String curveName(final ECParameterSpec spec) {
+            // Try the most common cases first
+            if (Curve.nistp256.isEqual(spec)) return Curve.nistp256.name();
+            if (Curve.nistp384.isEqual(spec)) return Curve.nistp384.name();
+            if (Curve.nistp521.isEqual(spec)) return Curve.nistp521.name();
+
+
+            for (final Curve curve : Curve.values()) {
+                if (!curve.isEqual(spec)) continue;
+
+                final Optional<Curve> nistAlias = curve.getAliases().stream()
+                        .filter(curve1 -> curve1.name().startsWith("nist"))
+                        .findFirst();
+
+                return nistAlias.orElse(curve).name();
+            }
+
+            // Unsupported curve
+            // Print the curve information in the exception
+            final String s = ECParameterSpecs.toString(spec);
+            throw new UnsupportedCurveException(String.format("The specified ECParameterSpec has no known name.  Params:%n%s", s));
+        }
+
     }
 }

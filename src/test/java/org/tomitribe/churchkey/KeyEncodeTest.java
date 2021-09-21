@@ -217,7 +217,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void ecPublicOpenSsh() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
@@ -225,6 +224,7 @@ public class KeyEncodeTest {
         final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
+        assertTrue(content.startsWith("ecdsa-sha2-nistp256 AAAA"));
     }
 
     @Test
