@@ -257,7 +257,6 @@ public class KeyDecodeTest {
     }
 
     @Test
-    @Ignore("Implement")
     public void ecPublicJwk() throws Exception {
         final Key key = Keys.decode(resource.bytes("ecPublicJwk.jwk"));
         assertNotNull(key);
@@ -305,7 +304,6 @@ public class KeyDecodeTest {
     }
 
     @Test
-    @Ignore("Implement")
     public void ecPrivateJwk() throws Exception {
         final Key key = Keys.decode(resource.bytes("ecPrivateJwk.jwk"));
         assertNotNull(key);

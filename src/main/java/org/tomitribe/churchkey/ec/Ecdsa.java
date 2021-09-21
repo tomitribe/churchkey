@@ -59,7 +59,7 @@ public class Ecdsa {
         @Override
         public ECPublicKey toKey() {
             return (ECPublicKey) EC.getKeyFactory()
-                    .generatePrivate(new ECPublicKeySpec(new ECPoint(x, y), curve.getParameterSpec()));
+                    .generatePublic(new ECPublicKeySpec(new ECPoint(x, y), curve.getParameterSpec()));
         }
     }
 

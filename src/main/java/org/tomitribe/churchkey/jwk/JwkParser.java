@@ -18,6 +18,8 @@ package org.tomitribe.churchkey.jwk;
 
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.dsa.Dsa;
+import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.Ecdsa;
 import org.tomitribe.churchkey.util.Utils;
 import org.tomitribe.util.IO;
 
@@ -37,6 +39,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -88,10 +92,10 @@ public class JwkParser implements Key.Format.Parser {
             if ("DSA".equals(kty)) {
                 return asDsaKey(jwk);
             }
-//
-//            if ("EC".equals(kty)) {
-//                return asEcKey(jwk);
-//            }
+
+            if ("EC".equals(kty)) {
+                return asEcKey(jwk);
+            }
 
             throw new UnsupportedKtyAlgorithmException(kty);
 
@@ -142,6 +146,56 @@ public class JwkParser implements Key.Format.Parser {
         }
 
         throw new InvalidJwkKeySpecException("DSA", "x", "y");
+    }
+
+    /**
+     * {
+     *   "kty": "EC",
+     *   "crv": "P-256",
+     *   "x": "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4",
+     *   "y": "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM",
+     *   "d": "870MB6gfuTJ4HtUnUvYMyJpr5eUZNP4Bk43bVdj3eAE",
+     *   "use": "enc",
+     *   "kid": "1"
+     * }
+     */
+    private Key asEcKey(final JsonObject jsonObject) {
+        final Jwk jwk = new Jwk(jsonObject);
+
+        final String crv = jwk.getString("crv");
+        final BigInteger d = jwk.getBigInteger("d");
+        final BigInteger x = jwk.getBigInteger("x");
+        final BigInteger y = jwk.getBigInteger("y");
+
+        if (crv == null) throw new InvalidJwkKeySpecException("EC", "crv");
+
+        final Curve curve = Curve.resolve(crv);
+
+        if (d != null) {
+            final ECPrivateKey privateKey = Ecdsa.Private.builder()
+                    .curve(curve)
+                    .d(d)
+                    .build()
+                    .toKey();
+
+            final Map<String, String> attributes = getAttributes(jsonObject, "kty", "crv", "d");
+            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.JWK, attributes);
+        }
+
+        final List<String> missing = new ArrayList<String>();
+        if (y == null) missing.add("y");
+        if (x == null) missing.add("x");
+        if (missing.size() != 0) {
+            throw new InvalidJwkKeySpecException("EC", missing);
+        }
+        final ECPublicKey publicKey = Ecdsa.Public.builder()
+                .curve(curve)
+                .x(x)
+                .y(y)
+                .build()
+                .toKey();
+        final Map<String, String> attributes = getAttributes(jsonObject, "kty", "crv", "x", "y");
+        return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.EC, Key.Format.JWK, attributes);
     }
 
     private Key asRsaKey(final JsonObject jsonObject) throws NoSuchAlgorithmException, InvalidKeySpecException {
