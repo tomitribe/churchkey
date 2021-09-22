@@ -86,27 +86,13 @@ public class OpenSSHPublicKeyTest {
     public void testECDecode() throws Exception {
         final Resource resource = Resource.resource("ecdsa-nistp256");
 
-        final ECPublicKey expected = (ECPublicKey) Keys.decode(resource.bytes("public.pkcs8.pem")).getKey();
-
         final Key key = Keys.decode(resource.bytes("public.openssh"));
         assertEquals(Key.Algorithm.EC, key.getAlgorithm());
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
 
-        final ECPublicKey actual = (ECPublicKey) key.getKey();
-
-        assertEquals(expected.getW(), actual.getW());
-        assertTrue(ECParameterSpecs.equals(expected.getParams(), actual.getParams()));
-
-        { // Export to PEM
-            final String exported = new String(key.encode(Key.Format.PEM));
-            assertEquals(new String(resource.bytes("public.pkcs8.pem")), exported);
-        }
-        { // Export to OPENSSH
-            // PEM Public Keys do not have comments, so remove the comment from the expected output
-            final String exported = new String(key.encode(Key.Format.OPENSSH));
-            assertEquals(new String(resource.bytes("public.openssh")), exported);
-        }
+        final byte[] encoded = Keys.encode(key);
+        assertEquals(new String(resource.bytes("public.openssh")), new String(encoded));
     }
 
     private void assertDecodeDsaPublicKey(final int rsaBits, final int shaBits) throws Exception {

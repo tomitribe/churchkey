@@ -111,7 +111,7 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
                 final String curveName = EcPublic.curveName(ecPublicKey.getParams());
                 final String encodedKey = OpenSSHParser.base64(EcPublic.write(ecPublicKey, curveName));
                 return String.format("ecdsa-sha2-%s %s%s%n", curveName, encodedKey, comment).getBytes();
-                
+
             }
         } catch (IOException e) {
             throw new IllegalStateException("Failed to encode key", e);
@@ -203,6 +203,7 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
 
         static byte[] write(final ECPublicKey key, final String curveName) throws IOException {
             final KeyOutput out = new KeyOutput();
+            out.writeString("ecdsa-sha2-" + curveName);
             out.writeString(curveName);
             out.writeBytes(OpenSSHPrivateKey.fromEcPoint(key.getW()));
             return out.toByteArray();
