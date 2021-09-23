@@ -15,12 +15,13 @@
  */
 package org.tomitribe.churchkey.pem;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.tomitribe.churchkey.IgnoreIf;
 import org.tomitribe.churchkey.Resource;
+import org.tomitribe.churchkey.Skip;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.ec.Curve;
 import org.tomitribe.churchkey.util.Pem;
@@ -40,8 +41,8 @@ import static org.tomitribe.churchkey.ec.CurveAsserts.assertParamSpec;
 @RunWith(Parameterized.class)
 public class OpenSslEcCurvesTest {
 
-    @org.junit.Rule
-    public IgnoreIf.Rule customIgnoreRule = new IgnoreIf.Rule();
+    @Rule
+    public Skip.Rule skip = new Skip.Rule();
 
     private final Resource resource = Resource.resource(this.getClass());
 
@@ -58,7 +59,7 @@ public class OpenSslEcCurvesTest {
      * they have no OID according to OpenSSL
      */
     @Test
-    @IgnoreIf({"Oakley-EC2N-3", "Oakley-EC2N-4"})
+    @Skip({"Oakley-EC2N-3", "Oakley-EC2N-4"})
     public void oid() throws Exception {
         final byte[] bytes = resource.bytes(openSslCurveName + "-oid.pem");
         final byte[] data = Pem.parse(bytes).getData();
@@ -76,7 +77,7 @@ public class OpenSslEcCurvesTest {
      * https://github.com/openssl/openssl/issues/6317
      */
     @Test
-    @IgnoreIf("wap-wsg-idm-ecid-wtls7")
+    @Skip("wap-wsg-idm-ecid-wtls7")
     public void parameterSpec() throws Exception {
         final byte[] bytes = resource.bytes(openSslCurveName + "-params.pem");
         final byte[] data = Pem.parse(bytes).getData();

@@ -40,7 +40,7 @@ import java.util.List;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Inherited
-public @interface IgnoreIf {
+public @interface Skip {
 
     String[] value();
 
@@ -64,7 +64,7 @@ public @interface IgnoreIf {
 
             @Override
             public void evaluate() throws Throwable {
-                final IgnoreIf annotation = description.getAnnotation(IgnoreIf.class);
+                final Skip annotation = description.getAnnotation(Skip.class);
                 final String displayName = description.getDisplayName();
                 if (annotation != null && displayName.contains("[")) {
                     final String params = displayName.replaceAll(".*?\\[(.*?)].*", "$1");
