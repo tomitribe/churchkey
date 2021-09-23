@@ -34,6 +34,7 @@ import java.math.BigInteger;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.spec.ECParameterSpec;
 
 import static java.math.BigInteger.ZERO;
 import static org.tomitribe.churchkey.Key.Algorithm.DSA;
@@ -158,6 +159,9 @@ public class BeginPrivateKey {
                 final Asn1Object d3o2 = d3.readObject();
 
                 if (d3o2.isType(Asn1Type.OBJECT_IDENTIFIER)) {
+                    /*
+                     * An OID naming a curve is encoded
+                     */
                     final Oid oid = d3o2.asOID();
                     final Curve curve = Curve.resolve(oid);
                     if (curve == null) {
@@ -165,8 +169,11 @@ public class BeginPrivateKey {
                     }
                     ecdsa.curve(curve);
                 } else if (d3o2.isType(SEQUENCE)) {
-                    // TODO implement this rather than throw an exception
-                    throw new UnsupportedOperationException("Explicit parameters in EC keys is not supported");
+                    /*
+                     * The actual curve parameters are encoded
+                     */
+                    final ECParameterSpec parameterSpec = EcCurveParams.parseSequence(d3o2);
+                    ecdsa.spec(parameterSpec);
                 }
             }
             final Asn1Object d2o3 = d2.readObject().assertType(OCTET_STRING);

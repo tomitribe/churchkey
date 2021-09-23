@@ -63,80 +63,82 @@ public class EcCurveParams {
         }
         final DerParser d1 = new DerParser(data);
         final Asn1Object d1o1 = d1.readObject().assertType(SEQUENCE);
+        return parseSequence(d1o1);
+    }
+
+    public static ECParameterSpec parseSequence(final Asn1Object d1o1) throws IOException {
+        final ECField field;
+        final EllipticCurve ellipticCurve;
+
+        final DerParser d2 = new DerParser(d1o1.getValue());
+        final Asn1Object d2o1 = d2.readObject().assertType(INTEGER);
+        final Asn1Object d2o2 = d2.readObject().assertType(SEQUENCE);
         {
-            final ECField field;
-            final EllipticCurve ellipticCurve;
+            final DerParser d3 = new DerParser(d2o2.getValue());
+            final Asn1Object d3o1 = d3.readObject().assertType(OBJECT_IDENTIFIER);
+            final Oid oid = d3o1.asOID();
 
-            final DerParser d2 = new DerParser(d1o1.getValue());
-            final Asn1Object d2o1 = d2.readObject().assertType(INTEGER);
-            final Asn1Object d2o2 = d2.readObject().assertType(SEQUENCE);
-            {
-                final DerParser d3 = new DerParser(d2o2.getValue());
-                final Asn1Object d3o1 = d3.readObject().assertType(OBJECT_IDENTIFIER);
-                final Oid oid = d3o1.asOID();
+            if (primeField.equals(oid)) {
+                final Asn1Object d3o2 = d3.readObject().assertType(INTEGER);
+                field = new ECFieldFp(d3o2.toInteger());
+            } else if (characteristicTwoField.equals(oid)) {
+                final Asn1Object d3o2 = d3.readObject().assertType(SEQUENCE);
+                {
+                    final DerParser d4 = new DerParser(d3o2.getValue());
+                    final Asn1Object d4o1 = d4.readObject().assertType(INTEGER);
+                    final Asn1Object d4o2 = d4.readObject().assertType(OBJECT_IDENTIFIER);
 
-                if (primeField.equals(oid)) {
-                    final Asn1Object d3o2 = d3.readObject().assertType(INTEGER);
-                    field = new ECFieldFp(d3o2.toInteger());
-                } else if (characteristicTwoField.equals(oid)) {
-                    final Asn1Object d3o2 = d3.readObject().assertType(SEQUENCE);
-                    {
-                        final DerParser d4 = new DerParser(d3o2.getValue());
-                        final Asn1Object d4o1 = d4.readObject().assertType(INTEGER);
-                        final Asn1Object d4o2 = d4.readObject().assertType(OBJECT_IDENTIFIER);
+                    final Oid basis = d4o2.asOID();
 
-                        final Oid basis = d4o2.asOID();
-
-                        if (ppBasis.equals(basis)) {
-                            final Asn1Object d4o3 = d4.readObject().assertType(SEQUENCE);
-                            {
-                                final DerParser d5 = new DerParser(d4o3.getValue());
-                                final Asn1Object d5o1 = d5.readObject().assertType(INTEGER);
-                                final Asn1Object d5o2 = d5.readObject().assertType(INTEGER);
-                                final Asn1Object d5o3 = d5.readObject().assertType(INTEGER);
-                                field = new ECFieldF2m(d4o1.asInteger().intValue(), new int[]{
-                                        d5o3.asInteger().intValue(),
-                                        d5o2.asInteger().intValue(),
-                                        d5o1.asInteger().intValue()
-                                });
-                            }
-                        } else if (tpBasis.equals(basis)) {
-                            final Asn1Object d5o1 = d4.readObject().assertType(INTEGER);
+                    if (ppBasis.equals(basis)) {
+                        final Asn1Object d4o3 = d4.readObject().assertType(SEQUENCE);
+                        {
+                            final DerParser d5 = new DerParser(d4o3.getValue());
+                            final Asn1Object d5o1 = d5.readObject().assertType(INTEGER);
+                            final Asn1Object d5o2 = d5.readObject().assertType(INTEGER);
+                            final Asn1Object d5o3 = d5.readObject().assertType(INTEGER);
                             field = new ECFieldF2m(d4o1.asInteger().intValue(), new int[]{
+                                    d5o3.asInteger().intValue(),
+                                    d5o2.asInteger().intValue(),
                                     d5o1.asInteger().intValue()
                             });
-                        } else {
-                            throw new UnsupportedOperationException("Unsupported characteristic-two-basis " + basis);
                         }
+                    } else if (tpBasis.equals(basis)) {
+                        final Asn1Object d5o1 = d4.readObject().assertType(INTEGER);
+                        field = new ECFieldF2m(d4o1.asInteger().intValue(), new int[]{
+                                d5o1.asInteger().intValue()
+                        });
+                    } else {
+                        throw new UnsupportedOperationException("Unsupported characteristic-two-basis " + basis);
                     }
-                } else {
-                    throw new UnsupportedOperationException(oid.toString());
                 }
+            } else {
+                throw new UnsupportedOperationException(oid.toString());
             }
-
-            final Asn1Object d2o3 = d2.readObject().assertType(SEQUENCE);
-            {
-                final DerParser d3 = new DerParser(d2o3.getValue());
-                final Asn1Object d3o1 = d3.readObject().assertType(OCTET_STRING);
-                final Asn1Object d3o2 = d3.readObject().assertType(OCTET_STRING);
-                final Asn1Object d3o3 = d3.readObject();
-
-                final BigInteger a = d3o1.toInteger();
-                final BigInteger b = d3o2.toInteger();
-
-                if (d3o3 == null) {
-                    ellipticCurve = new EllipticCurve(field, a, b);
-                } else {
-                    ellipticCurve = new EllipticCurve(field, a, b, d3o3.getPureValueBytes());
-                }
-            }
-
-            final Asn1Object d2o4 = d2.readObject().assertType(OCTET_STRING);
-            final Asn1Object d2o5 = d2.readObject().assertType(INTEGER);
-            final Asn1Object d2o6 = d2.readObject().assertType(INTEGER);
-
-            final ECPoint point = OpenSSHPrivateKey.getEcPoint(d2o4.getPureValueBytes());
-            return new ECParameterSpec(ellipticCurve, point, d2o5.toInteger(), d2o6.toInteger().intValue());
         }
+
+        final Asn1Object d2o3 = d2.readObject().assertType(SEQUENCE);
+        {
+            final DerParser d3 = new DerParser(d2o3.getValue());
+            final Asn1Object d3o1 = d3.readObject().assertType(OCTET_STRING);
+            final Asn1Object d3o2 = d3.readObject().assertType(OCTET_STRING);
+            final Asn1Object d3o3 = d3.readObject();
+
+            final BigInteger a = d3o1.toInteger();
+            final BigInteger b = d3o2.toInteger();
+
+            if (d3o3 == null) {
+                ellipticCurve = new EllipticCurve(field, a, b);
+            } else {
+                ellipticCurve = new EllipticCurve(field, a, b, d3o3.getPureValueBytes());
+            }
+        }
+
+        final Asn1Object d2o4 = d2.readObject().assertType(OCTET_STRING);
+        final Asn1Object d2o5 = d2.readObject().assertType(INTEGER);
+        final Asn1Object d2o6 = d2.readObject().assertType(INTEGER);
+
+        final ECPoint point = OpenSSHPrivateKey.getEcPoint(d2o4.getPureValueBytes());
+        return new ECParameterSpec(ellipticCurve, point, d2o5.toInteger(), d2o6.toInteger().intValue());
     }
 }
