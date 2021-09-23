@@ -237,7 +237,6 @@ public class KeyDecodeTest {
     }
 
     @Test
-    @Ignore("Implement")
     public void ecPublicOpenSsh() throws Exception {
         final Key key = Keys.decode(resource.bytes("ecPublicOpenSsh.txt"));
         assertNotNull(key);
