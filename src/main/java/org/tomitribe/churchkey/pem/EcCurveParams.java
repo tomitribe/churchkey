@@ -19,8 +19,6 @@ import org.tomitribe.churchkey.asn1.Asn1Object;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.ssh.OpenSSHPrivateKey;
-import org.tomitribe.churchkey.util.Pem;
-import org.tomitribe.churchkey.util.Utils;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -46,21 +44,12 @@ public class EcCurveParams {
     }
 
     public static Oid parseOid(final byte[] data) throws IOException {
-        if (Utils.startsWith("-----BEGIN EC PARAMETERS-----", data)) {
-            final Pem pem = Pem.parse(data);
-            return parseOid(pem.getData());
-        }
-
         final DerParser d1 = new DerParser(data);
         final Asn1Object d1o1 = d1.readObject().assertType(OBJECT_IDENTIFIER);
         return d1o1.asOID();
     }
 
     public static ECParameterSpec parse(final byte[] data) throws IOException {
-        if (Utils.startsWith("-----BEGIN EC PARAMETERS-----", data)) {
-            final Pem pem = Pem.parse(data);
-            return parse(pem.getData());
-        }
         final DerParser d1 = new DerParser(data);
         final Asn1Object d1o1 = d1.readObject().assertType(SEQUENCE);
         return parseSequence(d1o1);

@@ -62,9 +62,8 @@ public class OpenSslEcCurvesTest {
     @Skip({"Oakley-EC2N-3", "Oakley-EC2N-4"})
     public void oid() throws Exception {
         final byte[] bytes = resource.bytes(openSslCurveName + "-oid.pem");
-        final byte[] data = Pem.parse(bytes).getData();
 
-        final Oid oid = EcCurveParams.parseOid(data);
+        final Oid oid = (Oid) BeginEcParameters.decode(bytes);
         final Curve actual = Curve.resolve(oid);
         assertNotNull("OID could not be resolved " + oid, actual);
         if (!curve.equals(actual) && !curve.getAliases().contains(actual) && !actual.getAliases().contains(curve)) {
@@ -80,11 +79,35 @@ public class OpenSslEcCurvesTest {
     @Skip("wap-wsg-idm-ecid-wtls7")
     public void parameterSpec() throws Exception {
         final byte[] bytes = resource.bytes(openSslCurveName + "-params.pem");
-        final byte[] data = Pem.parse(bytes).getData();
 
-        final ECParameterSpec spec = EcCurveParams.parse(data);
+        final ECParameterSpec spec = (ECParameterSpec) BeginEcParameters.decode(bytes);
         assertParamSpec(curve.getParameterSpec(), spec);
     }
+
+    /**
+     * Ensure that the Curve parameters can be encoded
+     * into something identical to what OpenSSL creates
+     */
+//    @Test
+    public void encodeParameters() throws Exception {
+        final byte[] bytes = resource.bytes(openSslCurveName + "-params.pem");
+
+        final ECParameterSpec spec = (ECParameterSpec) BeginEcParameters.decode(bytes);
+        assertParamSpec(curve.getParameterSpec(), spec);
+    }
+
+    /**
+     * Ensure that the Curve Oid can be encoded
+     * into something identical to what OpenSSL creates
+     */
+//    @Test
+    public void encodeOid() throws Exception {
+        final byte[] bytes = resource.bytes(openSslCurveName + "-params.pem");
+
+        final ECParameterSpec spec = (ECParameterSpec) BeginEcParameters.decode(bytes);
+        assertParamSpec(curve.getParameterSpec(), spec);
+    }
+
 
     @Parameters(name = "{0}")
     public static List<Object[]> params() {
