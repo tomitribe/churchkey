@@ -22,6 +22,7 @@ import org.tomitribe.churchkey.ec.Curve;
 import org.tomitribe.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.churchkey.ec.Ecdsa;
 import org.tomitribe.churchkey.ec.UnsupportedCurveException;
+import org.tomitribe.churchkey.util.Bytes;
 import org.tomitribe.churchkey.util.Utils;
 import org.tomitribe.util.IO;
 
@@ -400,14 +401,8 @@ public class JwkParser implements Key.Format.Parser {
     public static String encode(final BigInteger bigInteger) {
         final Base64.Encoder urlEncoder = Base64.getUrlEncoder().withoutPadding();
 
-        final byte[] bytes = bigInteger.toByteArray();
-        if (bytes[0] == 0) {
-            final byte[] trimmed = new byte[bytes.length - 1];
-            System.arraycopy(bytes, 1, trimmed, 0, trimmed.length);
-            return urlEncoder.encodeToString(trimmed);
-        } else {
-            return urlEncoder.encodeToString(bytes);
-        }
+        final byte[] bytes = Bytes.trim(bigInteger.toByteArray());
+        return urlEncoder.encodeToString(bytes);
     }
 
     public static String encode(final byte[] bytes) {
