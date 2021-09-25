@@ -18,6 +18,8 @@
  */
 package org.tomitribe.churchkey.asn1;
 
+import org.tomitribe.churchkey.util.Bytes;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
@@ -292,8 +294,16 @@ public class Asn1Object {
         return new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.SEQUENCE, true, bytes.length, bytes);
     }
 
-    public static Asn1Object octetString(final byte[] bytes) {
+    public static Asn1Object octetString(byte[] bytes) {
+        bytes = Bytes.trim(bytes);
+        if (bytes.length == 0) {
+            bytes = new byte[]{0};
+        }
         return new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.OCTET_STRING, false, bytes.length, bytes);
+    }
+
+    public static Asn1Object bitString(final byte[] bytes) {
+        return new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.BIT_STRING, false, bytes.length, bytes);
     }
 
     public static Asn1Object nill() {

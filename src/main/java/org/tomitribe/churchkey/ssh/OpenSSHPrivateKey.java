@@ -18,8 +18,8 @@ package org.tomitribe.churchkey.ssh;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.ec.Curve;
 import org.tomitribe.churchkey.ec.Ecdsa;
+import org.tomitribe.churchkey.ec.EcPoints;
 import org.tomitribe.churchkey.util.Pem;
-import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -142,7 +142,7 @@ public class OpenSSHPrivateKey {
 
         final byte[] q = keyInput.readBytes();
 
-        final ECPoint ecPoint = getEcPoint(q);
+        final ECPoint ecPoint = EcPoints.fromBytes(q);
 
         final BigInteger d = keyInput.readBigInteger();
 
@@ -164,55 +164,6 @@ public class OpenSSHPrivateKey {
         }
 
         return new Key(ecPrivateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.OPENSSH, attributes);
-    }
-
-    public static ECPoint getEcPoint(final byte[] bytes) {
-        if (bytes.length == 0) {
-            throw new IllegalStateException("Key data is truncated");
-        }
-
-        if (bytes[0] != (byte) 0x04) {
-            final byte[] format = {bytes[0]};
-            throw new UnsupportedOperationException("Only uncompressed EC points are supported.  Found EC point compression format of " + Hex.toString(format) + " (hex)");
-        }
-
-        final int length = bytes.length - 1;
-        final int elements = length / 2; /* x, y */
-
-        if (length != (elements * 2)) { // make sure length is not odd
-            throw new IllegalArgumentException(String.format("Invalid EC point data: expected %s bytes, found %s bytes", (2 * elements), length));
-        }
-
-        byte[] xp = new byte[elements];
-        byte[] yp = new byte[elements];
-        System.arraycopy(bytes, 1, xp, 0, elements);
-        System.arraycopy(bytes, 1 + elements, yp, 0, elements);
-
-        BigInteger x = new BigInteger(1, xp);
-        BigInteger y = new BigInteger(1, yp);
-        return new ECPoint(x, y);
-    }
-
-    public static byte[] fromEcPoint(final ECPoint point) {
-        final byte[] xp = normalize(point.getAffineX().toByteArray());
-        final byte[] yp = normalize(point.getAffineY().toByteArray());
-
-        final byte[] bytes = new byte[1 + xp.length + yp.length];
-        bytes[0] = 4;
-        System.arraycopy(xp, 0, bytes, 1, xp.length);
-        System.arraycopy(yp, 0, bytes, 1 + xp.length, yp.length);
-
-        return bytes;
-    }
-
-    private static byte[] normalize(final byte[] bytes) {
-        if (bytes.length % 8 == 0) return bytes;
-        if (bytes[0] != 0) {
-            throw new IllegalStateException();
-        }
-        final byte[] trim = new byte[bytes.length - 1];
-        System.arraycopy(bytes, 1, trim, 0, trim.length);
-        return normalize(trim);
     }
 
     public static void assertString(final String name, final String expected, final String actual) {

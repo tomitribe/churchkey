@@ -15,6 +15,7 @@
  */
 package org.tomitribe.churchkey.pem;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,16 +23,18 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.churchkey.Skip;
+import org.tomitribe.churchkey.asn1.Asn1Dump;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.ec.Curve;
-import org.tomitribe.churchkey.util.Pem;
 
 import java.security.spec.ECParameterSpec;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.tomitribe.churchkey.asn1.Asn1Dump.dump;
 import static org.tomitribe.churchkey.ec.CurveAsserts.assertParamSpec;
 
 /**
@@ -80,6 +83,7 @@ public class OpenSslEcCurvesTest {
     public void parameterSpec() throws Exception {
         final byte[] bytes = resource.bytes(openSslCurveName + "-params.pem");
 
+        EcCurveParams.name.set(openSslCurveName);
         final ECParameterSpec spec = (ECParameterSpec) BeginEcParameters.decode(bytes);
         assertParamSpec(curve.getParameterSpec(), spec);
     }
@@ -88,12 +92,33 @@ public class OpenSslEcCurvesTest {
      * Ensure that the Curve parameters can be encoded
      * into something identical to what OpenSSL creates
      */
-//    @Test
+    @Test
+    @Skip({
+            /* This curve is wrong in OpenSSL/LibreSSL */
+            "wap-wsg-idm-ecid-wtls7",
+            /* For these 6 specs OpenSSL/LibreSSL will add padding
+             * to both the x and y, where in the majority of other
+             * cases the padding is trimmed.  We elect to consistently
+             * trim x and y */
+            "sect113r1",
+            "wap-wsg-idm-ecid-wtls4",
+            "wap-wsg-idm-ecid-wtls8",
+            "wap-wsg-idm-ecid-wtls9",
+            "Oakley-EC2N-3",
+            "Oakley-EC2N-4",
+            /* The curve wap-wsg-idm-ecid-wtls12 is an alias for secp224r1.
+             * Despite them being identical, OpenSSL/LibreSSL will print
+             * the seed for secp224r1 but not wap-wsg-idm-ecid-wtls12.
+             * We chose not to replicate this inconsistency.
+             */
+            "wap-wsg-idm-ecid-wtls12",
+    })
     public void encodeParameters() throws Exception {
-        final byte[] bytes = resource.bytes(openSslCurveName + "-params.pem");
+        final byte[] expected = resource.bytes(openSslCurveName + "-params.pem");
+        final byte[] actual = BeginEcParameters.encode(curve.getParameterSpec());
 
-        final ECParameterSpec spec = (ECParameterSpec) BeginEcParameters.decode(bytes);
-        assertParamSpec(curve.getParameterSpec(), spec);
+        assertEquals(dump(expected), dump(actual));
+        assertEquals(new String(expected), new String(actual));
     }
 
     /**

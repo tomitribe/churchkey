@@ -226,21 +226,21 @@ public class BeginPrivateKey {
             final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
             return write()
                     .sequence(write()
-                            .bigInteger(ZERO)
+                            .integer(ZERO)
                             .sequence(write()
                                     .objectIdentifier(rsaKey)
                                     .nill())
                             .octetString(write()
                                     .sequence(write()
-                                            .bigInteger(ZERO)
-                                            .bigInteger(privateKey.getModulus())
-                                            .bigInteger(privateKey.getPublicExponent())
-                                            .bigInteger(privateKey.getPrivateExponent())
-                                            .bigInteger(privateKey.getPrimeP())
-                                            .bigInteger(privateKey.getPrimeQ())
-                                            .bigInteger(privateKey.getPrimeExponentP())
-                                            .bigInteger(privateKey.getPrimeExponentQ())
-                                            .bigInteger(privateKey.getCrtCoefficient()))))
+                                            .integer(ZERO)
+                                            .integer(privateKey.getModulus())
+                                            .integer(privateKey.getPublicExponent())
+                                            .integer(privateKey.getPrivateExponent())
+                                            .integer(privateKey.getPrimeP())
+                                            .integer(privateKey.getPrimeQ())
+                                            .integer(privateKey.getPrimeExponentP())
+                                            .integer(privateKey.getPrimeExponentQ())
+                                            .integer(privateKey.getCrtCoefficient()))))
                     .bytes();
         }
 
@@ -248,15 +248,15 @@ public class BeginPrivateKey {
             final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
             return write()
                     .sequence(write()
-                            .bigInteger(ZERO)
+                            .integer(ZERO)
                             .sequence(write()
                                     .objectIdentifier(dsaKey)
                                     .sequence(write()
-                                            .bigInteger(privateKey.getParams().getP())
-                                            .bigInteger(privateKey.getParams().getQ())
-                                            .bigInteger(privateKey.getParams().getG())))
+                                            .integer(privateKey.getParams().getP())
+                                            .integer(privateKey.getParams().getQ())
+                                            .integer(privateKey.getParams().getG())))
                             .octetString(write()
-                                    .bigInteger(privateKey.getX())))
+                                    .integer(privateKey.getX())))
                     .bytes();
         }
 

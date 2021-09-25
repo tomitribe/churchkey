@@ -41,20 +41,25 @@ import static org.tomitribe.churchkey.ec.Curve.getEnumName;
 public class CurveGenerator {
 
     public static void main(String[] args) throws Exception {
-        new CurveGenerator().generate();
+        new CurveGenerator().listSeeds();
+    }
+
+    public void listSeeds() throws Exception {
+        final List<Curve> list = parseCurves();
+        for (final Curve curve : list) {
+            final String name = curve.getName();
+            String seed = "no seed";
+
+            final Characteristics characteristics = curve.getCharacteristics();
+            if (characteristics != null && characteristics.getSeed() != null) {
+                seed = "seed";
+            }
+            System.out.printf("%s %s%n", name, seed);
+        }
     }
 
     public void generate() throws Exception {
-        final Jsonb jsonb = JsonbBuilder.newBuilder().build();
-
-        final List<String> categories = Arrays.asList("secg", "nist", "brainpool", "anssi", "x962", "x963", "wtls");
-
-        final List<Curve> list = categories.stream()
-                .map(s -> new File("/Users/dblevins/work/J08nY/std-curves/" + s + "/curves.json"))
-                .map(file -> readCurves(jsonb, file))
-                .map(Curves::getCurves)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        final List<Curve> list = parseCurves();
 
         final List<Curve> noOid = list.stream()
                 .filter(curve -> curve.getOid() == null)
@@ -99,6 +104,20 @@ public class CurveGenerator {
                 System.out.print(aliases());
             }
         }
+    }
+
+    private List<Curve> parseCurves() {
+        final Jsonb jsonb = JsonbBuilder.newBuilder().build();
+
+        final List<String> categories = Arrays.asList("secg", "nist", "brainpool", "anssi", "x962", "x963", "wtls");
+
+        final List<Curve> list = categories.stream()
+                .map(s -> new File("/Users/dblevins/work/J08nY/std-curves/" + s + "/curves.json"))
+                .map(file -> readCurves(jsonb, file))
+                .map(Curves::getCurves)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+        return list;
     }
 
     private Curves readCurves(final Jsonb jsonb, final File file) {
@@ -239,6 +258,24 @@ public class CurveGenerator {
 
         @JsonbProperty("aliases")
         private List<String> aliases;
+
+        @JsonbProperty("characteristics")
+        private Characteristics characteristics;
+
+    }
+
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+    public static class Characteristics {
+
+        @JsonbProperty("seed")
+        private String seed;
+
+
     }
 
     @Data

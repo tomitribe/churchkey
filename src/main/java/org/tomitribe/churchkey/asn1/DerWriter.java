@@ -52,9 +52,13 @@ public class DerWriter extends FilterOutputStream {
         return new DerWriter();
     }
 
-    public DerWriter bigInteger(final BigInteger value) {
-        bigInteger(Objects.requireNonNull(value, "No value").toByteArray());
+    public DerWriter integer(final BigInteger value) {
+        integer(Objects.requireNonNull(value, "No value").toByteArray());
         return this;
+    }
+
+    public DerWriter integer(final int value) {
+        return integer(BigInteger.valueOf(value));
     }
 
     public DerWriter sequence(final DerWriter derWriter) {
@@ -72,8 +76,8 @@ public class DerWriter extends FilterOutputStream {
      *
      * @param  bytes       {@link BigInteger} bytes
      */
-    public void bigInteger(byte... bytes) {
-        bigInteger(bytes, 0, Utils.length(bytes));
+    public void integer(byte... bytes) {
+        integer(bytes, 0, Utils.length(bytes));
     }
 
     /**
@@ -84,7 +88,7 @@ public class DerWriter extends FilterOutputStream {
      * @param  off         Offset in bytes data
      * @param  len         Number of bytes to write
      */
-    public void bigInteger(byte[] bytes, int off, int len) {
+    public void integer(byte[] bytes, int off, int len) {
         try {
             // Strip leading zeroes
             while (len > 1 && bytes[off] == 0 && isPositive(bytes[off + 1])) {
@@ -117,6 +121,14 @@ public class DerWriter extends FilterOutputStream {
 
     public DerWriter octetString(final byte[] bytes) {
         return writeObject(Asn1Object.octetString(bytes));
+    }
+
+    public DerWriter octetString(final BigInteger integer) {
+        return octetString(integer.toByteArray());
+    }
+
+    public DerWriter bitString(final byte[] bytes) {
+        return writeObject(Asn1Object.bitString(bytes));
     }
 
     public DerWriter objectIdentifier(final Oid oid) {

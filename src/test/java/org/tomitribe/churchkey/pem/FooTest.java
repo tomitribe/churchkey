@@ -47,10 +47,10 @@ public class FooTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             try (DerWriter w = new DerWriter(baos)) {
-                w.bigInteger(BigInteger.valueOf(-1));
-                w.bigInteger(BigInteger.valueOf(129));
-                w.bigInteger(new byte[]{0, 0}, 0, 2);
-                w.bigInteger(new byte[]{0, 1}, 0, 2);
+                w.integer(BigInteger.valueOf(-1));
+                w.integer(BigInteger.valueOf(129));
+                w.integer(new byte[]{0, 0}, 0, 2);
+                w.integer(new byte[]{0, 1}, 0, 2);
             }
         } finally {
             baos.close();
@@ -66,10 +66,10 @@ public class FooTest {
             try (DerWriter w = new DerWriter(baos)) {
 
                 final DerWriter sequence = new DerWriter();
-                sequence.bigInteger(BigInteger.valueOf(-1));
-                sequence.bigInteger(BigInteger.valueOf(129));
-                sequence.bigInteger(new byte[]{0, 0}, 0, 2);
-                sequence.bigInteger(new byte[]{0, 1}, 0, 2);
+                sequence.integer(BigInteger.valueOf(-1));
+                sequence.integer(BigInteger.valueOf(129));
+                sequence.integer(new byte[]{0, 0}, 0, 2);
+                sequence.integer(new byte[]{0, 1}, 0, 2);
                 sequence.close();
                 final byte[] bytes = sequence.bytes();
 //                Asn1Dump.print(bytes);
@@ -136,15 +136,15 @@ public class FooTest {
         final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Keys.decode(bytes).getKey();
 
         final DerWriter d4 = new DerWriter();
-        d4.bigInteger(ZERO);
-        d4.bigInteger(key.getModulus());
-        d4.bigInteger(key.getPublicExponent());
-        d4.bigInteger(key.getPrivateExponent());
-        d4.bigInteger(key.getPrimeP());
-        d4.bigInteger(key.getPrimeQ());
-        d4.bigInteger(key.getPrimeExponentP());
-        d4.bigInteger(key.getPrimeExponentQ());
-        d4.bigInteger(key.getCrtCoefficient());
+        d4.integer(ZERO);
+        d4.integer(key.getModulus());
+        d4.integer(key.getPublicExponent());
+        d4.integer(key.getPrivateExponent());
+        d4.integer(key.getPrimeP());
+        d4.integer(key.getPrimeQ());
+        d4.integer(key.getPrimeExponentP());
+        d4.integer(key.getPrimeExponentQ());
+        d4.integer(key.getCrtCoefficient());
 
         final DerWriter d3b = new DerWriter();
         d3b.writeObject(Asn1Object.sequence(d4.bytes()));
@@ -155,7 +155,7 @@ public class FooTest {
 
 
         final DerWriter d2 = new DerWriter();
-        d2.bigInteger(ZERO);
+        d2.integer(ZERO);
         d2.writeObject(Asn1Object.sequence(d3a.bytes()));
         d2.writeObject(Asn1Object.octetString(d3b.bytes()));
 
@@ -184,22 +184,22 @@ public class FooTest {
 
         final byte[] bytes1 = write()
                 .sequence(write()
-                        .bigInteger(ZERO)
+                        .integer(ZERO)
                         .sequence(write()
                                 .objectIdentifier(Oid.fromString("1.2.840.113549.1.1.1"))
                                 .nill()
                                 .bytes())
                         .octetString(write()
                                 .sequence(write()
-                                        .bigInteger(ZERO)
-                                        .bigInteger(key.getModulus())
-                                        .bigInteger(key.getPublicExponent())
-                                        .bigInteger(key.getPrivateExponent())
-                                        .bigInteger(key.getPrimeP())
-                                        .bigInteger(key.getPrimeQ())
-                                        .bigInteger(key.getPrimeExponentP())
-                                        .bigInteger(key.getPrimeExponentQ())
-                                        .bigInteger(key.getCrtCoefficient())
+                                        .integer(ZERO)
+                                        .integer(key.getModulus())
+                                        .integer(key.getPublicExponent())
+                                        .integer(key.getPrivateExponent())
+                                        .integer(key.getPrimeP())
+                                        .integer(key.getPrimeQ())
+                                        .integer(key.getPrimeExponentP())
+                                        .integer(key.getPrimeExponentQ())
+                                        .integer(key.getCrtCoefficient())
                                         .bytes())
                                 .bytes())
                         .bytes())
@@ -216,22 +216,22 @@ public class FooTest {
         assertEquals(new String(bytes), private_key);
         Asn1Dump.print(new DerWriter()
                 .sequence(new DerWriter()
-                        .bigInteger(ZERO)
+                        .integer(ZERO)
                         .sequence(new DerWriter()
                                 .objectIdentifier(Oid.fromString("1.2.840.113549.1.1.1"))
                                 .nill()
                                 .bytes())
                         .octetString(new DerWriter()
                                 .sequence(new DerWriter()
-                                        .bigInteger(ZERO)
-                                        .bigInteger(key.getModulus())
-                                        .bigInteger(key.getPublicExponent())
-                                        .bigInteger(key.getPrivateExponent())
-                                        .bigInteger(key.getPrimeP())
-                                        .bigInteger(key.getPrimeQ())
-                                        .bigInteger(key.getPrimeExponentP())
-                                        .bigInteger(key.getPrimeExponentQ())
-                                        .bigInteger(key.getCrtCoefficient())
+                                        .integer(ZERO)
+                                        .integer(key.getModulus())
+                                        .integer(key.getPublicExponent())
+                                        .integer(key.getPrivateExponent())
+                                        .integer(key.getPrimeP())
+                                        .integer(key.getPrimeQ())
+                                        .integer(key.getPrimeExponentP())
+                                        .integer(key.getPrimeExponentQ())
+                                        .integer(key.getCrtCoefficient())
                                         .bytes())
                                 .bytes())
                         .bytes()).bytes());
@@ -246,21 +246,21 @@ public class FooTest {
 
         final byte[] encoded = write()
                 .sequence(write()
-                        .bigInteger(ZERO)
+                        .integer(ZERO)
                         .sequence(write()
                                 .objectIdentifier(Oid.fromString("1.2.840.113549.1.1.1"))
                                 .nill())
                         .octetString(write()
                                 .sequence(write()
-                                        .bigInteger(ZERO)
-                                        .bigInteger(key.getModulus())
-                                        .bigInteger(key.getPublicExponent())
-                                        .bigInteger(key.getPrivateExponent())
-                                        .bigInteger(key.getPrimeP())
-                                        .bigInteger(key.getPrimeQ())
-                                        .bigInteger(key.getPrimeExponentP())
-                                        .bigInteger(key.getPrimeExponentQ())
-                                        .bigInteger(key.getCrtCoefficient()))))
+                                        .integer(ZERO)
+                                        .integer(key.getModulus())
+                                        .integer(key.getPublicExponent())
+                                        .integer(key.getPrivateExponent())
+                                        .integer(key.getPrimeP())
+                                        .integer(key.getPrimeQ())
+                                        .integer(key.getPrimeExponentP())
+                                        .integer(key.getPrimeExponentQ())
+                                        .integer(key.getCrtCoefficient()))))
                 .bytes();
 
         final String private_key = Pem.builder()

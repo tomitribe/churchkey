@@ -24,6 +24,8 @@ import org.tomitribe.churchkey.util.Utils;
 import java.io.IOException;
 import java.security.spec.ECParameterSpec;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Parses PEM files that start with "BEGIN EC PARAMETERS"
  */
@@ -32,7 +34,11 @@ public class BeginEcParameters {
     }
 
     public static byte[] encode(final ECParameterSpec params) {
-        return null;
+        return Pem.builder()
+                .type("EC PARAMETERS")
+                .data(EcCurveParams.encode(params))
+                .format()
+                .getBytes(UTF_8);
     }
 
     public static byte[] encode(final Oid oid) {
@@ -51,11 +57,11 @@ public class BeginEcParameters {
         if (type == Asn1Type.SEQUENCE) {
             return EcCurveParams.parse(data);
         }
-        
+
         if (type == Asn1Type.OBJECT_IDENTIFIER) {
             return EcCurveParams.parseOid(data);
         }
-        
+
         throw new UnsupportedOperationException("Unexpected ASN1 type: " + type);
     }
 

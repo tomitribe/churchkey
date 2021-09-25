@@ -20,6 +20,7 @@ import org.tomitribe.churchkey.dsa.Dsa;
 import org.tomitribe.churchkey.ec.Curve;
 import org.tomitribe.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.churchkey.ec.Ecdsa;
+import org.tomitribe.churchkey.ec.EcPoints;
 import org.tomitribe.churchkey.ec.UnsupportedCurveException;
 import org.tomitribe.churchkey.rsa.Rsa;
 import org.tomitribe.churchkey.util.Utils;
@@ -192,7 +193,7 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
             final String curveName = key.readString();
             final Curve curve = Curve.resolve(curveName);
             final byte[] bytes = key.readBytes();
-            final ECPoint point = OpenSSHPrivateKey.getEcPoint(bytes);
+            final ECPoint point = EcPoints.fromBytes(bytes);
             return Ecdsa.Public.builder()
                     .curve(curve)
                     .y(point.getAffineY())
@@ -205,7 +206,7 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
             final KeyOutput out = new KeyOutput();
             out.writeString("ecdsa-sha2-" + curveName);
             out.writeString(curveName);
-            out.writeBytes(OpenSSHPrivateKey.fromEcPoint(key.getW()));
+            out.writeBytes(EcPoints.toBytes(key.getW()));
             return out.toByteArray();
         }
 
