@@ -39,10 +39,10 @@ import static org.tomitribe.churchkey.asn1.DerWriter.write;
 public class EcCurveParams {
     public static final ThreadLocal<String> name = new ThreadLocal<>();
 
-    private static final Oid primeField = new Oid(1, 2, 840, 10045, 1, 1);
-    private static final Oid characteristicTwoField = new Oid(1, 2, 840, 10045, 1, 2);
-    private static final Oid tpBasis = new Oid(1, 2, 840, 10045, 1, 2, 3, 2);
-    private static final Oid ppBasis = new Oid(1, 2, 840, 10045, 1, 2, 3, 3);
+    public static final Oid primeField = new Oid(1, 2, 840, 10045, 1, 1);
+    public static final Oid characteristicTwoField = new Oid(1, 2, 840, 10045, 1, 2);
+    public static final Oid tpBasis = new Oid(1, 2, 840, 10045, 1, 2, 3, 2);
+    public static final Oid ppBasis = new Oid(1, 2, 840, 10045, 1, 2, 3, 3);
 
     private EcCurveParams() {
     }

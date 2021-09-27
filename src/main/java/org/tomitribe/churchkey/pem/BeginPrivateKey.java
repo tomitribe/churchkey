@@ -145,6 +145,40 @@ public class BeginPrivateKey {
         }
     }
 
+    /**
+     * EC Keys start out with this wrapper identifying the curve by OID
+     * 
+     *     0:d=0  hl=2 l= 112 cons: SEQUENCE
+     *     2:d=1  hl=2 l=   1 prim:  INTEGER           :00
+     *     5:d=1  hl=2 l=  20 cons:  SEQUENCE
+     *     7:d=2  hl=2 l=   7 prim:   OBJECT            :id-ecPublicKey
+     *    16:d=2  hl=2 l=   9 prim:   OBJECT            :brainpoolP192r1
+     *    27:d=1  hl=2 l=  85 prim:  OCTET STRING
+     *       0000 - 30 53 02 01 01 04 18 88-9f 26 37 f9 f5 1f da 16   0S.......&7.....
+     *       0010 - 1c b0 4c ce 79 09 36 b0-b6 8f 22 80 4d a0 ff a1   ..L.y.6...".M...
+     *       0020 - 34 03 32 00 04 46 c1 7d-10 61 08 39 73 14 45 d0   4.2..F.}.a.9s.E.
+     *       0030 - 8d 3b ac 12 05 a5 ef 45-d3 fb 33 cf 91 81 e8 43   .;.....E..3....C
+     *       0040 - dd ab cb b7 de 04 64 b0-82 a6 59 27 c9 0d b2 25   ......d...Y'...%
+     *       0050 - 32 20 c0 d6 38                                    2 ..8
+     *
+     * The above OCTET STRING at byte 27 (in this example) contains the actual key values
+     * and is in the following format once decoded.
+     *
+     *    0:d=0  hl=2 l=  83 cons: SEQUENCE
+     *     2:d=1  hl=2 l=   1 prim:  INTEGER           :01
+     *     5:d=1  hl=2 l=  24 prim:  OCTET STRING
+     *       0000 - 88 9f 26 37 f9 f5 1f da-16 1c b0 4c ce 79 09 36   ..&7.......L.y.6
+     *       0010 - b0 b6 8f 22 80 4d a0 ff-                          ...".M..
+     *    31:d=1  hl=2 l=  52 cons:  cont [ 1 ]
+     *    33:d=2  hl=2 l=  50 prim:   BIT STRING
+     *       0000 - 00 04 46 c1 7d 10 61 08-39 73 14 45 d0 8d 3b ac   ..F.}.a.9s.E..;.
+     *       0010 - 12 05 a5 ef 45 d3 fb 33-cf 91 81 e8 43 dd ab cb   ....E..3....C...
+     *       0020 - b7 de 04 64 b0 82 a6 59-27 c9 0d b2 25 32 20 c0   ...d...Y'...%2 .
+     *       0030 - d6 38                                             .8
+     *
+     * The above OCTET STRING contains the private key BigInteger.
+     * The BIT STRING contains the public key ECPoint (x, y) values.
+     */
     private static Key decodeEcKey(final byte[] bytes) throws IOException {
         final Ecdsa.Private.Builder ecdsa = Ecdsa.Private.builder();
         final DerParser d1 = new DerParser(bytes);

@@ -149,7 +149,7 @@ public class Key {
             try {
                 return keyFactory.generatePublic(keySpec);
             } catch (InvalidKeySpecException e) {
-                throw new InvalidPrivateKeySpecException(keySpec, e);
+                throw new InvalidPublicKeySpecException(keySpec, e);
             }
         }
 
@@ -157,7 +157,7 @@ public class Key {
             try {
                 return keyFactory.generatePrivate(keySpec);
             } catch (InvalidKeySpecException e) {
-                throw new InvalidPublicKeySpecException(keySpec, e);
+                throw new InvalidPrivateKeySpecException(keySpec, e);
             }
         }
     }

@@ -61,6 +61,8 @@ public class PemParser implements Key.Format.Parser {
             converters.put("RSA PRIVATE KEY", BeginRsaPrivateKey::decode);
             converters.put("RSA PUBLIC KEY", BeginRsaPublicKey::decode);
             converters.put("DSA PRIVATE KEY", BeginDsaPrivateKey::decode);
+            converters.put("EC PRIVATE KEY", BeginEcPrivateKey::decode);
+//            converters.put("EC PUBLIC KEY", BeginEcPublicKey::decode);
         }
 
         public PemDecoder() {
