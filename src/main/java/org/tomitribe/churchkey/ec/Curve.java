@@ -921,6 +921,10 @@ public enum Curve {
         this.oid = oid;
     }
 
+    public Oid getOid() {
+        return oid;
+    }
+
     public static String getEnumName(final String curveName) {
         return curveName.toLowerCase(Locale.ENGLISH).replaceAll("[ /_.-]+", "");
     }

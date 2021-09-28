@@ -15,19 +15,19 @@
  */
 package org.tomitribe.churchkey.pem;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.churchkey.Skip;
+import org.tomitribe.churchkey.asn1.Asn1Dump;
 import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.util.Hex;
-import org.tomitribe.util.IO;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.ECParameterSpec;
@@ -97,10 +97,27 @@ public class BeginPrivateKeyEcTest {
         }
     }
 
-    //    @Test
-    @Ignore
+    /**
+     * Oakley-EC2N-3 and Oakley-EC2N-4 are ignored because
+     * they have no OID according to OpenSSL
+     */
+    @Test
+    @Skip({"Oakley-EC2N-3", "Oakley-EC2N-4"})
     public void encode() throws Exception {
+        // Read the key
+        final byte[] bytes = resource.bytes("private.pkcs8." + openSslCurveName + "." + "oid" + ".pem");
+        final Key expected = EcKeys.decode(bytes);
 
+        // Write it back out to a PEM file
+        final byte[] encoded = expected.encode(Key.Format.PEM);
+
+        // Read it back from the PEM file
+        final Key actual = Keys.decode(encoded);
+
+        // Assert what we read is identical
+        final ECPrivateKey expectedKey = (ECPrivateKey) expected.getKey();
+        final ECPrivateKey actualKey = (ECPrivateKey) actual.getKey();
+        assertEquals(Hex.toString(expectedKey.getS().toByteArray()), Hex.toString(actualKey.getS().toByteArray()));
+        ECParameterSpecs.equals(expectedKey.getParams(), actualKey.getParams());
     }
-
 }

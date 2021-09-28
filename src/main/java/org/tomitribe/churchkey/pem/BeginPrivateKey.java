@@ -35,7 +35,9 @@ import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.ECParameterSpec;
+import java.util.Arrays;
 
+import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 import static org.tomitribe.churchkey.Key.Algorithm.DSA;
 import static org.tomitribe.churchkey.Key.Algorithm.EC;
@@ -147,7 +149,7 @@ public class BeginPrivateKey {
 
     /**
      * EC Keys start out with this wrapper identifying the curve by OID
-     * 
+     *
      *     0:d=0  hl=2 l= 112 cons: SEQUENCE
      *     2:d=1  hl=2 l=   1 prim:  INTEGER           :00
      *     5:d=1  hl=2 l=  20 cons:  SEQUENCE
@@ -258,43 +260,100 @@ public class BeginPrivateKey {
     public static byte[] toDer(final Key key) {
         if (key.getAlgorithm() == RSA) {
             final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
-            return write()
-                    .sequence(write()
-                            .integer(ZERO)
-                            .sequence(write()
-                                    .objectIdentifier(rsaKey)
-                                    .nill())
-                            .octetString(write()
-                                    .sequence(write()
-                                            .integer(ZERO)
-                                            .integer(privateKey.getModulus())
-                                            .integer(privateKey.getPublicExponent())
-                                            .integer(privateKey.getPrivateExponent())
-                                            .integer(privateKey.getPrimeP())
-                                            .integer(privateKey.getPrimeQ())
-                                            .integer(privateKey.getPrimeExponentP())
-                                            .integer(privateKey.getPrimeExponentQ())
-                                            .integer(privateKey.getCrtCoefficient()))))
-                    .bytes();
+            return encodeRsa(privateKey);
         }
 
         if (key.getAlgorithm() == DSA) {
             final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
-            return write()
-                    .sequence(write()
-                            .integer(ZERO)
-                            .sequence(write()
-                                    .objectIdentifier(dsaKey)
-                                    .sequence(write()
-                                            .integer(privateKey.getParams().getP())
-                                            .integer(privateKey.getParams().getQ())
-                                            .integer(privateKey.getParams().getG())))
-                            .octetString(write()
-                                    .integer(privateKey.getX())))
-                    .bytes();
+            return encodeDsa(privateKey);
+        }
+
+        if (key.getAlgorithm() == EC) {
+            final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
+            return encodeEc(privateKey);
         }
 
         return null;
+    }
+
+    private static byte[] encodeDsa(final DSAPrivateKey privateKey) {
+        return write()
+                .sequence(write()
+                        .integer(ZERO)
+                        .sequence(write()
+                                .objectIdentifier(dsaKey)
+                                .sequence(write()
+                                        .integer(privateKey.getParams().getP())
+                                        .integer(privateKey.getParams().getQ())
+                                        .integer(privateKey.getParams().getG())))
+                        .octetString(write()
+                                .integer(privateKey.getX())))
+                .bytes();
+    }
+
+    private static byte[] encodeRsa(final RSAPrivateCrtKey privateKey) {
+        return write()
+                .sequence(write()
+                        .integer(ZERO)
+                        .sequence(write()
+                                .objectIdentifier(rsaKey)
+                                .nill())
+                        .octetString(write()
+                                .sequence(write()
+                                        .integer(ZERO)
+                                        .integer(privateKey.getModulus())
+                                        .integer(privateKey.getPublicExponent())
+                                        .integer(privateKey.getPrivateExponent())
+                                        .integer(privateKey.getPrimeP())
+                                        .integer(privateKey.getPrimeQ())
+                                        .integer(privateKey.getPrimeExponentP())
+                                        .integer(privateKey.getPrimeExponentQ())
+                                        .integer(privateKey.getCrtCoefficient()))))
+                .bytes();
+    }
+
+    /**
+     *     0:d=0  hl=2 l=  84 cons: SEQUENCE
+     *     2:d=1  hl=2 l=   1 prim:  INTEGER           :00
+     *     5:d=1  hl=2 l=  16 cons:  SEQUENCE
+     *     7:d=2  hl=2 l=   7 prim:   OBJECT            :id-ecPublicKey
+     *    16:d=2  hl=2 l=   5 prim:   OBJECT            :secp128r1
+     *    23:d=1  hl=2 l=  61 prim:  OCTET STRING
+     *       0000 - 30 3b 02 01 01 04 10 12-d9 68 7a e0 21 c4 b4 ee   0;.......hz.!...
+     *       0010 - cd e2 46 27 e4 55 10 a1-24 03 22 00 04 19 ef 1d   ..F'.U..$.".....
+     *       0020 - d1 8e 15 82 f0 fb a9 a8-e7 3f 79 f8 79 d4 ab 9e   .........?y.y...
+     *       0030 - 5d 6d 40 33 d8 d0 fe 6d-43 71 fb bc e5            ]m@3...mCq...
+     *
+     * The OCTET STRING is formatted as follows
+     *
+     *     0:d=0  hl=2 l=  59 cons: SEQUENCE
+     *     2:d=1  hl=2 l=   1 prim:  INTEGER           :01
+     *     5:d=1  hl=2 l=  16 prim:  OCTET STRING
+     *       0000 - 12 d9 68 7a e0 21 c4 b4-ee cd e2 46 27 e4 55 10   ..hz.!.....F'.U.
+     *    23:d=1  hl=2 l=  36 cons:  cont [ 1 ]
+     *    25:d=2  hl=2 l=  34 prim:   BIT STRING
+     *       0000 - 00 04 19 ef 1d d1 8e 15-82 f0 fb a9 a8 e7 3f 79   ..............?y
+     *       0010 - f8 79 d4 ab 9e 5d 6d 40-33 d8 d0 fe 6d 43 71 fb   .y...]m@3...mCq.
+     *       0020 - bc e5                                             ..
+     */
+    private static byte[] encodeEc(final ECPrivateKey privateKey) {
+        final ECParameterSpec params = privateKey.getParams();
+        final Curve curve = Arrays.stream(Curve.values())
+                .filter(c -> c.isEqual(params))
+                .findFirst().orElseThrow(() -> new IllegalStateException("Unable to resolve OID for ECParameterSpec"));
+
+        return write()
+                .sequence(write()
+                        .integer(ZERO)
+                        .sequence(write()
+                                .objectIdentifier(ecKey)
+                                .objectIdentifier(curve.getOid()))
+                        .octetString(write()
+                                .sequence(write()
+                                        .integer(ONE)
+                                        .octetString(privateKey.getS())
+                                )))
+                .bytes();
     }
 
 }
