@@ -28,9 +28,14 @@ import org.tomitribe.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.util.Hex;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
+import java.util.Base64;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -142,6 +147,39 @@ public class BeginPrivateKeyEcTest {
         assertEquals(Key.Algorithm.EC, publicKey.getAlgorithm());
         assertEquals(Key.Format.PEM, publicKey.getFormat());
         assertEquals(Key.Type.PUBLIC, publicKey.getType());
+    }
+
+    @Skip("wap-wsg-idm-ecid-wtls7")
+    public void verify() throws Exception {
+
+        // Read the key
+        final Key key = EcKeys.decode(resource.bytes("private.pkcs8." + openSslCurveName + "." + "params" + ".pem"));
+        final byte[] sig = resource.bytes("private.pkcs8." + openSslCurveName + "." + "params" + ".sig");
+        final byte[] data = resource.bytes("data.txt");
+
+        final Signature instance = Signature.getInstance("SHA256withECDSA");
+        instance.initVerify((PublicKey) key.getPublicKey().getKey());
+        instance.update(data);
+        try {
+            assertTrue(instance.verify(Base64.getDecoder().decode(new String(sig).trim())));
+        } catch (SignatureException e) {
+            throw new AssertionError(openSslCurveName, e);
+        }
+    }
+
+    @Skip("wap-wsg-idm-ecid-wtls7")
+    public void sign() throws Exception {
+
+        // Read the key
+        final Key key = EcKeys.decode(resource.bytes("private.pkcs8." + openSslCurveName + "." + "params" + ".pem"));
+        final byte[] sig = resource.bytes("private.pkcs8." + openSslCurveName + "." + "params" + ".sig");
+        final byte[] data = resource.bytes("data.txt");
+
+        final Signature instance = Signature.getInstance("SHA256withECDSA");
+        instance.initSign((PrivateKey) key.getKey());
+        instance.update(data);
+        final byte[] sign = instance.sign();
+        assertEquals(new String(sig).trim(), Base64.getEncoder().encodeToString(sign));
     }
 
 }
