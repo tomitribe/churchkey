@@ -23,9 +23,13 @@ import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPublicKey;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class BeginPrivateKeyRsaTest {
 
@@ -196,6 +200,30 @@ public class BeginPrivateKeyRsaTest {
          * Assert we get the same bytes back when we encode the key
          */
         assertEquals(new String(bytes), new String(encoded));
+    }
+
+    @Test
+    public void opensslRsaPublicKey() throws IOException {
+        final Resource resource = Resource.resource(this.getClass().getSimpleName());
+        final Key key = Keys.decode(resource.bytes("openssl-rsaprivatekey-3072.pem"));
+        final Key publicKey = key.getPublicKey();
+        assertNotNull(publicKey);
+        assertTrue(publicKey.getKey() instanceof RSAPublicKey);
+        assertEquals(Key.Algorithm.RSA, publicKey.getAlgorithm());
+        assertEquals(Key.Format.PEM, publicKey.getFormat());
+        assertEquals(Key.Type.PUBLIC, publicKey.getType());
+    }
+
+    @Test
+    public void javaRsaPublicKey() throws IOException {
+        final Resource resource = Resource.resource(this.getClass().getSimpleName());
+        final Key key = Keys.decode(resource.bytes("java-rsaprivatekey-3072.pem"));
+        final Key publicKey = key.getPublicKey();
+        assertNotNull(publicKey);
+        assertTrue(publicKey.getKey() instanceof RSAPublicKey);
+        assertEquals(Key.Algorithm.RSA, publicKey.getAlgorithm());
+        assertEquals(Key.Format.PEM, publicKey.getFormat());
+        assertEquals(Key.Type.PUBLIC, publicKey.getType());
     }
 
     private void assertBigInteger(final String name, final BigInteger actual, final String expected) {

@@ -35,7 +35,9 @@ import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.util.Arrays;
@@ -104,7 +106,7 @@ public class BeginPrivateKey {
                 {
                     final DerParser d4 = new DerParser(d3o1.getValue());
                     final BigInteger version = d4.readBigInteger();
-                    final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
+                    final Rsa.Private build = Rsa.Private.builder()
                             .modulus(d4.readBigInteger())
                             .publicExponent(d4.readBigInteger())
                             .privateExponent(d4.readBigInteger())
@@ -113,10 +115,12 @@ public class BeginPrivateKey {
                             .primeExponentP(d4.readBigInteger())
                             .primeExponentQ(d4.readBigInteger())
                             .crtCoefficient(d4.readBigInteger())
-                            .build()
-                            .toKey();
+                            .build();
 
-                    return new Key(privateKey, Key.Type.PRIVATE, RSA, Key.Format.PEM);
+                    final RSAPrivateCrtKey privateKey = build.toKey();
+                    final RSAPublicKey publicKey = build.toPublic().toKey();
+
+                    return new Key(privateKey, publicKey, Key.Type.PRIVATE, RSA, Key.Format.PEM);
                 }
             }
         }
@@ -240,13 +244,7 @@ public class BeginPrivateKey {
 
                     final Ecdsa.Private build = ecdsa.build();
                     final ECPrivateKey privateKey = build.toKey();
-
-                    final Key publicKey;
-                    if (build.getX() != null && build.getY() != null) {
-                        publicKey = new Key(build.toPublic().toKey(), Key.Type.PUBLIC, EC, Key.Format.PEM);
-                    } else {
-                        publicKey = null;
-                    }
+                    final ECPublicKey publicKey = build.getX() != null && build.getY() != null ? build.toPublic().toKey() : null;
 
                     return new Key(privateKey, publicKey, Key.Type.PRIVATE, EC, Key.Format.PEM);
                 }

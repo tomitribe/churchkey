@@ -17,6 +17,8 @@
 package org.tomitribe.churchkey.pem;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
@@ -25,50 +27,45 @@ import org.tomitribe.churchkey.Resource;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
+@RunWith(Parameterized.class)
 public class BeginRsaPrivateKeyTest {
 
-    @Test
-    public void testDecode1024() throws Exception {
-        final Decoder decoder = new PemParser.PemDecoder()::decode;
-        final Resource resource = Resource.resource("rsa", 1024, 256);
-
-        assertDecode(decoder, resource);
+    @Parameterized.Parameters(name = "{0}")
+    public static List<Object[]> params() {
+        return Arrays.asList(new Object[][]{
+                {1024},
+                {2048},
+        });
     }
 
-    @Test
-    public void testKeysDecode1024() throws Exception {
-        final Decoder decoder = Keys::decode;
-        final Resource resource = Resource.resource("rsa", 1024, 256);
+    private final int bits;
 
-        assertDecode(decoder, resource);
+    public BeginRsaPrivateKeyTest(final int bits) {
+        this.bits = bits;
     }
 
+    /**
+     * Decode and compare to the DER file parsed by the JVM
+     */
     @Test
-    public void testDecode2048() throws Exception {
-        final Decoder decoder = new PemParser.PemDecoder()::decode;
-        final Resource resource = Resource.resource("rsa", 2048, 256);
+    public void decode() throws Exception {
+        final Resource resource = Resource.resource("rsa", bits, 256);
 
-        assertDecode(decoder, resource);
-    }
-
-    @Test
-    public void testKeysDecode2048() throws Exception {
-        final Decoder decoder = Keys::decode;
-        final Resource resource = Resource.resource("rsa", 2048, 256);
-
-        assertDecode(decoder, resource);
-    }
-
-    public void assertDecode(final Decoder decoder, final Resource resource) throws Exception {
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) rsa.generatePrivate(new PKCS8EncodedKeySpec(resource.bytes("private.pkcs8.der")));
 
         final byte[] bytes = resource.bytes("private.pkcs1.pem");
-        final Key key = decoder.decode(bytes);
+        final Key key = Keys.decode(bytes);
+
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+        assertEquals(Key.Format.PEM, key.getFormat());
+        assertEquals(Key.Type.PRIVATE, key.getType());
 
         final RSAPrivateCrtKey actual = (RSAPrivateCrtKey) key.getKey();
 
@@ -80,5 +77,18 @@ public class BeginRsaPrivateKeyTest {
         assertEquals(expected.getPrimeQ(), actual.getPrimeQ());
         assertEquals(expected.getPrivateExponent(), actual.getPrivateExponent());
         assertEquals(expected.getModulus(), actual.getModulus());
+    }
+
+    @Test
+    public void publicKey() throws Exception {
+        final Resource resource = Resource.resource("rsa", bits, 256);
+        final byte[] bytes = resource.bytes("private.pkcs1.pem");
+        final Key key = Keys.decode(bytes).getPublicKey();
+
+        assertNotNull(key);
+        assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+        assertEquals(Key.Format.PEM, key.getFormat());
+        assertEquals(Key.Type.PUBLIC, key.getType());
+
     }
 }

@@ -20,13 +20,20 @@ import org.tomitribe.churchkey.asn1.Asn1Object;
 import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.EcPoints;
 import org.tomitribe.churchkey.ec.Ecdsa;
+import org.tomitribe.churchkey.util.Bytes;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECPoint;
 
+import static org.tomitribe.churchkey.Key.Algorithm.EC;
 import static org.tomitribe.churchkey.asn1.Asn1Type.ANY;
+import static org.tomitribe.churchkey.asn1.Asn1Type.BIT_STRING;
+import static org.tomitribe.churchkey.asn1.Asn1Type.BOOLEAN;
 import static org.tomitribe.churchkey.asn1.Asn1Type.INTEGER;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OBJECT_IDENTIFIER;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
@@ -119,9 +126,23 @@ public class BeginEcPrivateKey {
 
                     ec.d(d2o2.toInteger());
 
-                    final ECPrivateKey privateKey = ec.build().toKey();
-                    return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.PEM);
                 }
+
+                final Asn1Object d2o4 = d2.readObject();
+                if (d2o4 != null && d2o4.isType(BOOLEAN)) {
+                    final DerParser d3 = new DerParser(d2o4.getValue());
+                    final Asn1Object d3o1 = d3.readObject().assertType(BIT_STRING);
+                    final byte[] value = Bytes.trim(d3o1.getValue());
+                    final ECPoint ecPoint = EcPoints.fromBytes(value);
+                    ec.x(ecPoint.getAffineX());
+                    ec.y(ecPoint.getAffineY());
+                }
+
+                final Ecdsa.Private build = ec.build();
+                final ECPrivateKey privateKey = build.toKey();
+                final ECPublicKey publicKey = build.getX() != null && build.getY() != null ? build.toPublic().toKey() : null;
+
+                return new Key(privateKey, publicKey, Key.Type.PRIVATE, EC, Key.Format.PEM);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

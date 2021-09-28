@@ -25,6 +25,7 @@ import org.tomitribe.churchkey.rsa.Rsa;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPublicKey;
 
 public class BeginRsaPrivateKey {
 
@@ -45,7 +46,7 @@ public class BeginRsaPrivateKey {
 
             p.readObject(); // Skip version
 
-            final RSAPrivateCrtKey privateKey = Rsa.Private.builder()
+            final Rsa.Private build = Rsa.Private.builder()
                     .modulus(p.readObject().asInteger())
                     .publicExponent(p.readObject().asInteger())
                     .privateExponent(p.readObject().asInteger())
@@ -54,10 +55,11 @@ public class BeginRsaPrivateKey {
                     .primeExponentP(p.readObject().asInteger())
                     .primeExponentQ(p.readObject().asInteger())
                     .crtCoefficient(p.readObject().asInteger())
-                    .build()
-                    .toKey();
+                    .build();
+            final RSAPrivateCrtKey privateKey = build.toKey();
+            final RSAPublicKey publicKey = build.toPublic().toKey();
 
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.PEM);
+            return new Key(privateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.PEM);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -28,10 +28,12 @@ import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -94,6 +96,28 @@ public class BeginEcPrivateKeyTest {
             final ECParameterSpec params = privateKey.getParams();
             assertTrue(curve.isEqual(params));
         }
+    }
+
+    @Test
+    @Skip("wap-wsg-idm-ecid-wtls7")
+    public void publicKeyParams() throws IOException {
+        assertPublicKey("params");
+    }
+
+    @Test
+    @Skip({"Oakley-EC2N-3", "Oakley-EC2N-4"})
+    public void publicKeyOid() throws IOException {
+        assertPublicKey("oid");
+    }
+
+    private void assertPublicKey(final String format) throws IOException {
+        final Key key = EcKeys.decode(resource.bytes("private.pkcs1." + openSslCurveName + "." + format + ".pem"));
+        final Key publicKey = key.getPublicKey();
+        assertNotNull(publicKey);
+        assertTrue(publicKey.getKey() instanceof ECPublicKey);
+        assertEquals(Key.Algorithm.EC, publicKey.getAlgorithm());
+        assertEquals(Key.Format.PEM, publicKey.getFormat());
+        assertEquals(Key.Type.PUBLIC, publicKey.getType());
     }
 
     //    @Test
