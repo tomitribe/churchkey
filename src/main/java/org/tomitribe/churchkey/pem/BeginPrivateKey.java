@@ -23,9 +23,11 @@ import org.tomitribe.churchkey.asn1.DerParser;
 import org.tomitribe.churchkey.asn1.Oid;
 import org.tomitribe.churchkey.dsa.Dsa;
 import org.tomitribe.churchkey.ec.Curve;
+import org.tomitribe.churchkey.ec.EcPoints;
 import org.tomitribe.churchkey.ec.Ecdsa;
 import org.tomitribe.churchkey.ec.UnsupportedCurveException;
 import org.tomitribe.churchkey.rsa.Rsa;
+import org.tomitribe.churchkey.util.Bytes;
 import org.tomitribe.churchkey.util.Pem;
 
 import java.io.IOException;
@@ -35,6 +37,7 @@ import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
 import java.util.Arrays;
 
 import static java.math.BigInteger.ONE;
@@ -42,6 +45,8 @@ import static java.math.BigInteger.ZERO;
 import static org.tomitribe.churchkey.Key.Algorithm.DSA;
 import static org.tomitribe.churchkey.Key.Algorithm.EC;
 import static org.tomitribe.churchkey.Key.Algorithm.RSA;
+import static org.tomitribe.churchkey.asn1.Asn1Type.BIT_STRING;
+import static org.tomitribe.churchkey.asn1.Asn1Type.BOOLEAN;
 import static org.tomitribe.churchkey.asn1.Asn1Type.INTEGER;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
 import static org.tomitribe.churchkey.asn1.Asn1Type.SEQUENCE;
@@ -220,11 +225,30 @@ public class BeginPrivateKey {
                     final DerParser d4 = new DerParser(d3o1.getValue());
                     final Asn1Object d4o1 = d4.readObject().assertType(INTEGER);
                     final Asn1Object d4o2 = d4.readObject().assertType(OCTET_STRING);
+                    final Asn1Object d4o3 = d4.readObject();
+
+                    if (d4o3 != null && d4o3.isType(BOOLEAN)) {
+                        final DerParser d5 = new DerParser(d4o3.getValue());
+                        final Asn1Object d5o1 = d5.readObject().assertType(BIT_STRING);
+                        final byte[] value = Bytes.trim(d5o1.getValue());
+                        final ECPoint ecPoint = EcPoints.fromBytes(value);
+                        ecdsa.x(ecPoint.getAffineX());
+                        ecdsa.y(ecPoint.getAffineY());
+                    }
 
                     ecdsa.d(new BigInteger(d4o2.getValue()));
 
-                    final ECPrivateKey privateKey = ecdsa.build().toKey();
-                    return new Key(privateKey, Key.Type.PRIVATE, EC, Key.Format.PEM);
+                    final Ecdsa.Private build = ecdsa.build();
+                    final ECPrivateKey privateKey = build.toKey();
+
+                    final Key publicKey;
+                    if (build.getX() != null && build.getY() != null) {
+                        publicKey = new Key(build.toPublic().toKey(), Key.Type.PUBLIC, EC, Key.Format.PEM);
+                    } else {
+                        publicKey = null;
+                    }
+
+                    return new Key(privateKey, publicKey, Key.Type.PRIVATE, EC, Key.Format.PEM);
                 }
             }
         }

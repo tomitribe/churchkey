@@ -38,12 +38,21 @@ public class Key {
     private final Algorithm algorithm;
     private final Format format;
     private final Map<String, String> attributes = new HashMap<>();
+    private final Key publicKey;
+
+    public Key(final java.security.Key key, final Key publicKey, final Type type, final Algorithm algorithm, final Format format) {
+        this(key, publicKey, type, algorithm, format, new HashMap<>());
+    }
 
     public Key(final java.security.Key key, final Type type, final Algorithm algorithm, final Format format) {
         this(key, type, algorithm, format, new HashMap<>());
     }
 
     public Key(final java.security.Key key, final Type type, final Algorithm algorithm, final Format format, final Map<String, String> attributes) {
+        this(key, null, type, algorithm, format, attributes);
+    }
+
+    public Key(final java.security.Key key, final Key publicKey, final Type type, final Algorithm algorithm, final Format format, final Map<String, String> attributes) {
         Objects.requireNonNull(key);
         Objects.requireNonNull(type);
         Objects.requireNonNull(algorithm);
@@ -54,6 +63,13 @@ public class Key {
         this.algorithm = algorithm;
         this.format = format;
         this.attributes.putAll(attributes);
+        this.publicKey = publicKey;
+    }
+
+    public Key getPublicKey() {
+        if (type == Type.PUBLIC) return this;
+        if (type == Type.PRIVATE) return publicKey;
+        throw new IllegalStateException(type + " keys do not have public keys");
     }
 
     public Map<String, String> getAttributes() {

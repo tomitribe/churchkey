@@ -23,17 +23,18 @@ import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.churchkey.Skip;
-import org.tomitribe.churchkey.asn1.Asn1Dump;
 import org.tomitribe.churchkey.ec.Curve;
 import org.tomitribe.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -120,4 +121,27 @@ public class BeginPrivateKeyEcTest {
         assertEquals(Hex.toString(expectedKey.getS().toByteArray()), Hex.toString(actualKey.getS().toByteArray()));
         ECParameterSpecs.equals(expectedKey.getParams(), actualKey.getParams());
     }
+
+    @Test
+    @Skip("wap-wsg-idm-ecid-wtls7")
+    public void publicKeyParams() throws IOException {
+        assertPublicKey("params");
+    }
+
+    @Test
+    @Skip({"Oakley-EC2N-3", "Oakley-EC2N-4"})
+    public void publicKeyOid() throws IOException {
+        assertPublicKey("oid");
+    }
+
+    private void assertPublicKey(final String format) throws IOException {
+        final Key key = EcKeys.decode(resource.bytes("private.pkcs8." + openSslCurveName + "." + format + ".pem"));
+        final Key publicKey = key.getPublicKey();
+        assertNotNull(publicKey);
+        assertTrue(publicKey.getKey() instanceof ECPublicKey);
+        assertEquals(Key.Algorithm.EC, publicKey.getAlgorithm());
+        assertEquals(Key.Format.PEM, publicKey.getFormat());
+        assertEquals(Key.Type.PUBLIC, publicKey.getType());
+    }
+
 }

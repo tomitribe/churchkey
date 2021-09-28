@@ -100,6 +100,8 @@ public class Ecdsa {
         public Spec<ECPublicKey, ECPublicKey> toPublic() {
             return Public.builder()
                     .curveName(curveName)
+                    .curve(curve)
+                    .spec(spec)
                     .x(x)
                     .y(y)
                     .build();
