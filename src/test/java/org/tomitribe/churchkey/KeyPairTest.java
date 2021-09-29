@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -69,7 +68,7 @@ public class KeyPairTest {
     }
 
     @Test
-    @Skip({"OPENSSH", "SSH2"})
+    @Skip({"SSH2"})
     public void rsa() throws Exception {
         final Key expected = generate(RSA);
 
@@ -91,19 +90,9 @@ public class KeyPairTest {
     }
 
     @Test
-    @Skip({"OPENSSH", "SSH2"})
+    @Skip({"SSH2"})
     public void dsa() throws Exception {
         final Key expected = generate(DSA);
-
-        {
-            final DSAPrivateKey privateKey = (DSAPrivateKey) expected.getKey();
-            final DSAPublicKey publicKey = (DSAPublicKey) expected.getPublicKey().getKey();
-            final BigInteger g = privateKey.getParams().getG();
-            final BigInteger x = privateKey.getX();
-            final BigInteger p = privateKey.getParams().getP();
-            final BigInteger y = g.modPow(x, p);
-            assertEquals(publicKey.getY(), y);
-        }
 
         final byte[] encoded = expected.encode(format);
 

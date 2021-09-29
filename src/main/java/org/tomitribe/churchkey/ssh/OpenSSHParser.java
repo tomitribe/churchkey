@@ -30,7 +30,7 @@ public class OpenSSHParser implements Key.Format.Parser {
                 return new OpenSSHPublicKey().encode(key);
             }
             case PRIVATE: {
-                throw new UnsupportedOperationException("Unsupported key type: " + key.getType());
+                return OpenSSHPrivateKey.encode(key);
             }
             case SECRET:
                 throw new UnsupportedOperationException("Secret keys cannot be exported to PEM format.");

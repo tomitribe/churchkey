@@ -16,8 +16,10 @@
  */
 package org.tomitribe.churchkey;
 
+import org.tomitribe.churchkey.dsa.Dsa;
 import org.tomitribe.churchkey.jwk.JwkParser;
 import org.tomitribe.churchkey.pem.PemParser;
+import org.tomitribe.churchkey.rsa.Rsa;
 import org.tomitribe.churchkey.ssh.OpenSSHParser;
 import org.tomitribe.churchkey.ssh.SSH2Parser;
 
@@ -25,6 +27,8 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.HashMap;
@@ -64,7 +68,41 @@ public class Key {
         this.algorithm = algorithm;
         this.format = format;
         this.attributes.putAll(attributes);
-        this.publicKey = publicKey != null ? new Key(publicKey, Type.PUBLIC, algorithm, format, attributes) : null;
+        this.publicKey = publicKey(key, publicKey, algorithm, format, attributes);
+    }
+
+    private Key publicKey(final java.security.Key key, PublicKey publicKey, final Algorithm algorithm,
+                          final Format format, final Map<String, String> attributes) {
+        if (!(key instanceof PrivateKey)) {
+            return null;
+        }
+
+        if (publicKey == null) {
+            // For RSA and DSA it's fairly easy to calculate it
+            if (algorithm == Algorithm.RSA && key instanceof RSAPrivateCrtKey) {
+                final RSAPrivateCrtKey rsaPrivateCrtKey = (RSAPrivateCrtKey) key;
+                publicKey = Rsa.Public.builder()
+                        .publicExponent(rsaPrivateCrtKey.getPublicExponent())
+                        .modulus(rsaPrivateCrtKey.getModulus())
+                        .build().toKey();
+            } else if (algorithm == Algorithm.DSA && key instanceof DSAPrivateKey) {
+                final DSAPrivateKey privateKey = (DSAPrivateKey) key;
+                publicKey = Dsa.Private.builder()
+                        .x(privateKey.getX())
+                        .p(privateKey.getParams().getP())
+                        .g(privateKey.getParams().getG())
+                        .q(privateKey.getParams().getQ())
+                        .build()
+                        .toPublic()
+                        .toKey();
+            }
+        }
+
+        if (publicKey != null) {
+            return new Key(publicKey, Type.PUBLIC, algorithm, format, attributes);
+        }
+
+        return null;
     }
 
     public Key getPublicKey() {

@@ -210,12 +210,11 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
             return out.toByteArray();
         }
 
-        private static String curveName(final ECParameterSpec spec) {
+        public static String curveName(final ECParameterSpec spec) {
             // Try the most common cases first
             if (Curve.nistp256.isEqual(spec)) return Curve.nistp256.name();
             if (Curve.nistp384.isEqual(spec)) return Curve.nistp384.name();
             if (Curve.nistp521.isEqual(spec)) return Curve.nistp521.name();
-
 
             for (final Curve curve : Curve.values()) {
                 if (!curve.isEqual(spec)) continue;

@@ -16,23 +16,30 @@
 package org.tomitribe.churchkey.ssh;
 
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.dsa.Dsa;
 import org.tomitribe.churchkey.ec.Curve;
-import org.tomitribe.churchkey.ec.Ecdsa;
 import org.tomitribe.churchkey.ec.EcPoints;
+import org.tomitribe.churchkey.ec.Ecdsa;
+import org.tomitribe.churchkey.rsa.Rsa;
 import org.tomitribe.churchkey.util.Pem;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPrivateKey;
-import java.security.spec.DSAPrivateKeySpec;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECPoint;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.tomitribe.churchkey.ssh.OpenSSHPublicKey.EcPublic.curveName;
 
 public class OpenSSHPrivateKey {
 
@@ -87,22 +94,134 @@ public class OpenSSHPrivateKey {
         }
     }
 
+    public static byte[] encode(final Key key) {
+        byte[] result;
+        try {
+            final KeyOutput out = new KeyOutput();
+
+            out.writeAuthMagic("openssh-key-v1");
+            out.writeString("none"); // ciphername
+            out.writeString("none"); // kdfname
+            out.writeString(""); // kdf
+            out.writeInt(1); // number of keys
+
+            out.writeBytes(encodePublicKey(key)); // public key
+            out.writeBytes(encodePrivateKey(key)); // public key
+
+            result = out.toByteArray();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        final byte[] bytes = result;
+        return Pem.builder()
+                .type("OPENSSH PRIVATE KEY")
+                .wrap(70)
+                .data(bytes)
+                .format()
+                .getBytes();
+    }
+
+    private static byte[] encodePublicKey(final Key key) throws IOException {
+        if (key.getPublicKey() == null) {
+            return new byte[0];
+        }
+
+        final java.security.Key publicKey = key.getPublicKey().getKey();
+        if (publicKey instanceof RSAPublicKey) {
+
+            return OpenSSHPublicKey.RsaPublic.write((RSAPublicKey) publicKey);
+
+        } else if (publicKey instanceof DSAPublicKey) {
+
+            return OpenSSHPublicKey.DsaPublic.write((DSAPublicKey) publicKey);
+
+        } else if (publicKey instanceof ECPublicKey) {
+
+            final ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
+            final String curveName = curveName(ecPublicKey.getParams());
+
+            return OpenSSHPublicKey.EcPublic.write(ecPublicKey, curveName);
+        }
+
+        throw new UnsupportedOperationException("Unsupported key type: " + publicKey.getClass().getName());
+    }
+
+    private static byte[] encodePrivateKey(final Key key) throws IOException {
+        final KeyOutput out = new KeyOutput();
+
+        final int i = new SecureRandom().nextInt();
+        out.writeInt(i);
+        out.writeInt(i);
+
+        if (key.getAlgorithm() == Key.Algorithm.RSA) {
+            out.writeString("ssh-rsa");
+            return writeRsaPrivateKey(key, out);
+        }
+
+        if (key.getAlgorithm() == Key.Algorithm.DSA) {
+            out.writeString("ssh-dss");
+            return writePrivateDssKey(key, out);
+        }
+
+        if (key.getAlgorithm() == Key.Algorithm.EC) {
+            final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
+            final String curve = curveName(privateKey.getParams());
+            out.writeString("ecdsa-sha2-" + curve);
+            return writeEcdsaPrivateKey(key, curve, out);
+        }
+
+        throw new UnsupportedOperationException("Unsupported key type: " + key.getAlgorithm());
+    }
+
+    private static byte[] writePrivateDssKey(final Key key, final KeyOutput out) throws IOException {
+        final DSAPublicKey publicKey = (DSAPublicKey) key.getPublicKey().getKey();
+        final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
+
+        out.writeBigInteger(privateKey.getParams().getP());
+        out.writeBigInteger(privateKey.getParams().getQ());
+        out.writeBigInteger(privateKey.getParams().getG());
+        out.writeBigInteger(publicKey.getY());
+        out.writeBigInteger(privateKey.getX());
+        out.writeString(getComment(key));
+        return out.toByteArray();
+    }
+
     private static Key readPrivateDssKey(final KeyInput keyInput) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         final BigInteger p = keyInput.readBigInteger();
         final BigInteger q = keyInput.readBigInteger();
         final BigInteger g = keyInput.readBigInteger();
-        final BigInteger unknown = keyInput.readBigInteger();
+        final BigInteger y = keyInput.readBigInteger();
         final BigInteger x = keyInput.readBigInteger();
+        final Dsa.Private build = Dsa.Private.builder()
+                .p(p)
+                .q(q)
+                .g(g)
+                .x(x)
+                .build();
 
-        final DSAPrivateKeySpec spec = new DSAPrivateKeySpec(x, p, q, g);
-
-        final KeyFactory result = KeyFactory.getInstance("DSA");
-        final PrivateKey publicKey = result.generatePrivate(spec);
+        final DSAPrivateKey privateKey = build.toKey();
+        final DSAPublicKey publicKey = build.toPublic().toKey();
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("comment", keyInput.readString());
+        attributes.put("Comment", keyInput.readString());
 
-        return new Key(publicKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.OPENSSH, attributes);
+        return new Key(privateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.OPENSSH, attributes);
+    }
+
+    private static byte[] writeRsaPrivateKey(final Key key, final KeyOutput out) throws IOException {
+        final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
+        out.writeBigInteger(privateKey.getModulus());
+        out.writeBigInteger(privateKey.getPublicExponent());
+        out.writeBigInteger(privateKey.getPrivateExponent());
+        out.writeBigInteger(privateKey.getCrtCoefficient());
+        out.writeBigInteger(privateKey.getPrimeP());
+        out.writeBigInteger(privateKey.getPrimeQ());
+        out.writeString(getComment(key));
+        return out.toByteArray();
+    }
+
+    private static String getComment(final Key key) {
+        return key.getAttribute("Comment") == null ? "none" : key.getAttribute("Comment");
     }
 
     private static Key readRsaPrivateKey(final KeyInput keyInput) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
@@ -120,16 +239,40 @@ public class OpenSSHPrivateKey {
         final BigInteger primeExpQ = privateExp.mod(primeQ.subtract(one));
 
 
-        final RSAPrivateCrtKeySpec spec = new RSAPrivateCrtKeySpec(modulus, publicExp, privateExp, primeP, primeQ, primeExpP, primeExpQ, crtCoef);
+        final Rsa.Private.Builder rsa = Rsa.Private.builder()
+                .modulus(modulus)
+                .publicExponent(publicExp)
+                .privateExponent(privateExp)
+                .crtCoefficient(crtCoef)
+                .primeP(primeP)
+                .primeQ(primeQ)
+                .primeExponentP(primeExpP)
+                .primeExponentQ(primeExpQ);
 
-        final KeyFactory result = KeyFactory.getInstance("RSA");
-        final PrivateKey privateKey = result.generatePrivate(spec);
+
+        final Rsa.Private build = rsa.build();
+        final RSAPrivateCrtKey privateKey = build.toKey();
+        final RSAPublicKey publicKey = build.toPublic().toKey();
 
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put("comment", comment);
+        attributes.put("Comment", comment);
 
-        // TODO make Key.Format.OPENSSH and move to into OpenSSHParser
-        return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.OPENSSH, attributes);
+        return new Key(privateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.OPENSSH, attributes);
+    }
+
+    private static byte[] writeEcdsaPrivateKey(final Key key, final String curve, final KeyOutput out) throws IOException {
+        if (key.getPublicKey() == null) {
+            throw new IllegalStateException("ECPublicKey is missing.  This is required to write an ECPrivateKey to OPENSSH private key format");
+        }
+
+        final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
+        final ECPublicKey publicKey = (ECPublicKey) key.getPublicKey().getKey();
+
+        out.writeString(curve);
+        out.writeBytes(EcPoints.toBytes(publicKey.getW()));
+        out.writeBigInteger(privateKey.getS());
+        out.writeString(getComment(key));
+        return out.toByteArray();
     }
 
     private static Key readEcdsaPrivateKey(final Curve curve, final KeyInput keyInput) throws IOException {
@@ -176,10 +319,6 @@ public class OpenSSHPrivateKey {
         if (expected != actual) {
             throw new IllegalArgumentException(String.format("Expected %s of '%s'. Found '%s'", name, expected, actual));
         }
-    }
-
-    public static byte[] encode(final Key key) {
-        return null;
     }
 
 }
