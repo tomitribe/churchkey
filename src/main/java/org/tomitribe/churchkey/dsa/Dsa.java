@@ -55,12 +55,14 @@ public class Dsa {
         private BigInteger p;
         private BigInteger q;
         private BigInteger g;
-        private BigInteger y;
         private BigInteger x;
+        private BigInteger y;
 
 
         @Override
         public Spec<DSAPublicKey, DSAPublicKey> toPublic() {
+            final BigInteger y = this.y == null ? g.modPow(x, p) : this.y;
+
             return Public.builder()
                     .g(g)
                     .p(p)

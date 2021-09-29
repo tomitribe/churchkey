@@ -70,6 +70,24 @@ public class DerWriter extends FilterOutputStream {
         return this;
     }
 
+    public DerWriter any(final DerWriter derWriter) {
+        return any(derWriter.bytes());
+    }
+
+    public DerWriter any(final byte[] bytes) {
+        writeObject(new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.ANY, true, bytes.length, bytes));
+        return this;
+    }
+
+    public DerWriter bolean(final DerWriter derWriter) {
+        return bolean(derWriter.bytes());
+    }
+
+    public DerWriter bolean(final byte[] bytes) {
+        writeObject(new Asn1Object(Asn1Class.UNIVERSAL, Asn1Type.BOOLEAN, true, bytes.length, bytes));
+        return this;
+    }
+
     /**
      * The integer is always considered to be positive, so if the first byte is less than 0, we pad with a zero to make it
      * positive

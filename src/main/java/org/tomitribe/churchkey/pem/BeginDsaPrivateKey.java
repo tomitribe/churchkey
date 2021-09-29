@@ -25,6 +25,7 @@ import org.tomitribe.churchkey.dsa.Dsa;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 
 public class BeginDsaPrivateKey {
 
@@ -44,16 +45,17 @@ public class BeginDsaPrivateKey {
             final DerParser parser1 = sequence.createParser();
 
             parser1.readObject(); // Skip version
-            final DSAPrivateKey privateKey = Dsa.Private.builder()
+            final Dsa.Private build = Dsa.Private.builder()
                     .p(parser1.readObject().asInteger())
                     .q(parser1.readObject().asInteger())
                     .g(parser1.readObject().asInteger())
                     .y(parser1.readObject().asInteger())
                     .x(parser1.readObject().asInteger())
-                    .build()
-                    .toKey();
+                    .build();
+            final DSAPrivateKey privateKey = build.toKey();
+            final DSAPublicKey publicKey = build.toPublic().toKey();
 
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.PEM);
+            return new Key(privateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.PEM);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

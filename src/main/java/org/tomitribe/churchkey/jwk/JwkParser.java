@@ -127,15 +127,17 @@ public class JwkParser implements Key.Format.Parser {
         }
 
         if (x != null) {
-            final DSAPrivateKey privateKey = Dsa.Private.builder()
+            final Dsa.Private build = Dsa.Private.builder()
                     .p(p)
                     .q(q)
                     .g(g)
                     .x(x)
-                    .build()
-                    .toKey();
+                    .build();
+            final DSAPrivateKey privateKey = build.toKey();
+            final DSAPublicKey publicKey = build.toPublic().toKey();
+
             final Map<String, String> attributes = getAttributes(jsonObject, "kty", "p", "q", "q", "x", "y");
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.JWK, attributes);
+            return new Key(privateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.DSA, Key.Format.JWK, attributes);
         }
 
         if (y != null) {
@@ -177,14 +179,17 @@ public class JwkParser implements Key.Format.Parser {
         final Curve curve = Curve.resolve(crv);
 
         if (d != null) {
-            final ECPrivateKey privateKey = Ecdsa.Private.builder()
+            final Ecdsa.Private build = Ecdsa.Private.builder()
                     .curve(curve)
                     .d(d)
-                    .build()
-                    .toKey();
+                    .x(x)
+                    .y(y)
+                    .build();
 
+            final ECPrivateKey privateKey = build.toKey();
+            final ECPublicKey publicKey = build.getX() != null && build.getY() != null ? build.toPublic().toKey() : null;
             final Map<String, String> attributes = getAttributes(jsonObject, "kty", "crv", "d");
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.JWK, attributes);
+            return new Key(privateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.JWK, attributes);
         }
 
         final List<String> missing = new ArrayList<String>();
@@ -222,14 +227,14 @@ public class JwkParser implements Key.Format.Parser {
         checkPrivateKey(rsaPrivateKeySpec);
 
         final KeyFactory result = KeyFactory.getInstance("RSA");
+        final PublicKey publicKey = result.generatePublic(rsaPublicKeySpec);
 
         if (privateExp != null) {
             final PrivateKey privateKey = result.generatePrivate(rsaPrivateKeySpec);
             final Map<String, String> attributes = getAttributes(jsonObject, "kty", "n", "e", "d", "p", "q", "dp", "dq", "qi");
-            return new Key(privateKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.JWK, attributes);
+            return new Key(privateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.RSA, Key.Format.JWK, attributes);
         }
 
-        final PublicKey publicKey = result.generatePublic(rsaPublicKeySpec);
         final Map<String, String> attributes = getAttributes(jsonObject, "kty", "n", "e");
         return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.JWK, attributes);
     }
@@ -286,6 +291,12 @@ public class JwkParser implements Key.Format.Parser {
             final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
             jwk.add("d", encode(privateKey.getS()));
             jwk.add("crv", curveName(privateKey.getParams()));
+            if (key.getPublicKey() != null) {
+                final ECPublicKey publicKey = (ECPublicKey) key.getPublicKey().getKey();
+                final ECPoint point = publicKey.getW();
+                jwk.add("y", encode(point.getAffineY()));
+                jwk.add("x", encode(point.getAffineX()));
+            }
         } else if (key.getKey() instanceof ECPublicKey) {
             final ECPublicKey publicKey = (ECPublicKey) key.getKey();
             final ECPoint point = publicKey.getW();

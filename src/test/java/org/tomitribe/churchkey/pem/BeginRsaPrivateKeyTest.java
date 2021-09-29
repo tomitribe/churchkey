@@ -19,8 +19,8 @@ package org.tomitribe.churchkey.pem;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.KeyAsserts;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 
@@ -69,14 +69,7 @@ public class BeginRsaPrivateKeyTest {
 
         final RSAPrivateCrtKey actual = (RSAPrivateCrtKey) key.getKey();
 
-        assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
-        assertEquals(expected.getCrtCoefficient(), actual.getCrtCoefficient());
-        assertEquals(expected.getPrimeExponentP(), actual.getPrimeExponentP());
-        assertEquals(expected.getPrimeExponentQ(), actual.getPrimeExponentQ());
-        assertEquals(expected.getPrimeP(), actual.getPrimeP());
-        assertEquals(expected.getPrimeQ(), actual.getPrimeQ());
-        assertEquals(expected.getPrivateExponent(), actual.getPrivateExponent());
-        assertEquals(expected.getModulus(), actual.getModulus());
+        KeyAsserts.assertRsaPrivateKey(expected, actual);
     }
 
     @Test
@@ -89,6 +82,5 @@ public class BeginRsaPrivateKeyTest {
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
         assertEquals(Key.Format.PEM, key.getFormat());
         assertEquals(Key.Type.PUBLIC, key.getType());
-
     }
 }

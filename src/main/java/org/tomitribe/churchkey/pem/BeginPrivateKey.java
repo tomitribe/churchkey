@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
@@ -150,8 +151,11 @@ public class BeginPrivateKey {
                 final DerParser d3 = new DerParser(d2o3.getValue());
                 dsa.x(d3.readBigInteger());
 
-                final DSAPrivateKey privateKey = dsa.build().toKey();
-                return new Key(privateKey, Key.Type.PRIVATE, DSA, Key.Format.PEM);
+                final Dsa.Private build = dsa.build();
+                final DSAPrivateKey privateKey = build.toKey();
+                final DSAPublicKey publicKey = build.toPublic().toKey();
+
+                return new Key(privateKey, publicKey, Key.Type.PRIVATE, DSA, Key.Format.PEM);
             }
         }
     }
@@ -291,8 +295,7 @@ public class BeginPrivateKey {
         }
 
         if (key.getAlgorithm() == EC) {
-            final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
-            return encodeEc(privateKey);
+            return encodeEc(key);
         }
 
         return null;
@@ -358,24 +361,43 @@ public class BeginPrivateKey {
      *       0010 - f8 79 d4 ab 9e 5d 6d 40-33 d8 d0 fe 6d 43 71 fb   .y...]m@3...mCq.
      *       0020 - bc e5                                             ..
      */
-    private static byte[] encodeEc(final ECPrivateKey privateKey) {
+    private static byte[] encodeEc(final Key key) {
+        final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
         final ECParameterSpec params = privateKey.getParams();
         final Curve curve = Arrays.stream(Curve.values())
                 .filter(c -> c.isEqual(params))
                 .findFirst().orElseThrow(() -> new IllegalStateException("Unable to resolve OID for ECParameterSpec"));
 
-        return write()
-                .sequence(write()
-                        .integer(ZERO)
-                        .sequence(write()
-                                .objectIdentifier(ecKey)
-                                .objectIdentifier(curve.getOid()))
-                        .octetString(write()
-                                .sequence(write()
-                                        .integer(ONE)
-                                        .octetString(privateKey.getS())
-                                )))
-                .bytes();
+        if (key.getPublicKey() != null) {
+            final ECPublicKey publicKey = (ECPublicKey) key.getPublicKey().getKey();
+            return write()
+                    .sequence(write()
+                            .integer(ZERO)
+                            .sequence(write()
+                                    .objectIdentifier(ecKey)
+                                    .objectIdentifier(curve.getOid()))
+                            .octetString(write()
+                                    .sequence(write()
+                                            .integer(ONE)
+                                            .octetString(privateKey.getS())
+                                            .bolean(write()
+                                                    .bitString(EcPoints.toBytes(publicKey.getW())))
+                                    )))
+                    .bytes();
+        } else {
+            return write()
+                    .sequence(write()
+                            .integer(ZERO)
+                            .sequence(write()
+                                    .objectIdentifier(ecKey)
+                                    .objectIdentifier(curve.getOid()))
+                            .octetString(write()
+                                    .sequence(write()
+                                            .integer(ONE)
+                                            .octetString(privateKey.getS())
+                                    )))
+                    .bytes();
+        }
     }
 
 }

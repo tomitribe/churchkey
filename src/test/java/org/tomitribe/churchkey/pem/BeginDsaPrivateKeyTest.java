@@ -19,6 +19,7 @@ package org.tomitribe.churchkey.pem;
 import org.junit.Test;
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.KeyAsserts;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 
@@ -56,9 +57,7 @@ public class BeginDsaPrivateKeyTest {
 
         final DSAPrivateKey actual = (DSAPrivateKey) key.getKey();
 
-        assertEquals(expected.getParams().getG(), actual.getParams().getG());
-        assertEquals(expected.getParams().getQ(), actual.getParams().getQ());
-        assertEquals(expected.getParams().getP(), actual.getParams().getP());
-        assertEquals(expected.getX(), actual.getX());
+        KeyAsserts.assertDsaPrivateKey(expected, actual);
     }
+
 }
