@@ -16,26 +16,25 @@
  */
 package org.tomitribe.churchkey.pem;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.KeyAsserts;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
-import org.tomitribe.util.collect.ObjectMap;
 
 import java.security.KeyFactory;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class OpenSSHPrivateKeyTest {
 
     @Test
-    @Ignore
-    public void testDecode2048() throws Exception {
+    public void rsa() throws Exception {
         final Decoder decoder = Keys::decode;
         final Resource resource = Resource.resource("opensshrsa", 2048, 256);
 
@@ -45,17 +44,51 @@ public class OpenSSHPrivateKeyTest {
         final byte[] bytes = resource.bytes("private.openssh");
         final Key key = decoder.decode(bytes);
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+        assertEquals(Key.Format.OPENSSH, key.getFormat());
+        assertEquals(Key.Type.PRIVATE, key.getType());
 
         final RSAPrivateCrtKey actual = (RSAPrivateCrtKey) key.getKey();
 
-        assertEquals(expected.getPublicExponent(), actual.getPublicExponent());
-        assertEquals(expected.getCrtCoefficient(), actual.getCrtCoefficient());
-        assertEquals(expected.getPrimeP(), actual.getPrimeP());
-        assertEquals(expected.getPrimeQ(), actual.getPrimeQ());
-        assertEquals(expected.getPrivateExponent(), actual.getPrivateExponent());
-        assertEquals(expected.getModulus(), actual.getModulus());
-        assertEquals(expected.getPrimeExponentP(), actual.getPrimeExponentP());
-        assertEquals(expected.getPrimeExponentQ(), actual.getPrimeExponentQ());
+        KeyAsserts.assertRsaPrivateKey(expected, actual);
+    }
+
+    @Test
+    public void ec() throws Exception {
+        final Decoder decoder = Keys::decode;
+        final Resource resource = Resource.resource("ecdsa-nistp256");
+
+        final Key expectedKey = Keys.decode(resource.bytes("private.pkcs8.pem"));
+        final ECPrivateKey expected = (ECPrivateKey) expectedKey.getKey();
+
+        final byte[] bytes = resource.bytes("private.openssh");
+        final Key key = decoder.decode(bytes);
+        assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+        assertEquals(Key.Format.OPENSSH, key.getFormat());
+        assertEquals(Key.Type.PRIVATE, key.getType());
+
+        final ECPrivateKey actual = (ECPrivateKey) key.getKey();
+
+        KeyAsserts.assertEcPrivateKey(expected, actual);
+    }
+
+    @Test
+    public void dsa() throws Exception {
+        final Decoder decoder = Keys::decode;
+        final Resource resource = Resource.resource("opensshdsa");
+
+        final byte[] bytes = resource.bytes("private.openssh");
+        final Key key = decoder.decode(bytes);
+        assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
+        assertEquals(Key.Format.OPENSSH, key.getFormat());
+        assertEquals(Key.Type.PRIVATE, key.getType());
+
+        final DSAPrivateKey expected = (DSAPrivateKey) key.getKey();
+
+        final byte[] encode = key.encode(Key.Format.OPENSSH);
+        final Key key2 = Keys.decode(encode);
+        final DSAPrivateKey actual = (DSAPrivateKey) key2.getKey();
+
+        KeyAsserts.assertDsaPrivateKey(expected, actual);
     }
 
 }
