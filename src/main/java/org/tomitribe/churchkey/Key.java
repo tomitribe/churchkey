@@ -91,18 +91,42 @@ public class Key {
     private final Map<String, String> attributes = new HashMap<>();
     private final Key publicKey;
 
+    /**
+     * Avoid constructing Key instances directly and instead favor any of {@link Keys#decode(byte[])},
+     * {@link Keys#of(java.security.Key)} or {@link Keys#of(java.security.KeyPair)}
+     *
+     * This constructor may change or become private without notice.
+     */
     public Key(final java.security.Key key, final java.security.PublicKey publicKey, final Type type, final Algorithm algorithm, final Format format) {
         this(key, publicKey, type, algorithm, format, new HashMap<>());
     }
 
+    /**
+     * Avoid constructing Key instances directly and instead favor any of {@link Keys#decode(byte[])},
+     * {@link Keys#of(java.security.Key)} or {@link Keys#of(java.security.KeyPair)}
+     *
+     * This constructor may change or become private without notice.
+     */
     public Key(final java.security.Key key, final Type type, final Algorithm algorithm, final Format format) {
         this(key, type, algorithm, format, new HashMap<>());
     }
 
+    /**
+     * Avoid constructing Key instances directly and instead favor any of {@link Keys#decode(byte[])},
+     * {@link Keys#of(java.security.Key)} or {@link Keys#of(java.security.KeyPair)}
+     *
+     * This constructor may change or become private without notice.
+     */
     public Key(final java.security.Key key, final Type type, final Algorithm algorithm, final Format format, final Map<String, String> attributes) {
         this(key, null, type, algorithm, format, attributes);
     }
 
+    /**
+     * Avoid constructing Key instances directly and instead favor any of {@link Keys#decode(byte[])},
+     * {@link Keys#of(java.security.Key)} or {@link Keys#of(java.security.KeyPair)}
+     *
+     * This constructor may change or become private without notice.
+     */
     public Key(final java.security.Key key, final java.security.PublicKey publicKey, final Type type,
                final Algorithm algorithm, final Format format, final Map<String, String> attributes) {
         Objects.requireNonNull(key);
