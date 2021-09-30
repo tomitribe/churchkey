@@ -27,7 +27,7 @@
 
   <artifactId>churchkey</artifactId>
   <packaging>jar</packaging>
-  <version>0.15-SNAPSHOT</version>
+  <version>0.16-SNAPSHOT</version>
   <name>Tomitribe :: Churchkey</name>
 
   <scm>
