@@ -24,7 +24,18 @@ public class Bytes {
         while (true) {
             if (bytes.length == 0) return bytes;
             if (bytes[0] != 0) return bytes;
-
+            final byte[] trim = new byte[bytes.length - 1];
+            System.arraycopy(bytes, 1, trim, 0, trim.length);
+            bytes = trim;
+        }
+    }
+    public static byte[] trim2(byte[] bytes) {
+        if (bytes == null) return null;
+        while (true) {
+            if (bytes.length == 0) return bytes;
+            if (bytes[0] != 0) return bytes;
+            if (bytes.length < 2) return bytes;
+            if (bytes[1] < 0) return bytes;
             final byte[] trim = new byte[bytes.length - 1];
             System.arraycopy(bytes, 1, trim, 0, trim.length);
             bytes = trim;

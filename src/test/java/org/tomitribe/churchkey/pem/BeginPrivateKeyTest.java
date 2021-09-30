@@ -19,6 +19,7 @@ package org.tomitribe.churchkey.pem;
 import org.junit.Test;
 import org.tomitribe.churchkey.Decoder;
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.KeyAsserts;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.util.Hex;
@@ -163,6 +164,24 @@ public class BeginPrivateKeyTest {
                 "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
 
         assertEquals(1, privateKey.getParams().getCofactor());
+    }
+
+    /**
+     * If improperly encoded the d value of this EC private key
+     * will come out negative.
+     */
+    @Test
+    public void trickyEncoding() throws Exception {
+        final String jwk = "{" +
+                "\"d\":\"i-cfA2QsqM293T8lSVHK0XHXya21y6Fxv6x2cuHFjeg\"," +
+                "\"crv\":\"P-256\",\"y\":\"rod-94CZV31COEG_BBA3BL9k7tLEMl7fsikNlFEJ7q4\"," +
+                "\"x\":\"oQ_WBq0fFaIXf69gkMP-p8vwZXhzI9ST2FIPOfNmd5I\"," +
+                "\"kty\":\"EC\"}";
+
+        final Key expected = Keys.decode(jwk.getBytes());
+        final Key actual = Keys.decode(expected.encode(Key.Format.PEM));
+
+        KeyAsserts.assertEcPrivateKey((ECPrivateKey) expected.getKey(), (ECPrivateKey) actual.getKey());
     }
 
     private void assertBigInteger(final String name, final BigInteger actual, final String expected) {

@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.tomitribe.churchkey.Key;
+import org.tomitribe.churchkey.KeyAsserts;
 import org.tomitribe.churchkey.Keys;
 import org.tomitribe.churchkey.Resource;
 import org.tomitribe.churchkey.Skip;
@@ -28,6 +29,7 @@ import org.tomitribe.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.util.Hex;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -94,7 +96,10 @@ public class BeginPrivateKeyEcTest {
 
         { // assert private key integer
             final byte[] expected = resource.bytes("private.pkcs8." + openSslCurveName + "." + format + ".txt");
-            assertEquals(new String(expected), Hex.toString(privateKey.getS().toByteArray()));
+
+            final BigInteger i = new BigInteger(1, Hex.fromString(new String(expected)));
+            final BigInteger s = privateKey.getS();
+            assertEquals(i, s);
         }
 
         { // assert curve parameters
@@ -147,6 +152,20 @@ public class BeginPrivateKeyEcTest {
         assertEquals(Key.Algorithm.EC, publicKey.getAlgorithm());
         assertEquals(Key.Format.PEM, publicKey.getFormat());
         assertEquals(Key.Type.PUBLIC, publicKey.getType());
+    }
+
+    /**
+     * Verify that what we are able to encode/decode the key
+     * and get the same result as the key we first encoded
+     */
+    @Test
+    @Skip({"Oakley-EC2N-3", "Oakley-EC2N-4"})
+    public void roundTrip() throws IOException {
+        final Key read = EcKeys.decode(resource.bytes("private.pkcs8." + openSslCurveName + ".oid.pem"));
+        final byte[] encode = read.encode(Key.Format.PEM);
+        final Key written = Keys.decode(encode);
+
+        KeyAsserts.assertEcPrivateKey((ECPrivateKey) read.getKey(), (ECPrivateKey) written.getKey());
     }
 
     @Skip("wap-wsg-idm-ecid-wtls7")

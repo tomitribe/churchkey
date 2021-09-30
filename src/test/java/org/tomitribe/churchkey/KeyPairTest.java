@@ -112,7 +112,7 @@ public class KeyPairTest {
     }
 
     @Test
-    @Skip({"PEM", "SSH2", "OPENSSH"})
+    @Skip({"SSH2", "OPENSSH"})
     public void ec() throws Exception {
         final Key expected = generate(EC);
 
@@ -138,5 +138,4 @@ public class KeyPairTest {
         final KeyPair pair = generator.generateKeyPair();
         return new Key(pair.getPrivate(), pair.getPublic(), Key.Type.PRIVATE, algorithm, format);
     }
-
 }

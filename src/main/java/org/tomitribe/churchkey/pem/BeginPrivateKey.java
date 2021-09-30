@@ -244,7 +244,7 @@ public class BeginPrivateKey {
                         ecdsa.y(ecPoint.getAffineY());
                     }
 
-                    ecdsa.d(new BigInteger(d4o2.getValue()));
+                    ecdsa.d(new BigInteger(1, Bytes.trim(d4o2.getValue())));
 
                     final Ecdsa.Private build = ecdsa.build();
                     final ECPrivateKey privateKey = build.toKey();

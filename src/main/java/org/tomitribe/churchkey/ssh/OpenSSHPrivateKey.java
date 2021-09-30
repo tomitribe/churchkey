@@ -287,7 +287,7 @@ public class OpenSSHPrivateKey {
 
         final ECPoint ecPoint = EcPoints.fromBytes(q);
 
-        final BigInteger d = keyInput.readBigInteger();
+        final BigInteger d = new BigInteger(1, keyInput.readBytes());
 
         final ECPrivateKey ecPrivateKey = Ecdsa.Private.builder()
                 .curveName(curveName)

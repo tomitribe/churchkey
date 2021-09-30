@@ -16,7 +16,6 @@
 package org.tomitribe.churchkey;
 
 import org.tomitribe.churchkey.ec.CurveAsserts;
-import org.tomitribe.churchkey.pem.EcCurveParams;
 
 import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
@@ -57,15 +56,15 @@ public class KeyAsserts {
         assertEquals(expected.getParams().getP(), actual.getParams().getP());
         assertEquals(expected.getY(), actual.getY());
     }
-    
+
     public static void assertEcPrivateKey(final ECPrivateKey expected, final ECPrivateKey actual) {
-        assertEquals(expected.getS(), actual.getS());
+        assertEquals("d", expected.getS(), actual.getS());
         CurveAsserts.assertParamSpec(expected.getParams(), actual.getParams());
     }
 
     public static void assertEcPublicKey(final ECPublicKey expected, final ECPublicKey actual) {
-        assertEquals(expected.getW().getAffineX(), actual.getW().getAffineX());
-        assertEquals(expected.getW().getAffineY(), actual.getW().getAffineY());
+        assertEquals("x", expected.getW().getAffineX(), actual.getW().getAffineX());
+        assertEquals("y", expected.getW().getAffineY(), actual.getW().getAffineY());
         CurveAsserts.assertParamSpec(expected.getParams(), actual.getParams());
     }
 }
