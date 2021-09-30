@@ -106,7 +106,7 @@ public class OpenSSHPrivateKey {
             out.writeInt(1); // number of keys
 
             out.writeBytes(encodePublicKey(key)); // public key
-            out.writeBytes(encodePrivateKey(key)); // public key
+            out.writeBytes(pad(encodePrivateKey(key))); // public key
 
             result = out.toByteArray();
         } catch (IOException e) {
@@ -119,6 +119,27 @@ public class OpenSSHPrivateKey {
                 .data(bytes)
                 .format()
                 .getBytes();
+    }
+
+    private static byte[] pad(final byte[] bytes) {
+        final int i = bytes.length % 8;
+        if (i == 0) return bytes;
+
+        final int needed = 8 - i;
+        final byte[] padding = {
+                (byte) 0x01,
+                (byte) 0x02,
+                (byte) 0x03,
+                (byte) 0x04,
+                (byte) 0x05,
+                (byte) 0x06,
+                (byte) 0x07,
+        };
+
+        final byte[] padded = new byte[bytes.length + needed];
+        System.arraycopy(bytes, 0, padded, 0, bytes.length);
+        System.arraycopy(padding, 0, padded, bytes.length, needed);
+        return padded;
     }
 
     private static byte[] encodePublicKey(final Key key) throws IOException {
