@@ -39,7 +39,7 @@ import static org.tomitribe.churchkey.asn1.Asn1Type.OBJECT_IDENTIFIER;
 import static org.tomitribe.churchkey.asn1.Asn1Type.OCTET_STRING;
 import static org.tomitribe.churchkey.asn1.Asn1Type.SEQUENCE;
 
-/**
+/*
  * Parses "BEGIN EC PRIVATE KEY" PEM contents
  *
  * The asn1 structure will be either of these two formats
