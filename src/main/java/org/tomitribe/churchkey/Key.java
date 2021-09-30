@@ -35,6 +35,53 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Wraps an instance of {@link java.security.Key} and provides additional metadata
+ * such as {@link Key.Type} (PUBLIC, PRIVATE),  {@link Key.Algorithm} (RSA, DSA, EC)
+ * and {@link Key.Format} (PEM, JWK, OPENSSH, SSH2) to identify the type of encoding
+ * that was read to create this key.
+ * 
+ * The {@link java.security.Key} this {@link Key} instance wraps can be obtained via
+ * {@link Key#getKey()} and cast to any of {@link java.security.interfaces.RSAPublicKey}, 
+ * {@link java.security.interfaces.RSAPrivateKey}, {@link java.security.interfaces.RSAPrivateCrtKey},
+ * {@link java.security.interfaces.DSAPrivateKey}, {@link java.security.interfaces.DSAPublicKey},
+ * {@link java.security.interfaces.ECPrivateKey} or {@link java.security.interfaces.ECPublicKey}
+ * depending on the value of  {@link Key.Type} and  {@link Key.Algorithm}
+ * 
+ * {@link Key} instances can be exported to any desired format via {@link Key#encode(Format)}
+ *
+ * If the key is of type {@link Key.Type#PRIVATE} is either {@link Key.Algorithm#RSA} or
+ * {@link Key.Algorithm#DSA}, the public key can be obtained via {@link Key#getPublicKey()}.  If
+ * the key is a {@link Key.Type#PRIVATE} {@link Key.Algorithm#EC} key the public key can be
+ * obtained if the public key information was present in the encoded key file used to decode
+ * and create this {@link Key} instance.  For most key formats, the public key information
+ * will be present in the private key file.
+ *
+ * Some key formats such as OPENSSH, SSH2 and JWK allow for comments or additional
+ * metadata to be in they key file.  This information will be parsed and placed into
+ * the {@link Key#getAttributes()} map where it can be easily accessed.
+ *
+ * For example, given the following JWK:
+ *
+ * <code>
+ * {
+ *   "kty": "EC",
+ *   "crv": "P-256",
+ *   "x": "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4",
+ *   "y": "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM",
+ *   "d": "870MB6gfuTJ4HtUnUvYMyJpr5eUZNP4Bk43bVdj3eAE",
+ *   "use": "enc",
+ *   "kid": "orangekey"
+ * }
+ * </code>
+ *
+ * One could obtain the "kid" and "use" fields as follows:
+ *
+ * <code>
+ * final String kid = key.getAttribute("kid");
+ * final String use = key.getAttribute("use");
+ * </code>
+ */
 public class Key {
 
     private final java.security.Key key;
@@ -105,11 +152,67 @@ public class Key {
         return null;
     }
 
+    /**
+     * Returns the Public Key corresponding to this Private key.
+     *
+     * If the key is of type {@link Key.Type#PRIVATE} is either {@link Key.Algorithm#RSA} or
+     * {@link Key.Algorithm#DSA}, the public key information will be discovered through the encoded
+     * file when {@link Keys#decode(byte[])} is called.  If not found this information will be
+     * calculated.
+     *
+     * If the key is a {@link Key.Type#PRIVATE} {@link Key.Algorithm#EC} key the public key can be
+     * obtained only if the public key information was present in the encoded key file used to decode
+     * and create this {@link Key} instance.  For most key formats, the EC public key information
+     * will be present in the EC private key file.
+     *
+     * @return the public key corresponding to this private key or null if no public key information exists
+     * @throws IllegalStateException if this is not a private key
+     */
     public Key getPublicKey() {
         if (type == Type.PRIVATE) return publicKey;
         throw new IllegalStateException(type + " keys do not have public keys");
     }
 
+    /**
+     * Some key formats such as OPENSSH, SSH2 and JWK allow for comments or additional
+     * metadata to be in they key file.  This information will be parsed and placed into
+     * the {@link Key#getAttributes()} map where it can be easily accessed.
+     *
+     * For example, given the following JWK:
+     *
+     * <code>
+     * {
+     *   "kty": "EC",
+     *   "crv": "P-256",
+     *   "x": "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4",
+     *   "y": "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM",
+     *   "d": "870MB6gfuTJ4HtUnUvYMyJpr5eUZNP4Bk43bVdj3eAE",
+     *   "use": "enc",
+     *   "kid": "orangekey"
+     * }
+     * </code>
+     *
+     * One could obtain the "kid" and "use" fields as follows:
+     *
+     * <code>
+     * final String kid = key.getAttribute("kid");
+     * final String use = key.getAttribute("use");
+     * </code>
+     *
+     * A key's attributes will be exported to the target {@link Format}
+     * when calling {@link #encode(Format)} if that target format supports
+     * it.
+     *
+     * <ul>
+     *     <li>{@link Format#JWK} support any attribute.  All attributes added to the {@link Key} will be present in the encoded JWK.</li>
+     *     <li>{@link Format#SSH2} support any attribute.  All attributes added to the {@link Key} will be present in the encoded SSH2 key.</li>
+     *     <li>{@link Format#OPENSSH} supports a standard "Comment" attribute.
+     *     All other attributes will be ignored</li>
+     *     <li>{@link Format#PEM} files do not support attributes, therefore all attributes will be ignored</li>
+     * </ul>
+     *
+     * @return a modifiable map of attributes found or added to this key instance
+     */
     public Map<String, String> getAttributes() {
         return attributes;
     }
@@ -122,6 +225,16 @@ public class Key {
         return attributes.containsKey(name);
     }
 
+    /**
+     * The {@link java.security.Key} this {@link Key} instance wraps can be obtained via
+     * {@link Key#getKey()} and cast to any of {@link java.security.interfaces.RSAPublicKey},
+     * {@link java.security.interfaces.RSAPrivateKey}, {@link java.security.interfaces.RSAPrivateCrtKey},
+     * {@link java.security.interfaces.DSAPrivateKey}, {@link java.security.interfaces.DSAPublicKey},
+     * {@link java.security.interfaces.ECPrivateKey} or {@link java.security.interfaces.ECPublicKey}
+     * depending on the value of  {@link Key.Type} and  {@link Key.Algorithm}
+     *
+     * @return
+     */
     public java.security.Key getKey() {
         return key;
     }
@@ -138,16 +251,49 @@ public class Key {
         return format;
     }
 
-    // TODO
-    // public Key getPublicKey()
-
+    /**
+     * Encodes this key to the target format.  In the case of JWK the returned bytes will
+     * be unformatted JSON, not base64 encoded.
+     *
+     * Keys can be exported to any format regardless of which format was present when
+     * {@link Keys#decode(byte[])} was called.  This allows keys to be easily converted
+     * from one format to another.
+     *
+     * Private keys formatted to {@link org.tomitribe.churchkey.Key.Format#PEM)} will
+     * be written in PKCS8 format and start with "BEGIN PRIVATE KEY"
+     *
+     * Public keys formatted to  {@link org.tomitribe.churchkey.Key.Format#PEM)} will
+     * be written in X509 format and start with "BEGIN PUBLIC KEY"
+     *
+     * It is currently not possible to encode to PKCS1 formats and create key files
+     * starting with "BEGIN RSA PRIVATE KEY", "BEGIN DSA PRIVATE KEY" or "BEGIN EC PRIVATE KEY"
+     * though these files can be read via {@link Keys#decode(byte[])}
+     *
+     * @param format the desired target format.
+     * @return the encoded bytes ready to be written as-is to the target file.  For PEM,
+     * JWK, OPENSSH and SSH2 this will return UTF-8 bytes.  For future formats such as DER
+     * the bytes returned will be binary.
+     */
     public byte[] encode(final Format format) {
         return format.encode(this);
     }
 
     public enum Type {
+        /**
+         * Indicates the {@link java.security.Key} contained by the {@link Key} instance
+         * is assignable to {@link java.security.PublicKey}
+         */
         PUBLIC,
+        /**
+         * Indicates the {@link java.security.Key} contained by the {@link Key} instance
+         * is assignable to {@link java.security.PrivateKey}
+         */
         PRIVATE,
+        /**
+         * Indicates the {@link java.security.Key} contained by the {@link Key} instance
+         * is a symmetric key.  For {@link Format#JWK} keys this will be anytime the
+         * 'kty' is 'oct'
+         */
         SECRET
     }
 

@@ -136,6 +136,6 @@ public class KeyPairTest {
     private Key generate(final Key.Algorithm algorithm) throws NoSuchAlgorithmException {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance(algorithm.name());
         final KeyPair pair = generator.generateKeyPair();
-        return new Key(pair.getPrivate(), pair.getPublic(), Key.Type.PRIVATE, algorithm, format);
+        return Keys.of(pair);
     }
 }

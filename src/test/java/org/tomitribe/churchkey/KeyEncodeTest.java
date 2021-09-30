@@ -15,7 +15,6 @@
  */
 package org.tomitribe.churchkey;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.security.KeyPair;
@@ -88,7 +87,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void rsaPrivateOpenSsh() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
@@ -174,7 +172,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void dsaPrivateOpenSsh() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
@@ -260,12 +257,11 @@ public class KeyEncodeTest {
     }
 
     @Test
-    @Ignore("Not yet implemented")
     public void ecPrivateOpenSsh() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.OPENSSH));
+        final String content = new String(Keys.of(pair).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
     }
