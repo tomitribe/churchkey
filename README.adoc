@@ -7,6 +7,8 @@ Churchkey is a Java library that can parse and export public and private key fil
   - OpenSSH
   - SSH2
 
+## Reading keys
+
 *Step 1* Pass the bytes of the key file to Churchkey. No need to tell Churchkey what kind of key it is.
 
 [source,java]
@@ -38,40 +40,67 @@ Assert.assertEquals(Key.Type.PUBLIC, key.getType());
 Assert.assertTrue(key.getKey() instanceof RSAPublicKey);
 ----
 
-## Java Sample
+See the complete link:https://github.com/tomitribe/churchkey/blob/master/src/test/java/org/supertribe/ExampleTest.java#L39[source]
+
+## Writing/Converting Keys
+
+The following will read (decode) a PEM file and then convert (encode) it to a JWK format
 
 [source,java]
 ----
-import org.junit.Assert;
-import org.junit.Test;
-import org.tomitribe.churchkey.Key;
-import org.tomitribe.churchkey.Keys;
+// Read the PEM file
+final Key key = Keys.decode(pemFile.getBytes());
 
-import java.security.interfaces.RSAPublicKey;
+// Write the key as JWK
+final byte[] jwkBytes = key.encode(Key.Format.JWK);
 
-public class ExampleTest {
+final String jwk = new String(jwkBytes);
 
-    @Test
-    public void test() throws Exception {
+final String expected = "" +
+        "{\n" +
+        "  \"kty\": \"RSA\",\n" +
+        "  \"e\": \"AQAB\",\n" +
+        "  \"n\": \"sszbq1NfZap2IceUCO9rCF9ZYfHE3oU5m6Avgyxu1LmlB6rNPejO-eB7T9i" +
+        "IhxXCEKsGDcx4Cpo5nxnW5PSQZM_wzXg1bAOZ3O6k57EoFC108cB0hdvOiCXXKOZGrGiZu" +
+        "F7q5Zt1ftqIk7oK2gbItSdB7dDrR4CSJSGhsSu5mP0\"\n" +
+        "}\n";
 
-        final String pemFile = "" +
-                "-----BEGIN PUBLIC KEY-----\n" +
-                "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyzNurU19lqnYhx5QI72sIX1lh\n" +
-                "8cTehTmboC+DLG7UuaUHqs096M754HtP2IiHFcIQqwYNzHgKmjmfGdbk9JBkz/DN\n" +
-                "eDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht\n" +
-                "0OtHgJIlIaGxK7mY/QIDAQAB\n" +
-                "-----END PUBLIC KEY-----\n";
-
-        final Key key = Keys.decode(pemFile.getBytes());
-
-        Assert.assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
-        Assert.assertEquals(Key.Format.PEM, key.getFormat());
-        Assert.assertEquals(Key.Type.PUBLIC, key.getType());
-
-        Assert.assertTrue(key.getKey() instanceof RSAPublicKey);
-    }
-}
+JsonAsserts.assertJson(expected, jwk);
 ----
+
+See the complete link:https://github.com/tomitribe/churchkey/blob/master/src/test/java/org/supertribe/Pem2JwkTest.java#L48[source]
+
+## Get the Public key from a Private key
+
+The following will read (decode) a private key PEM file and then obtain and write out the public PEM.
+
+[source,java]
+----
+final String pemFile = "" +
+        "-----BEGIN EC PRIVATE KEY-----\n" +
+        "MHcCAQEEIDV2ischPSu7JmDEhNlW9KpUiYl3AAANcMxRIEAxqk6hoAoGCCqGSM49\n" +
+        "AwEHoUQDQgAERUSiTdfyjPPvepCpRGirABPcUo8QBaMJHoRf4D3XWBryDRMCZU20\n" +
+        "GPXomXCQbIxJZtkOULn918lHK/CvytRW9A==\n" +
+        "-----END EC PRIVATE KEY-----\n";
+
+// Read the PEM file
+final Key key = Keys.decode(pemFile.getBytes());
+
+// Get the public key
+final Key publicKey = key.getPublicKey();
+
+// Write the public key as PEM (or any other format)
+final byte[] encoded = publicKey.encode(Key.Format.PEM);
+
+assertEquals("" +
+        "-----BEGIN PUBLIC KEY-----\n" +
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERUSiTdfyjPPvepCpRGirABPcUo8Q\n" +
+        "BaMJHoRf4D3XWBryDRMCZU20GPXomXCQbIxJZtkOULn918lHK/CvytRW9A==\n" +
+        "-----END PUBLIC KEY-----\n", new String(encoded));
+----
+
+See the complete link:https://github.com/tomitribe/churchkey/blob/master/src/test/java/org/supertribe/PublicFromPrivateTest.java#L41[source]
+
 
 ## Supported Key Formats
 Churchkey is a Java library that can read RSA and DSA that look like any of the following:
@@ -175,7 +204,7 @@ wHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q==
 <dependency>
   <groupId>org.tomitribe</groupId>
   <artifactId>churchkey</artifactId>
-  <version>0.14</version>
+  <version>0.13</version>
 </dependency>
 ----
 

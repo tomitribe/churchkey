@@ -18,15 +18,18 @@ package org.supertribe;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.tomitribe.churchkey.JsonAsserts;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
 
 import java.security.interfaces.RSAPublicKey;
 
-public class ExampleTest {
+import static org.junit.Assert.assertEquals;
+
+public class Pem2JwkTest {
 
     @Test
-    public void read() throws Exception {
+    public void convert() throws Exception {
 
         final String pemFile = "" +
                 "-----BEGIN PUBLIC KEY-----\n" +
@@ -38,10 +41,22 @@ public class ExampleTest {
 
         final Key key = Keys.decode(pemFile.getBytes());
 
-        Assert.assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
-        Assert.assertEquals(Key.Format.PEM, key.getFormat());
-        Assert.assertEquals(Key.Type.PUBLIC, key.getType());
-
+        // We have a key instance we can use with JCE
         Assert.assertTrue(key.getKey() instanceof RSAPublicKey);
+
+        // Write the key out to another format we need to use
+        final byte[] jwkBytes = key.encode(Key.Format.JWK);
+
+        final String jwk = new String(jwkBytes);
+        final String expected = "" +
+                "{\n" +
+                "  \"kty\": \"RSA\",\n" +
+                "  \"e\": \"AQAB\",\n" +
+                "  \"n\": \"sszbq1NfZap2IceUCO9rCF9ZYfHE3oU5m6Avgyxu1LmlB6rNPejO-eB7T9i" +
+                "IhxXCEKsGDcx4Cpo5nxnW5PSQZM_wzXg1bAOZ3O6k57EoFC108cB0hdvOiCXXKOZGrGiZu" +
+                "F7q5Zt1ftqIk7oK2gbItSdB7dDrR4CSJSGhsSu5mP0\"\n" +
+                "}\n";
+
+        JsonAsserts.assertJson(expected, jwk);
     }
 }

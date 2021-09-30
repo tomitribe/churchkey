@@ -16,32 +16,37 @@
  */
 package org.supertribe;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.tomitribe.churchkey.Key;
 import org.tomitribe.churchkey.Keys;
 
-import java.security.interfaces.RSAPublicKey;
+import static org.junit.Assert.assertEquals;
 
-public class ExampleTest {
+public class PublicFromPrivateTest {
 
     @Test
-    public void read() throws Exception {
+    public void convert() throws Exception {
 
         final String pemFile = "" +
-                "-----BEGIN PUBLIC KEY-----\n" +
-                "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyzNurU19lqnYhx5QI72sIX1lh\n" +
-                "8cTehTmboC+DLG7UuaUHqs096M754HtP2IiHFcIQqwYNzHgKmjmfGdbk9JBkz/DN\n" +
-                "eDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht\n" +
-                "0OtHgJIlIaGxK7mY/QIDAQAB\n" +
-                "-----END PUBLIC KEY-----\n";
+                "-----BEGIN EC PRIVATE KEY-----\n" +
+                "MHcCAQEEIDV2ischPSu7JmDEhNlW9KpUiYl3AAANcMxRIEAxqk6hoAoGCCqGSM49\n" +
+                "AwEHoUQDQgAERUSiTdfyjPPvepCpRGirABPcUo8QBaMJHoRf4D3XWBryDRMCZU20\n" +
+                "GPXomXCQbIxJZtkOULn918lHK/CvytRW9A==\n" +
+                "-----END EC PRIVATE KEY-----\n";
 
+        // Read the PEM file
         final Key key = Keys.decode(pemFile.getBytes());
 
-        Assert.assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
-        Assert.assertEquals(Key.Format.PEM, key.getFormat());
-        Assert.assertEquals(Key.Type.PUBLIC, key.getType());
+        // Get the public key
+        final Key publicKey = key.getPublicKey();
 
-        Assert.assertTrue(key.getKey() instanceof RSAPublicKey);
+        // Write the public key as PEM (or any other format)
+        final byte[] encoded = publicKey.encode(Key.Format.PEM);
+
+        assertEquals("" +
+                "-----BEGIN PUBLIC KEY-----\n" +
+                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAERUSiTdfyjPPvepCpRGirABPcUo8Q\n" +
+                "BaMJHoRf4D3XWBryDRMCZU20GPXomXCQbIxJZtkOULn918lHK/CvytRW9A==\n" +
+                "-----END PUBLIC KEY-----\n", new String(encoded));
     }
 }
