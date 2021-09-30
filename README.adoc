@@ -1,6 +1,6 @@
 # Churchkey
 
-Churchkey is a Java library that can parse public and private key files in several formats including:
+Churchkey is a Java library that can parse and export public and private key files in several formats including:
 
   - JSON Web Key (JWK)
   - PEM
@@ -175,7 +175,7 @@ wHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q==
 <dependency>
   <groupId>org.tomitribe</groupId>
   <artifactId>churchkey</artifactId>
-  <version>0.9</version>
+  <version>0.14</version>
 </dependency>
 ----
 
