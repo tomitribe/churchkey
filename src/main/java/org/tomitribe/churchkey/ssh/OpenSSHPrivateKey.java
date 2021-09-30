@@ -310,13 +310,15 @@ public class OpenSSHPrivateKey {
 
         final BigInteger d = new BigInteger(1, keyInput.readBytes());
 
-        final ECPrivateKey ecPrivateKey = Ecdsa.Private.builder()
+        final Ecdsa.Private build = Ecdsa.Private.builder()
                 .curveName(curveName)
                 .d(d)
                 .x(ecPoint.getAffineX())
                 .y(ecPoint.getAffineY())
-                .build()
-                .toKey();
+                .build();
+
+        final ECPrivateKey ecPrivateKey = build.toKey();
+        final ECPublicKey publicKey = build.toPublic().toKey();
 
         final Map<String, String> attributes = new HashMap<String, String>();
 
@@ -327,7 +329,7 @@ public class OpenSSHPrivateKey {
             attributes.put("Comment", "");
         }
 
-        return new Key(ecPrivateKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.OPENSSH, attributes);
+        return new Key(ecPrivateKey, publicKey, Key.Type.PRIVATE, Key.Algorithm.EC, Key.Format.OPENSSH, attributes);
     }
 
     public static void assertString(final String name, final String expected, final String actual) {

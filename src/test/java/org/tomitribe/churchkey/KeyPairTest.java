@@ -112,7 +112,7 @@ public class KeyPairTest {
     }
 
     @Test
-    @Skip({"SSH2", "OPENSSH"})
+    @Skip({"SSH2"})
     public void ec() throws Exception {
         final Key expected = generate(EC);
 
