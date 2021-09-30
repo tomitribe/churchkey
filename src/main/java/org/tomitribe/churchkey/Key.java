@@ -259,10 +259,10 @@ public class Key {
      * {@link Keys#decode(byte[])} was called.  This allows keys to be easily converted
      * from one format to another.
      *
-     * Private keys formatted to {@link org.tomitribe.churchkey.Key.Format#PEM)} will
+     * Private keys formatted to {@link org.tomitribe.churchkey.Key.Format#PEM} will
      * be written in PKCS8 format and start with "BEGIN PRIVATE KEY"
      *
-     * Public keys formatted to  {@link org.tomitribe.churchkey.Key.Format#PEM)} will
+     * Public keys formatted to  {@link org.tomitribe.churchkey.Key.Format#PEM} will
      * be written in X509 format and start with "BEGIN PUBLIC KEY"
      *
      * It is currently not possible to encode to PKCS1 formats and create key files

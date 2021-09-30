@@ -102,12 +102,12 @@ public class Keys {
     }
 
     /**
-     * Encodes the key to the specified {@link org.tomitribe.churchkey.Key.Format)}
+     * Encodes the key to the specified {@link org.tomitribe.churchkey.Key.Format}
      *
-     * Private keys formatted to {@link org.tomitribe.churchkey.Key.Format#PEM)} will
+     * Private keys formatted to {@link org.tomitribe.churchkey.Key.Format#PEM} will
      * be written in PKCS8 format and start with "BEGIN PRIVATE KEY"
      *
-     * Public keys formatted to  {@link org.tomitribe.churchkey.Key.Format#PEM)} will
+     * Public keys formatted to  {@link org.tomitribe.churchkey.Key.Format#PEM} will
      * be written in X509 format and start with "BEGIN PUBLIC KEY"
      *
      * It is currently not possible to encode to PKCS1 formats and create key files
