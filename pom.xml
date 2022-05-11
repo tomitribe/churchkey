@@ -25,10 +25,11 @@
     <version>5</version>
   </parent>
 
+  <groupId>io.churchkey</groupId>
   <artifactId>churchkey</artifactId>
   <packaging>jar</packaging>
-  <version>0.16-SNAPSHOT</version>
-  <name>Tomitribe :: Churchkey</name>
+  <version>1.16-SNAPSHOT</version>
+  <name>Churchkey</name>
 
   <scm>
     <connection>scm:git:git@github.com:tomitribe/churchkey.git</connection>

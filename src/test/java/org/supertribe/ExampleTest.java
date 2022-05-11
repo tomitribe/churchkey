@@ -18,8 +18,8 @@ package org.supertribe;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.tomitribe.churchkey.Key;
-import org.tomitribe.churchkey.Keys;
+import io.churchkey.Key;
+import io.churchkey.Keys;
 
 import java.security.interfaces.RSAPublicKey;
 
