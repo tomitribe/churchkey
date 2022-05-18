@@ -35,19 +35,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Wraps an instance of {@link java.security.Key} and provides additional metadata
  * such as {@link Key.Type} (PUBLIC, PRIVATE),  {@link Key.Algorithm} (RSA, DSA, EC)
  * and {@link Key.Format} (PEM, JWK, OPENSSH, SSH2) to identify the type of encoding
  * that was read to create this key.
- * 
+ *
  * The {@link java.security.Key} this {@link Key} instance wraps can be obtained via
  * {@link Key#getKey()} and cast to any of {@link java.security.interfaces.RSAPublicKey}, 
  * {@link java.security.interfaces.RSAPrivateKey}, {@link java.security.interfaces.RSAPrivateCrtKey},
  * {@link java.security.interfaces.DSAPrivateKey}, {@link java.security.interfaces.DSAPublicKey},
  * {@link java.security.interfaces.ECPrivateKey} or {@link java.security.interfaces.ECPublicKey}
  * depending on the value of  {@link Key.Type} and  {@link Key.Algorithm}
- * 
+ *
  * {@link Key} instances can be exported to any desired format via {@link Key#encode(Format)}
  *
  * If the key is of type {@link Key.Type#PRIVATE} is either {@link Key.Algorithm#RSA} or
@@ -300,6 +302,22 @@ public class Key {
      */
     public byte[] encode(final Format format) {
         return format.encode(this);
+    }
+
+    public String toJwk() {
+        return new String(encode(Format.JWK), UTF_8);
+    }
+
+    public String toPem() {
+        return new String(encode(Format.PEM), UTF_8);
+    }
+
+    public String toOpenSsh() {
+        return new String(encode(Format.OPENSSH), UTF_8);
+    }
+
+    public String toSsh2() {
+        return new String(encode(Format.SSH2), UTF_8);
     }
 
     public enum Type {
