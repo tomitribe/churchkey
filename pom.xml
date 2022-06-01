@@ -192,6 +192,30 @@
             </goals>
             <configuration>
               <minimizeJar>true</minimizeJar>
+              <relocations>
+                <relocation>
+                  <pattern>com.grack.nanojson</pattern>
+                  <shadedPattern>io.churchkey.shade.json</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.tomitribe.util</pattern>
+                  <shadedPattern>io.churchkey.shade.util</shadedPattern>
+                </relocation>
+              </relocations>
+              <filters>
+                <filter>
+                  <artifact>com.grack:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/maven/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.tomitribe:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/maven/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
