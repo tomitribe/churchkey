@@ -119,7 +119,6 @@
     </dependency>
   </dependencies>
 
-
   <build>
     <plugins>
       <plugin>
@@ -174,6 +173,22 @@
           <argLine>-Xmx128m</argLine>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <minimizeJar>true</minimizeJar>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -193,16 +208,16 @@
   </profiles>
 
   <distributionManagement>
- 		<snapshotRepository>
- 			<id>sonatype-nexus-snapshots</id>
- 			<name>Sonatype Nexus Snapshots</name>
- 			<url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
- 		</snapshotRepository>
- 		<repository>
- 			<id>sonatype-nexus-staging</id>
- 			<name>Nexus Release Repository</name>
- 			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
- 		</repository>
- 	</distributionManagement>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
+    </snapshotRepository>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
 </project>
