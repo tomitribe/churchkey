@@ -16,25 +16,23 @@
  */
 package io.churchkey.jwk;
 
+import com.grack.nanojson.JsonArray;
+import com.grack.nanojson.JsonBuilder;
+import com.grack.nanojson.JsonObject;
+import com.grack.nanojson.JsonParser;
+import com.grack.nanojson.JsonWriter;
+import io.churchkey.Key;
 import io.churchkey.dsa.Dsa;
 import io.churchkey.ec.Curve;
-import io.churchkey.util.Bytes;
-import io.churchkey.Key;
 import io.churchkey.ec.ECParameterSpecs;
 import io.churchkey.ec.Ecdsa;
 import io.churchkey.ec.UnsupportedCurveException;
+import io.churchkey.util.Bytes;
 import io.churchkey.util.Utils;
 import org.tomitribe.util.IO;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonReaderFactory;
-import javax.json.JsonValue;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -71,11 +69,10 @@ public class JwkParser implements Key.Format.Parser {
 
         final HashMap<String, Object> config = new HashMap<>();
         config.put("org.apache.johnzon.buffer-strategy", "BY_INSTANCE");
-        final JsonReaderFactory factory = Json.createReaderFactory(config);
-        final JsonReader reader = factory.createReader(IO.read(decoded));
+
 
         try {
-            final JsonObject jsonObject = reader.readObject();
+            final JsonObject jsonObject = JsonParser.object().from(IO.read(decoded));
             final JsonObject jwk = getJwk(jsonObject);
 
             final String kty;
@@ -239,74 +236,74 @@ public class JwkParser implements Key.Format.Parser {
         return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.JWK, attributes);
     }
 
-    private void toRsaKey(final Key key, final JsonObjectBuilder jwk) {
+    private void toRsaKey(final Key key, final JsonBuilder<JsonObject> jwk) {
 
         if (key.getKey() instanceof RSAPrivateCrtKey) {
             final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
-            jwk.add("n", encode(privateKey.getModulus()));
-            jwk.add("e", encode(privateKey.getPublicExponent()));
-            jwk.add("d", encode(privateKey.getPrivateExponent()));
-            jwk.add("p", encode(privateKey.getPrimeP()));
-            jwk.add("q", encode(privateKey.getPrimeQ()));
-            jwk.add("dp", encode(privateKey.getPrimeExponentP()));
-            jwk.add("dq", encode(privateKey.getPrimeExponentQ()));
-            jwk.add("qi", encode(privateKey.getCrtCoefficient()));
+            jwk.value("n", encode(privateKey.getModulus()));
+            jwk.value("e", encode(privateKey.getPublicExponent()));
+            jwk.value("d", encode(privateKey.getPrivateExponent()));
+            jwk.value("p", encode(privateKey.getPrimeP()));
+            jwk.value("q", encode(privateKey.getPrimeQ()));
+            jwk.value("dp", encode(privateKey.getPrimeExponentP()));
+            jwk.value("dq", encode(privateKey.getPrimeExponentQ()));
+            jwk.value("qi", encode(privateKey.getCrtCoefficient()));
         } else if (key.getKey() instanceof RSAPrivateKey) {
             final RSAPrivateKey privateKey = (RSAPrivateKey) key.getKey();
-            jwk.add("n", encode(privateKey.getModulus()));
-            jwk.add("d", encode(privateKey.getPrivateExponent()));
+            jwk.value("n", encode(privateKey.getModulus()));
+            jwk.value("d", encode(privateKey.getPrivateExponent()));
         } else if (key.getKey() instanceof RSAPublicKey) {
             final RSAPublicKey publicKey = (RSAPublicKey) key.getKey();
-            jwk.add("n", encode(publicKey.getModulus()));
-            jwk.add("e", encode(publicKey.getPublicExponent()));
+            jwk.value("n", encode(publicKey.getModulus()));
+            jwk.value("e", encode(publicKey.getPublicExponent()));
         } else {
             throw new UnsupportedOperationException("Unkown RSA Key type: " + key.getKey().getClass().getName());
         }
-        jwk.add("kty", "RSA");
+        jwk.value("kty", "RSA");
     }
 
-    private void toDsaKey(final Key key, final JsonObjectBuilder jwk) {
+    private void toDsaKey(final Key key, final JsonBuilder<JsonObject> jwk) {
 
         if (key.getKey() instanceof DSAPrivateKey) {
             final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
-            jwk.add("x", encode(privateKey.getX()));
-            jwk.add("p", encode(privateKey.getParams().getP()));
-            jwk.add("q", encode(privateKey.getParams().getQ()));
-            jwk.add("g", encode(privateKey.getParams().getG()));
+            jwk.value("x", encode(privateKey.getX()));
+            jwk.value("p", encode(privateKey.getParams().getP()));
+            jwk.value("q", encode(privateKey.getParams().getQ()));
+            jwk.value("g", encode(privateKey.getParams().getG()));
         } else if (key.getKey() instanceof DSAPublicKey) {
             final DSAPublicKey privateKey = (DSAPublicKey) key.getKey();
-            jwk.add("y", encode(privateKey.getY()));
-            jwk.add("p", encode(privateKey.getParams().getP()));
-            jwk.add("q", encode(privateKey.getParams().getQ()));
-            jwk.add("g", encode(privateKey.getParams().getG()));
+            jwk.value("y", encode(privateKey.getY()));
+            jwk.value("p", encode(privateKey.getParams().getP()));
+            jwk.value("q", encode(privateKey.getParams().getQ()));
+            jwk.value("g", encode(privateKey.getParams().getG()));
         } else {
             throw new UnsupportedOperationException("Unkown DSA Key type: " + key.getKey().getClass().getName());
         }
-        jwk.add("kty", "DSA");
+        jwk.value("kty", "DSA");
     }
 
-    private void toEcKey(final Key key, final JsonObjectBuilder jwk) {
+    private void toEcKey(final Key key, final JsonBuilder<JsonObject> jwk) {
 
         if (key.getKey() instanceof ECPrivateKey) {
             final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
-            jwk.add("d", encode(privateKey.getS()));
-            jwk.add("crv", curveName(privateKey.getParams()));
+            jwk.value("d", encode(privateKey.getS()));
+            jwk.value("crv", curveName(privateKey.getParams()));
             if (key.getPublicKey() != null) {
                 final ECPublicKey publicKey = (ECPublicKey) key.getPublicKey().getKey();
                 final ECPoint point = publicKey.getW();
-                jwk.add("y", encode(point.getAffineY()));
-                jwk.add("x", encode(point.getAffineX()));
+                jwk.value("y", encode(point.getAffineY()));
+                jwk.value("x", encode(point.getAffineX()));
             }
         } else if (key.getKey() instanceof ECPublicKey) {
             final ECPublicKey publicKey = (ECPublicKey) key.getKey();
             final ECPoint point = publicKey.getW();
-            jwk.add("y", encode(point.getAffineY()));
-            jwk.add("x", encode(point.getAffineX()));
-            jwk.add("crv", curveName(publicKey.getParams()));
+            jwk.value("y", encode(point.getAffineY()));
+            jwk.value("x", encode(point.getAffineX()));
+            jwk.value("crv", curveName(publicKey.getParams()));
         } else {
             throw new UnsupportedOperationException("Unkown EC Key type: " + key.getKey().getClass().getName());
         }
-        jwk.add("kty", "EC");
+        jwk.value("kty", "EC");
     }
 
     private String curveName(final ECParameterSpec spec) {
@@ -339,15 +336,15 @@ public class JwkParser implements Key.Format.Parser {
         return new Key(keySpec, Key.Type.SECRET, Key.Algorithm.OCT, Key.Format.JWK, attributes);
     }
 
-    private void toOctKey(final Key key, final JsonObjectBuilder jwk) {
+    private void toOctKey(final Key key, final JsonBuilder<JsonObject> jwk) {
 
         if (key.getKey() instanceof SecretKey) {
             final SecretKey publicKey = (SecretKey) key.getKey();
-            jwk.add("k", encode(publicKey.getEncoded()));
+            jwk.value("k", encode(publicKey.getEncoded()));
         } else {
             throw new UnsupportedOperationException("Unkown RSA Key type: " + key.getKey().getClass().getName());
         }
-        jwk.add("kty", "oct");
+        jwk.value("kty", "oct");
     }
 
 
@@ -358,25 +355,25 @@ public class JwkParser implements Key.Format.Parser {
     private Map<String, String> getAttributes(final JsonObject jwkObject, final Collection<String> excludes) {
         final Map<String, String> map = new HashMap<>();
 
-        for (final Map.Entry<String, JsonValue> entry : jwkObject.entrySet()) {
+        for (final Map.Entry<String, Object> entry : jwkObject.entrySet()) {
             if (excludes.contains(entry.getKey())) continue;
             map.put(entry.getKey(), toString(entry.getValue()));
         }
         return map;
     }
 
-    private String toString(final JsonValue value) {
-        switch (value.getValueType()) {
-            case STRING:
-                final String string = value.toString();
-                return string.substring(1, string.length() - 1);
-            case NULL:
-                return null;
-            default:
-                return value.toString();
+    private String toString(final Object value) {
+        if (value == null) return null;
+        if (value instanceof JsonObject) {
+            final JsonObject object = (JsonObject) value;
+            return JsonWriter.string(object);
         }
+        if (value instanceof JsonArray) {
+            final JsonArray objects = (JsonArray) value;
+            return JsonWriter.string(objects);
+        }
+        return value.toString();
     }
-
 
     private void checkPublicKey(final RSAPublicKeySpec spec) {
         final List<String> missing = new ArrayList<>();
@@ -451,6 +448,7 @@ public class JwkParser implements Key.Format.Parser {
         public String getString(final String s, final String s1) {
             return jwk.getString(s, s1);
         }
+
     }
 
     private JsonObject getJwk(final JsonObject jsonObject) {
@@ -466,21 +464,21 @@ public class JwkParser implements Key.Format.Parser {
     }
 
     private JsonObject getJwkFromJwks(final JsonObject jwks) {
-        final JsonValue keys = jwks.getValue("keys");
+        final Object keys = jwks.get("keys");
 
         if (keys == null) {
             throw new IllegalArgumentException("Invalid JWKS; 'keys' entry is missing.");
         }
 
-        switch (keys.getValueType()) {
-            case ARRAY:
-                return getFirstJwk(jwks, keys.asJsonArray());
-            case OBJECT:
-                return keys.asJsonObject();
-            default:
-                throw new IllegalArgumentException("Invalid JWKS; 'keys' entry should be an array.");
-
+        if (keys instanceof JsonObject) {
+            return (JsonObject) keys;
         }
+
+        if (keys instanceof JsonArray) {
+            return getFirstJwk(jwks, (JsonArray) keys);
+        }
+
+        throw new IllegalArgumentException("Invalid JWKS; 'keys' entry should be an array.");
     }
 
     private JsonObject getFirstJwk(final JsonObject jwks, final JsonArray keys) {
@@ -488,13 +486,13 @@ public class JwkParser implements Key.Format.Parser {
             throw new IllegalArgumentException("Invalid JWKS; 'keys' entry is empty.\n" + jwks.toString());
         }
 
-        final JsonValue value = keys.get(0);
+        final Object value = keys.get(0);
 
-        if (!JsonValue.ValueType.OBJECT.equals(value.getValueType())) {
+        if (!(value instanceof JsonObject)) {
             throw new IllegalArgumentException("Invalid JWKS; 'keys' array should contain jwk objects.\n" + jwks.toString());
         }
 
-        return value.asJsonObject();
+        return (JsonObject) value;
     }
 
     /**
@@ -514,9 +512,9 @@ public class JwkParser implements Key.Format.Parser {
 
     @Override
     public byte[] encode(final Key key) {
-        final JsonObjectBuilder builder = Json.createObjectBuilder();
+        final JsonBuilder<JsonObject> builder = JsonObject.builder();
         for (final Map.Entry<String, String> entry : key.getAttributes().entrySet()) {
-            builder.add(entry.getKey(), entry.getValue());
+            builder.value(entry.getKey(), entry.getValue());
         }
 
         switch (key.getAlgorithm()) {
@@ -540,8 +538,12 @@ public class JwkParser implements Key.Format.Parser {
                 throw new UnsupportedOperationException("Cannot encode key type: " + key.getAlgorithm());
         }
 
-        final JsonObject build = builder.build();
-        return build.toString().getBytes();
+        final JsonObject build = builder.done();
+        return JsonWriter.string(build).getBytes();
+    }
+
+    private void encodeAttribute(final JsonBuilder<JsonObject> builder, final String key, final String value) {
+        builder.value(key, value);
     }
 
 }

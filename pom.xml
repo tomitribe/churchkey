@@ -78,14 +78,21 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.grack</groupId>
+      <artifactId>nanojson</artifactId>
+      <version>1.7</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.johnzon</groupId>
       <artifactId>johnzon-core</artifactId>
       <version>1.2.14</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-json_1.1_spec</artifactId>
       <version>1.5</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.johnzon</groupId>
