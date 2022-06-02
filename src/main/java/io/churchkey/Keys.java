@@ -16,14 +16,14 @@
  */
 package io.churchkey;
 
-/**
- * The primary factory used to obtain instances of {@link Key}
- *
- * This factory should be favored over calling the constructor's of {@link Key} directly.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class Keys {
 
-    private Keys() {
+    final List<Key> keys = new ArrayList<>();
+
+    public Keys() {
     }
 
 }

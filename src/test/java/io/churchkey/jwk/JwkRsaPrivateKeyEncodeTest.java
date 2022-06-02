@@ -41,7 +41,7 @@ public class JwkRsaPrivateKeyEncodeTest {
         final Key key = decoder.decode(resource.bytes("private.jwk"));
         assertKey(expected, key);
 
-        final byte[] encode = Key.encode(key);
+        final byte[] encode = key.encode(key.getFormat());
 
         JsonAsserts.assertJson(new String(resource.bytes("private.jwk")), new String(encode));
         assertKey(expected, Key.decode(encode));
@@ -75,7 +75,7 @@ public class JwkRsaPrivateKeyEncodeTest {
         final Key key = decoder.decode(resource.bytes("private.jwk"));
         assertKey(expected, key);
 
-        final byte[] encode = Key.encode(key);
+        final byte[] encode = key.encode(key.getFormat());
 
         JsonAsserts.assertJson(new String(resource.bytes("private.jwk")), new String(encode));
 

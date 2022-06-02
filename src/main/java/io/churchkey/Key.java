@@ -204,49 +204,6 @@ public class Key {
     }
 
     /**
-     * Encodes the key to the {@link Format} discovered
-     * when this key was decoded via {@link #decode(byte[])} or {@link Format#PEM}
-     * if this key was created via call to {@link #of(java.security.Key)}.
-     *
-     * Keys can be exported to any format regardless of which format was present when
-     * {@link Key#decode(byte[])} was called.  This allows keys to be easily converted
-     * from one format to another.
-     *
-     * Private keys formatted to {@link Format#PEM} will
-     * be written in PKCS8 format and start with "BEGIN PRIVATE KEY"
-     *
-     * Public keys formatted to  {@link Format#PEM} will
-     * be written in X509 format and start with "BEGIN PUBLIC KEY"
-     *
-     * It is currently not possible to encode to PKCS1 formats and create key files
-     * starting with "BEGIN RSA PRIVATE KEY", "BEGIN DSA PRIVATE KEY" or "BEGIN EC PRIVATE KEY"
-     * though these files can be read via {@link Key#decode(byte[])}
-     */
-    public static byte[] encode(final Key key) {
-        return encode(key, key.getFormat());
-    }
-
-    /**
-     * Encodes the key to the specified {@link Format}
-     *
-     * Private keys formatted to {@link Format#PEM} will
-     * be written in PKCS8 format and start with "BEGIN PRIVATE KEY"
-     *
-     * Public keys formatted to  {@link Format#PEM} will
-     * be written in X509 format and start with "BEGIN PUBLIC KEY"
-     *
-     * It is currently not possible to encode to PKCS1 formats and create key files
-     * starting with "BEGIN RSA PRIVATE KEY", "BEGIN DSA PRIVATE KEY" or "BEGIN EC PRIVATE KEY"
-     * though these files can be read via {@link Key#decode(byte[])}
-     *
-     * @param key The key instance that will be formatted
-     * @return
-     */
-    public static byte[] encode(final Key key, Format format) {
-        return format.encode(key);
-    }
-
-    /**
      * Creates a {@link Key} instance that encompasses both the public and private keys.  If this Key
      * instance is exported via {@link Key#encode(Format)}} the resulting file will be a private key
      * file that includes both the public and private key data.

@@ -90,7 +90,7 @@ public class OpenSSHPublicKeyTest {
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
 
-        final byte[] encoded = Key.encode(key);
+        final byte[] encoded = key.encode(key.getFormat());
         assertEquals(new String(resource.bytes("public.openssh")), new String(encoded));
     }
 

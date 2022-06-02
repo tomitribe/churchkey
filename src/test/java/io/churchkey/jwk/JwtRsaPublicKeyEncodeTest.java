@@ -41,7 +41,7 @@ public class JwtRsaPublicKeyEncodeTest {
         final Key key = decoder.decode(resource.bytes("public.jwk"));
         assertKey(expected, key);
 
-        final byte[] encode = Key.encode(key);
+        final byte[] encode = key.encode(key.getFormat());
 
         JsonAsserts.assertJson(new String(resource.bytes("public.jwk")), new String(encode));
 
@@ -70,7 +70,7 @@ public class JwtRsaPublicKeyEncodeTest {
         final Key key = decoder.decode(resource.bytes("public.jwk"));
         assertKey(expected, key);
 
-        final byte[] encode = Key.encode(key);
+        final byte[] encode = key.encode(key.getFormat());
 
         JsonAsserts.assertJson(new String(resource.bytes("public.jwk")), new String(encode));
 

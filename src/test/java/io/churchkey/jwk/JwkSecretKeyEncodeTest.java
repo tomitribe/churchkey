@@ -58,7 +58,7 @@ public class JwkSecretKeyEncodeTest extends org.junit.Assert {
         assertEquals(key.getFormat(), Key.Format.JWK);
         assertEquals(key.getType(), Key.Type.SECRET);
 
-        final byte[] encode = Key.encode(key);
+        final byte[] encode = key.encode(key.getFormat());
 
         assertEquals("{" +
                 "\"alg\":\"HS256\"," +
