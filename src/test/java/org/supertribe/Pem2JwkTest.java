@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import io.churchkey.JsonAsserts;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 
 import java.security.interfaces.RSAPublicKey;
 
@@ -39,7 +38,7 @@ public class Pem2JwkTest {
                 "0OtHgJIlIaGxK7mY/QIDAQAB\n" +
                 "-----END PUBLIC KEY-----\n";
 
-        final Key key = Keys.decode(pemFile.getBytes());
+        final Key key = Key.decode(pemFile.getBytes());
 
         // We have a key instance we can use with JCE
         Assert.assertTrue(key.getKey() instanceof RSAPublicKey);

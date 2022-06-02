@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import io.churchkey.Key;
 import io.churchkey.KeyAsserts;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 
 import java.security.KeyFactory;
@@ -61,7 +60,7 @@ public class BeginRsaPrivateKeyTest {
         final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) rsa.generatePrivate(new PKCS8EncodedKeySpec(resource.bytes("private.pkcs8.der")));
 
         final byte[] bytes = resource.bytes("private.pkcs1.pem");
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
 
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -76,7 +75,7 @@ public class BeginRsaPrivateKeyTest {
     public void publicKey() throws Exception {
         final Resource resource = Resource.resource("rsa", bits, 256);
         final byte[] bytes = resource.bytes("private.pkcs1.pem");
-        final Key key = Keys.decode(bytes).getPublicKey();
+        final Key key = Key.decode(bytes).getPublicKey();
 
         assertNotNull(key);
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());

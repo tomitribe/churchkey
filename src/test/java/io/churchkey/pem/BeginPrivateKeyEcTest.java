@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 import io.churchkey.ec.ECParameterSpecs;
 import org.tomitribe.util.Hex;
@@ -123,7 +122,7 @@ public class BeginPrivateKeyEcTest {
         final byte[] encoded = expected.encode(Key.Format.PEM);
 
         // Read it back from the PEM file
-        final Key actual = Keys.decode(encoded);
+        final Key actual = Key.decode(encoded);
 
         // Assert what we read is identical
         final ECPrivateKey expectedKey = (ECPrivateKey) expected.getKey();
@@ -163,7 +162,7 @@ public class BeginPrivateKeyEcTest {
     public void roundTrip() throws IOException {
         final Key read = EcKeys.decode(resource.bytes("private.pkcs8." + openSslCurveName + ".oid.pem"));
         final byte[] encode = read.encode(Key.Format.PEM);
-        final Key written = Keys.decode(encode);
+        final Key written = Key.decode(encode);
 
         KeyAsserts.assertEcPrivateKey((ECPrivateKey) read.getKey(), (ECPrivateKey) written.getKey());
     }

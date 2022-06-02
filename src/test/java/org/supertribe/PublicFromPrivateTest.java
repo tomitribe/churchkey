@@ -18,7 +18,6 @@ package org.supertribe;
 
 import org.junit.Test;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,7 +34,7 @@ public class PublicFromPrivateTest {
                 "-----END EC PRIVATE KEY-----\n";
 
         // Read the PEM file
-        final Key key = Keys.decode(pemFile.getBytes());
+        final Key key = Key.decode(pemFile.getBytes());
 
         // Get the public key
         final Key publicKey = key.getPublicKey();

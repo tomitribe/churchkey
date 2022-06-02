@@ -19,7 +19,6 @@ package org.supertribe;
 import org.junit.Assert;
 import org.junit.Test;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 
 import java.security.interfaces.RSAPublicKey;
 
@@ -36,7 +35,7 @@ public class ExampleTest {
                 "0OtHgJIlIaGxK7mY/QIDAQAB\n" +
                 "-----END PUBLIC KEY-----\n";
 
-        final Key key = Keys.decode(pemFile.getBytes());
+        final Key key = Key.decode(pemFile.getBytes());
 
         Assert.assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
         Assert.assertEquals(Key.Format.PEM, key.getFormat());

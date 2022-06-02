@@ -64,7 +64,7 @@ public class KeyPairTest {
 
         final byte[] encoded = expected.encode(format);
 
-        final Key actual = Keys.decode(encoded);
+        final Key actual = Key.decode(encoded);
 
         Assert.assertEquals(Key.Type.PRIVATE, actual.getType());
         assertEquals(format, actual.getFormat());
@@ -86,7 +86,7 @@ public class KeyPairTest {
 
         final byte[] encoded = expected.encode(format);
 
-        final Key actual = Keys.decode(encoded);
+        final Key actual = Key.decode(encoded);
 
         Assert.assertEquals(Key.Type.PRIVATE, actual.getType());
         assertEquals(format, actual.getFormat());
@@ -108,7 +108,7 @@ public class KeyPairTest {
 
         final byte[] encoded = expected.encode(format);
 
-        final Key actual = Keys.decode(encoded);
+        final Key actual = Key.decode(encoded);
 
         Assert.assertEquals(Key.Type.PRIVATE, actual.getType());
         assertEquals(format, actual.getFormat());
@@ -126,6 +126,6 @@ public class KeyPairTest {
     private Key generate(final Key.Algorithm algorithm) throws NoSuchAlgorithmException {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance(algorithm.name());
         final KeyPair pair = generator.generateKeyPair();
-        return Keys.of(pair);
+        return Key.of(pair);
     }
 }

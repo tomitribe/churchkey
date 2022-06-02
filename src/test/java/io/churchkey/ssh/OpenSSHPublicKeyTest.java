@@ -17,7 +17,6 @@
 package io.churchkey.ssh;
 
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 import io.churchkey.ec.ECParameterSpecs;
 import org.junit.Ignore;
@@ -53,7 +52,7 @@ public class OpenSSHPublicKeyTest {
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPublicKey expected = (RSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
 
-        final Key key = Keys.decode(resource.bytes("public.openssh"));
+        final Key key = Key.decode(resource.bytes("public.openssh"));
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -86,12 +85,12 @@ public class OpenSSHPublicKeyTest {
     public void testECDecode() throws Exception {
         final Resource resource = Resource.resource("ecdsa-nistp256");
 
-        final Key key = Keys.decode(resource.bytes("public.openssh"));
+        final Key key = Key.decode(resource.bytes("public.openssh"));
         assertEquals(Key.Algorithm.EC, key.getAlgorithm());
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
 
-        final byte[] encoded = Keys.encode(key);
+        final byte[] encoded = Key.encode(key);
         assertEquals(new String(resource.bytes("public.openssh")), new String(encoded));
     }
 
@@ -101,7 +100,7 @@ public class OpenSSHPublicKeyTest {
         final KeyFactory rsa = KeyFactory.getInstance("DSA");
         final DSAPublicKey expected = (DSAPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
 
-        final Key key = Keys.decode(resource.bytes("public.openssh"));
+        final Key key = Key.decode(resource.bytes("public.openssh"));
         assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -130,7 +129,7 @@ public class OpenSSHPublicKeyTest {
         final KeyFactory rsa = KeyFactory.getInstance("EC");
         final ECPublicKey expected = (ECPublicKey) rsa.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
 
-        final Key key = Keys.decode(resource.bytes("public.openssh"));
+        final Key key = Key.decode(resource.bytes("public.openssh"));
         assertEquals(Key.Algorithm.EC, key.getAlgorithm());
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());

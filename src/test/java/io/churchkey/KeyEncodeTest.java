@@ -37,7 +37,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.PEM));
 
         assertNotNull(content);
         assertTrue(content.startsWith("-----BEGIN PUBLIC KEY-----"));
@@ -49,7 +49,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.OPENSSH));
         assertNotNull(content);
         assertTrue(content.startsWith("ssh-rsa "));
     }
@@ -59,7 +59,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -69,7 +69,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }
@@ -79,7 +79,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.PEM));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.PEM));
 
         assertNotNull(content);
         assertTrue(content.startsWith("-----BEGIN PRIVATE KEY-----"));
@@ -92,7 +92,7 @@ public class KeyEncodeTest {
         final KeyPair pair = generator.generateKeyPair();
         final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
 
-        final String content = new String(Keys.of(expected).encode(Key.Format.OPENSSH));
+        final String content = new String(Key.of(expected).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
     }
@@ -103,7 +103,7 @@ public class KeyEncodeTest {
         final KeyPair pair = generator.generateKeyPair();
         final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
 
-        final String content = new String(Keys.of(expected).encode(Key.Format.SSH2));
+        final String content = new String(Key.of(expected).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -114,7 +114,7 @@ public class KeyEncodeTest {
         final KeyPair pair = generator.generateKeyPair();
         final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
 
-        final String content = new String(Keys.of(expected).encode(Key.Format.JWK));
+        final String content = new String(Key.of(expected).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }
@@ -124,7 +124,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.PEM));
 
         assertNotNull(content);
         assertTrue(content.startsWith("-----BEGIN PUBLIC KEY-----"));
@@ -136,7 +136,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
     }
@@ -146,7 +146,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -156,7 +156,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }
@@ -166,7 +166,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.PEM));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.PEM));
 
         assertNotNull(content);
     }
@@ -176,7 +176,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.OPENSSH));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
     }
@@ -186,7 +186,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.SSH2));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -196,7 +196,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.JWK));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }
@@ -206,7 +206,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.PEM));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.PEM));
 
         assertNotNull(content);
         assertTrue(content.startsWith("-----BEGIN PUBLIC KEY-----"));
@@ -218,7 +218,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.OPENSSH));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
         assertTrue(content.startsWith("ecdsa-sha2-nistp256 AAAA"));
@@ -229,7 +229,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.SSH2));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -239,7 +239,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPublic()).encode(Key.Format.JWK));
+        final String content = new String(Key.of(pair.getPublic()).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }
@@ -249,7 +249,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.PEM));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.PEM));
 
         assertNotNull(content);
         assertTrue(content.startsWith("-----BEGIN PRIVATE KEY-----"));
@@ -261,7 +261,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair).encode(Key.Format.OPENSSH));
+        final String content = new String(Key.of(pair).encode(Key.Format.OPENSSH));
 
         assertNotNull(content);
     }
@@ -271,7 +271,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.SSH2));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -281,7 +281,7 @@ public class KeyEncodeTest {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
         final KeyPair pair = generator.generateKeyPair();
 
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.JWK));
+        final String content = new String(Key.of(pair.getPrivate()).encode(Key.Format.JWK));
 
         assertNotNull(content);
     }

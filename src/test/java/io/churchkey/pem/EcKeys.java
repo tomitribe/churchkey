@@ -18,7 +18,6 @@ package io.churchkey.pem;
 import org.junit.Assume;
 import io.churchkey.InvalidPrivateKeySpecException;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 
 import java.security.spec.InvalidParameterSpecException;
 
@@ -41,7 +40,7 @@ public class EcKeys {
     public static Key decode(final byte[] bytes) {
         final Key key;
         try {
-            key = Keys.decode(bytes);
+            key = Key.decode(bytes);
         } catch (InvalidPrivateKeySpecException e) {
             Throwable t = getCause(e);
             final boolean unsupported = t instanceof InvalidParameterSpecException && t.getMessage().startsWith("Not a supported curve:");

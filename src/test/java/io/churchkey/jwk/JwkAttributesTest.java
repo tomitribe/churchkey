@@ -17,7 +17,6 @@
 package io.churchkey.jwk;
 
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import org.junit.Test;
 
 public class JwkAttributesTest extends org.junit.Assert {
@@ -44,7 +43,7 @@ public class JwkAttributesTest extends org.junit.Assert {
                 "  \"qi\": \"yTa2sQrLQCFkLuc3Zi-0xIHyD-ohb1WDLiT08H1dSPfx-Y5l8pNn_fG7N5GWFic-ae5h-GKbX14e4MAE5fYgKA\"\n" +
                 "}";
 
-        final Key key = Keys.decode(jwk.getBytes());
+        final Key key = Key.decode(jwk.getBytes());
 
         assertEquals("1234", key.getAttribute("kid"));
         assertEquals("{\"feet\":5}", key.getAttribute("objects"));
@@ -80,7 +79,7 @@ public class JwkAttributesTest extends org.junit.Assert {
                 "  \"e\": \"AQAB\"\n" +
                 "}";
 
-        final Key key = Keys.decode(jwk.getBytes());
+        final Key key = Key.decode(jwk.getBytes());
 
         assertEquals("1234", key.getAttribute("kid"));
         assertEquals("{\"feet\":5}", key.getAttribute("objects"));

@@ -16,7 +16,6 @@
  */
 package io.churchkey.jwk;
 
-import io.churchkey.Keys;
 import org.junit.Test;
 import io.churchkey.Key;
 
@@ -38,7 +37,7 @@ public class JwkSecretKeyTest extends org.junit.Assert {
                 "  \"alg\": \"HS256\"\n" +
                 "}";
 
-        final Key key = Keys.decode(jwk.getBytes());
+        final Key key = Key.decode(jwk.getBytes());
 
         assertEquals("orange-1234", key.getAttribute("kid"));
         assertEquals("sig", key.getAttribute("use"));

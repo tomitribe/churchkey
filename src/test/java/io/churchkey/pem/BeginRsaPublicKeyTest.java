@@ -20,7 +20,6 @@ import org.junit.Test;
 import io.churchkey.Decoder;
 import io.churchkey.JsonAsserts;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 
 import java.io.IOException;
@@ -52,7 +51,7 @@ public class BeginRsaPublicKeyTest {
 
     @Test
     public void testKeysDecode1024() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("rsa", 1024, 256);
 
         assertDecode(decoder, resource);
@@ -60,7 +59,7 @@ public class BeginRsaPublicKeyTest {
 
     @Test
     public void testKeysDecode2048() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("rsa", 2048, 256);
 
         assertDecode(decoder, resource);

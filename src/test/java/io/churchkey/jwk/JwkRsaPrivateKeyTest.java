@@ -16,7 +16,6 @@
  */
 package io.churchkey.jwk;
 
-import io.churchkey.Keys;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -55,7 +54,7 @@ public class JwkRsaPrivateKeyTest {
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
         final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) rsa.generatePrivate(new PKCS8EncodedKeySpec(resource.bytes("private.pkcs8.der")));
 
-        final Key key = Keys.decode(resource.bytes("private.jwk"));
+        final Key key = Key.decode(resource.bytes("private.jwk"));
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.JWK, key.getFormat());

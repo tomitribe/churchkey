@@ -19,7 +19,6 @@ package io.churchkey.jwk;
 import io.churchkey.Decoder;
 import io.churchkey.JsonAsserts;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import org.junit.Test;
 import io.churchkey.Resource;
 
@@ -33,7 +32,7 @@ public class JwtRsaPublicKeyEncodeTest {
 
     @Test
     public void testKeysDecode1024() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("rsa", 1024, 256);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
@@ -42,11 +41,11 @@ public class JwtRsaPublicKeyEncodeTest {
         final Key key = decoder.decode(resource.bytes("public.jwk"));
         assertKey(expected, key);
 
-        final byte[] encode = Keys.encode(key);
+        final byte[] encode = Key.encode(key);
 
         JsonAsserts.assertJson(new String(resource.bytes("public.jwk")), new String(encode));
 
-        assertKey(expected, Keys.decode(encode));
+        assertKey(expected, Key.decode(encode));
     }
 
     public void assertKey(final RSAPublicKey expected, final Key key) {
@@ -62,7 +61,7 @@ public class JwtRsaPublicKeyEncodeTest {
 
     @Test
     public void testKeysDecode2048() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("rsa", 2048, 256);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
@@ -71,11 +70,11 @@ public class JwtRsaPublicKeyEncodeTest {
         final Key key = decoder.decode(resource.bytes("public.jwk"));
         assertKey(expected, key);
 
-        final byte[] encode = Keys.encode(key);
+        final byte[] encode = Key.encode(key);
 
         JsonAsserts.assertJson(new String(resource.bytes("public.jwk")), new String(encode));
 
-        assertKey(expected, Keys.decode(encode));
+        assertKey(expected, Key.decode(encode));
     }
 
 }

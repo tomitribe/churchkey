@@ -17,7 +17,6 @@
 package io.churchkey.ssh;
 
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 import org.junit.Test;
 
@@ -49,7 +48,7 @@ public class BeginSSH2PublicKeyTest {
         final KeyFactory factory = KeyFactory.getInstance("RSA");
         final RSAPublicKey expected = (RSAPublicKey) factory.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
 
-        final Key key = Keys.decode(resource.bytes("public.ssh2"));
+        final Key key = Key.decode(resource.bytes("public.ssh2"));
         assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());
@@ -97,7 +96,7 @@ public class BeginSSH2PublicKeyTest {
         final KeyFactory factory = KeyFactory.getInstance("DSA");
         final DSAPublicKey expected = (DSAPublicKey) factory.generatePublic(new X509EncodedKeySpec(resource.bytes("public.pkcs8.der")));
 
-        final Key key = Keys.decode(resource.bytes("public.ssh2"));
+        final Key key = Key.decode(resource.bytes("public.ssh2"));
         assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());

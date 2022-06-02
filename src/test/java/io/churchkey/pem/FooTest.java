@@ -19,7 +19,6 @@ import io.churchkey.asn1.Asn1Class;
 import org.junit.Ignore;
 import org.junit.Test;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 import io.churchkey.asn1.Asn1Dump;
 import io.churchkey.asn1.Asn1Object;
@@ -133,7 +132,7 @@ public class FooTest {
     public void test4() throws Exception {
         final Resource resource = Resource.resource(BeginPrivateKeyTest.class.getSimpleName());
         final byte[] bytes = resource.bytes("openssl-rsaprivatekey-3072.pem");
-        final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Keys.decode(bytes).getKey();
+        final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Key.decode(bytes).getKey();
 
         final DerWriter d4 = new DerWriter();
         d4.integer(ZERO);
@@ -179,7 +178,7 @@ public class FooTest {
     public void test5() throws Exception {
         final Resource resource = Resource.resource(BeginPrivateKeyTest.class.getSimpleName());
         final byte[] bytes = resource.bytes("openssl-rsaprivatekey-3072.pem");
-        final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Keys.decode(bytes).getKey();
+        final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Key.decode(bytes).getKey();
 
 
         final byte[] bytes1 = write()
@@ -242,7 +241,7 @@ public class FooTest {
     public void test6() throws Exception {
         final Resource resource = Resource.resource(BeginPrivateKeyTest.class.getSimpleName());
         final byte[] bytes = resource.bytes("openssl-rsaprivatekey-3072.pem");
-        final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Keys.decode(bytes).getKey();
+        final RSAPrivateCrtKey key = (RSAPrivateCrtKey) Key.decode(bytes).getKey();
 
         final byte[] encoded = write()
                 .sequence(write()

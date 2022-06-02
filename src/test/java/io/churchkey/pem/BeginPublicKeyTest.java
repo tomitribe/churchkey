@@ -20,7 +20,6 @@ import org.junit.Test;
 import io.churchkey.Decoder;
 import io.churchkey.JsonAsserts;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 
 import java.io.IOException;
@@ -47,12 +46,12 @@ public class BeginPublicKeyTest {
 
     @Test
     public void testRsaKeysDecode1024() throws Exception {
-        assertRsaDecode(Keys::decode, "rsa", 1024);
+        assertRsaDecode(Key::decode, "rsa", 1024);
     }
 
     @Test
     public void testRsaKeysDecode2048() throws Exception {
-        assertRsaDecode(Keys::decode, "rsa", 2048);
+        assertRsaDecode(Key::decode, "rsa", 2048);
     }
 
     @Test
@@ -62,7 +61,7 @@ public class BeginPublicKeyTest {
 
     @Test
     public void testDSAKeysDecode1024() throws Exception {
-        assertDsaDecode(Keys::decode, "dsa", 1024);
+        assertDsaDecode(Key::decode, "dsa", 1024);
     }
 
     public static void assertRsaDecode(final Decoder decoder, final String algorithm, final int bits) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {

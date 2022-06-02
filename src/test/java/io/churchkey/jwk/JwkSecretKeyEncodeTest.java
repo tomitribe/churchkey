@@ -17,7 +17,6 @@
 package io.churchkey.jwk;
 
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import org.junit.Test;
 
 import java.util.Base64;
@@ -38,7 +37,7 @@ public class JwkSecretKeyEncodeTest extends org.junit.Assert {
                 "  \"alg\": \"HS256\"\n" +
                 "}";
 
-        final Key key = Keys.decode(jwk.getBytes());
+        final Key key = Key.decode(jwk.getBytes());
 
         assertEquals("orange-1234", key.getAttribute("kid"));
         assertEquals("sig", key.getAttribute("use"));
@@ -59,7 +58,7 @@ public class JwkSecretKeyEncodeTest extends org.junit.Assert {
         assertEquals(key.getFormat(), Key.Format.JWK);
         assertEquals(key.getType(), Key.Type.SECRET);
 
-        final byte[] encode = Keys.encode(key);
+        final byte[] encode = Key.encode(key);
 
         assertEquals("{" +
                 "\"alg\":\"HS256\"," +

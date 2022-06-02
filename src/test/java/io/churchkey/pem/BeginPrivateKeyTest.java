@@ -20,7 +20,6 @@ import io.churchkey.Decoder;
 import io.churchkey.KeyAsserts;
 import org.junit.Test;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 import org.tomitribe.util.Hex;
 
@@ -45,7 +44,7 @@ public class BeginPrivateKeyTest {
 
     @Test
     public void testKeysDecode1024() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("rsa", 1024, 256);
 
         assertDecode(decoder, resource);
@@ -61,7 +60,7 @@ public class BeginPrivateKeyTest {
 
     @Test
     public void testKeysDecode2048() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("rsa", 2048, 256);
 
         assertDecode(decoder, resource);
@@ -72,7 +71,7 @@ public class BeginPrivateKeyTest {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes("openssl-ecprivatekey-prime256v1.pem");
 
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
 
         assertBigInteger("s", privateKey.getS(), "" +
@@ -105,7 +104,7 @@ public class BeginPrivateKeyTest {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes("openssl-ecprivatekey-parameterspec.pem");
 
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
 
         assertBigInteger("s", privateKey.getS(), "" +
@@ -138,7 +137,7 @@ public class BeginPrivateKeyTest {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes("java-ecprivatekey-prime256v1.pem");
 
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final ECPrivateKey privateKey = (ECPrivateKey) key.getKey();
 
         assertBigInteger("s", privateKey.getS(), "" +
@@ -178,8 +177,8 @@ public class BeginPrivateKeyTest {
                 "\"x\":\"oQ_WBq0fFaIXf69gkMP-p8vwZXhzI9ST2FIPOfNmd5I\"," +
                 "\"kty\":\"EC\"}";
 
-        final Key expected = Keys.decode(jwk.getBytes());
-        final Key actual = Keys.decode(expected.encode(Key.Format.PEM));
+        final Key expected = Key.decode(jwk.getBytes());
+        final Key actual = Key.decode(expected.encode(Key.Format.PEM));
 
         KeyAsserts.assertEcPrivateKey((ECPrivateKey) expected.getKey(), (ECPrivateKey) actual.getKey());
     }

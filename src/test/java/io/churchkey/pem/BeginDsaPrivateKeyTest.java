@@ -20,7 +20,6 @@ import org.junit.Test;
 import io.churchkey.Decoder;
 import io.churchkey.Key;
 import io.churchkey.KeyAsserts;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 
 import java.security.KeyFactory;
@@ -41,7 +40,7 @@ public class BeginDsaPrivateKeyTest {
 
     @Test
     public void testKeysDecode1024() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("dsa", 1024, 256);
 
         assertDecode(decoder, resource);

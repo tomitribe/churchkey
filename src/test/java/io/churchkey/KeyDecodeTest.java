@@ -36,7 +36,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPublicPemPkcs1() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPublicPemPkcs1.pem"));
+        final Key key = Key.decode(resource.bytes("rsaPublicPemPkcs1.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -45,7 +45,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPublicPemX509() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPublicPemX509.pem"));
+        final Key key = Key.decode(resource.bytes("rsaPublicPemX509.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -54,7 +54,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPublicOpenSsh() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPublicOpenSsh.txt"));
+        final Key key = Key.decode(resource.bytes("rsaPublicOpenSsh.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -63,7 +63,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPublicSsh2() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPublicSsh2.txt"));
+        final Key key = Key.decode(resource.bytes("rsaPublicSsh2.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());
@@ -72,7 +72,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPublicJwk() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPublicJwk.jwk"));
+        final Key key = Key.decode(resource.bytes("rsaPublicJwk.jwk"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.JWK, key.getFormat());
@@ -81,7 +81,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPrivatePemPkcs1() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPrivatePemPkcs1.pem"));
+        final Key key = Key.decode(resource.bytes("rsaPrivatePemPkcs1.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -90,7 +90,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPrivatePemPkcs8() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPrivatePemPkcs8.pem"));
+        final Key key = Key.decode(resource.bytes("rsaPrivatePemPkcs8.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -99,7 +99,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPrivateOpenSsh() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPrivateOpenSsh.txt"));
+        final Key key = Key.decode(resource.bytes("rsaPrivateOpenSsh.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -109,7 +109,7 @@ public class KeyDecodeTest {
     @Test
     @Ignore("This format does not appear to exist in the wild")
     public void rsaPrivateSsh2() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPrivateSsh2.txt"));
+        final Key key = Key.decode(resource.bytes("rsaPrivateSsh2.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());
@@ -118,7 +118,7 @@ public class KeyDecodeTest {
 
     @Test
     public void rsaPrivateJwk() throws Exception {
-        final Key key = Keys.decode(resource.bytes("rsaPrivateJwk.jwk"));
+        final Key key = Key.decode(resource.bytes("rsaPrivateJwk.jwk"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.JWK, key.getFormat());
@@ -128,7 +128,7 @@ public class KeyDecodeTest {
     @Test
     @Ignore("This format does not appear to exist in the wild")
     public void dsaPublicPemPkcs1() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPublicPemPkcs1.pem"));
+        final Key key = Key.decode(resource.bytes("dsaPublicPemPkcs1.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -137,7 +137,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPublicPemX509() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPublicPemX509.pem"));
+        final Key key = Key.decode(resource.bytes("dsaPublicPemX509.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -146,7 +146,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPublicOpenSsh() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPublicOpenSsh.txt"));
+        final Key key = Key.decode(resource.bytes("dsaPublicOpenSsh.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -155,7 +155,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPublicSsh2() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPublicSsh2.txt"));
+        final Key key = Key.decode(resource.bytes("dsaPublicSsh2.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());
@@ -164,7 +164,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPublicJwk() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPublicJwk.jwk"));
+        final Key key = Key.decode(resource.bytes("dsaPublicJwk.jwk"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.JWK, key.getFormat());
@@ -173,7 +173,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPrivatePemPkcs1() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPrivatePemPkcs1.pem"));
+        final Key key = Key.decode(resource.bytes("dsaPrivatePemPkcs1.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -182,7 +182,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPrivatePemPkcs8() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPrivatePemPkcs8.pem"));
+        final Key key = Key.decode(resource.bytes("dsaPrivatePemPkcs8.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -191,7 +191,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPrivateOpenSsh() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPrivateOpenSsh.txt"));
+        final Key key = Key.decode(resource.bytes("dsaPrivateOpenSsh.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -201,7 +201,7 @@ public class KeyDecodeTest {
     @Test
     @Ignore("This format does not appear to exist in the wild")
     public void dsaPrivateSsh2() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPrivateSsh2.txt"));
+        final Key key = Key.decode(resource.bytes("dsaPrivateSsh2.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());
@@ -210,7 +210,7 @@ public class KeyDecodeTest {
 
     @Test
     public void dsaPrivateJwk() throws Exception {
-        final Key key = Keys.decode(resource.bytes("dsaPrivateJwk.jwk"));
+        final Key key = Key.decode(resource.bytes("dsaPrivateJwk.jwk"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.JWK, key.getFormat());
@@ -220,7 +220,7 @@ public class KeyDecodeTest {
     @Test
     @Ignore("This format does not appear to exist in the wild")
     public void ecPublicPemPkcs1() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPublicPemPkcs1.pem"));
+        final Key key = Key.decode(resource.bytes("ecPublicPemPkcs1.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -229,7 +229,7 @@ public class KeyDecodeTest {
 
     @Test
     public void ecPublicPemX509() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPublicPemX509.pem"));
+        final Key key = Key.decode(resource.bytes("ecPublicPemX509.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -238,7 +238,7 @@ public class KeyDecodeTest {
 
     @Test
     public void ecPublicOpenSsh() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPublicOpenSsh.txt"));
+        final Key key = Key.decode(resource.bytes("ecPublicOpenSsh.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -248,7 +248,7 @@ public class KeyDecodeTest {
     @Test
     @Ignore("Implement")
     public void ecPublicSsh2() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPublicSsh2.txt"));
+        final Key key = Key.decode(resource.bytes("ecPublicSsh2.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());
@@ -257,7 +257,7 @@ public class KeyDecodeTest {
 
     @Test
     public void ecPublicJwk() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPublicJwk.jwk"));
+        final Key key = Key.decode(resource.bytes("ecPublicJwk.jwk"));
         assertNotNull(key);
         assertEquals(Key.Type.PUBLIC, key.getType());
         assertEquals(Key.Format.JWK, key.getFormat());
@@ -267,7 +267,7 @@ public class KeyDecodeTest {
     @Test
     @Ignore("Implement")
     public void ecPrivatePemPkcs1() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPrivatePemPkcs1.pem"));
+        final Key key = Key.decode(resource.bytes("ecPrivatePemPkcs1.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -276,7 +276,7 @@ public class KeyDecodeTest {
 
     @Test
     public void ecPrivatePemPkcs8() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPrivatePemPkcs8.pem"));
+        final Key key = Key.decode(resource.bytes("ecPrivatePemPkcs8.pem"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.PEM, key.getFormat());
@@ -285,7 +285,7 @@ public class KeyDecodeTest {
 
     @Test
     public void ecPrivateOpenSsh() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPrivateOpenSsh.txt"));
+        final Key key = Key.decode(resource.bytes("ecPrivateOpenSsh.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.OPENSSH, key.getFormat());
@@ -295,7 +295,7 @@ public class KeyDecodeTest {
     @Test
     @Ignore("This format does not appear to exist in the wild")
     public void ecPrivateSsh2() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPrivateSsh2.txt"));
+        final Key key = Key.decode(resource.bytes("ecPrivateSsh2.txt"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.SSH2, key.getFormat());
@@ -304,7 +304,7 @@ public class KeyDecodeTest {
 
     @Test
     public void ecPrivateJwk() throws Exception {
-        final Key key = Keys.decode(resource.bytes("ecPrivateJwk.jwk"));
+        final Key key = Key.decode(resource.bytes("ecPrivateJwk.jwk"));
         assertNotNull(key);
         assertEquals(Key.Type.PRIVATE, key.getType());
         assertEquals(Key.Format.JWK, key.getFormat());

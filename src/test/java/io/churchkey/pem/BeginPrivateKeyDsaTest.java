@@ -17,7 +17,6 @@ package io.churchkey.pem;
 
 import org.junit.Test;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 import org.tomitribe.util.Hex;
 
@@ -33,7 +32,7 @@ public class BeginPrivateKeyDsaTest {
     public void opensslDSAPrivateKey() throws Exception {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes("openssl-dsaprivatekey-3072.pem");
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
 
         assertBigInteger("x", privateKey.getX(), "" +
@@ -76,7 +75,7 @@ public class BeginPrivateKeyDsaTest {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes("java-dsaprivatekey-3072.pem");
 
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final DSAPrivateKey privateKey = (DSAPrivateKey) key.getKey();
 
         assertBigInteger("x", privateKey.getX(), "" +
@@ -136,7 +135,7 @@ public class BeginPrivateKeyDsaTest {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes(name);
 
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final byte[] encoded = key.encode(Key.Format.PEM);
 
         /*

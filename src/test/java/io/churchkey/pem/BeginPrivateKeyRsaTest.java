@@ -17,7 +17,6 @@ package io.churchkey.pem;
 
 import org.junit.Test;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 import org.tomitribe.util.Hex;
 
@@ -36,7 +35,7 @@ public class BeginPrivateKeyRsaTest {
     public void opensslRsaPrivateKey() throws Exception {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes("openssl-rsaprivatekey-3072.pem");
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
 
         assertBigInteger("Modulus", privateKey.getModulus(), "" +
@@ -108,7 +107,7 @@ public class BeginPrivateKeyRsaTest {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes("java-rsaprivatekey-3072.pem");
 
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) key.getKey();
         assertBigInteger("PublicExponent", privateKey.getPublicExponent(), "010001");
         assertBigInteger("Modulus", privateKey.getModulus(), "" +
@@ -192,7 +191,7 @@ public class BeginPrivateKeyRsaTest {
         final Resource resources = Resource.resource(this.getClass().getSimpleName());
         final byte[] bytes = resources.bytes(name);
 
-        final Key key = Keys.decode(bytes);
+        final Key key = Key.decode(bytes);
         final byte[] encoded = key.encode(Key.Format.PEM);
 
         /*
@@ -204,7 +203,7 @@ public class BeginPrivateKeyRsaTest {
     @Test
     public void opensslRsaPublicKey() throws IOException {
         final Resource resource = Resource.resource(this.getClass().getSimpleName());
-        final Key key = Keys.decode(resource.bytes("openssl-rsaprivatekey-3072.pem"));
+        final Key key = Key.decode(resource.bytes("openssl-rsaprivatekey-3072.pem"));
         final Key publicKey = key.getPublicKey();
         assertNotNull(publicKey);
         assertTrue(publicKey.getKey() instanceof RSAPublicKey);
@@ -216,7 +215,7 @@ public class BeginPrivateKeyRsaTest {
     @Test
     public void javaRsaPublicKey() throws IOException {
         final Resource resource = Resource.resource(this.getClass().getSimpleName());
-        final Key key = Keys.decode(resource.bytes("java-rsaprivatekey-3072.pem"));
+        final Key key = Key.decode(resource.bytes("java-rsaprivatekey-3072.pem"));
         final Key publicKey = key.getPublicKey();
         assertNotNull(publicKey);
         assertTrue(publicKey.getKey() instanceof RSAPublicKey);

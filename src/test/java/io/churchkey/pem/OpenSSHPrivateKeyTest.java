@@ -20,7 +20,6 @@ import io.churchkey.Decoder;
 import io.churchkey.KeyAsserts;
 import org.junit.Test;
 import io.churchkey.Key;
-import io.churchkey.Keys;
 import io.churchkey.Resource;
 
 import java.security.KeyFactory;
@@ -35,7 +34,7 @@ public class OpenSSHPrivateKeyTest {
 
     @Test
     public void rsa() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("opensshrsa", 2048, 256);
 
         final KeyFactory rsa = KeyFactory.getInstance("RSA");
@@ -54,10 +53,10 @@ public class OpenSSHPrivateKeyTest {
 
     @Test
     public void ec() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("ecdsa-nistp256");
 
-        final Key expectedKey = Keys.decode(resource.bytes("private.pkcs8.pem"));
+        final Key expectedKey = Key.decode(resource.bytes("private.pkcs8.pem"));
         final ECPrivateKey expected = (ECPrivateKey) expectedKey.getKey();
 
         final byte[] bytes = resource.bytes("private.openssh");
@@ -73,7 +72,7 @@ public class OpenSSHPrivateKeyTest {
 
     @Test
     public void dsa() throws Exception {
-        final Decoder decoder = Keys::decode;
+        final Decoder decoder = Key::decode;
         final Resource resource = Resource.resource("opensshdsa");
 
         final byte[] bytes = resource.bytes("private.openssh");
@@ -85,7 +84,7 @@ public class OpenSSHPrivateKeyTest {
         final DSAPrivateKey expected = (DSAPrivateKey) key.getKey();
 
         final byte[] encode = key.encode(Key.Format.OPENSSH);
-        final Key key2 = Keys.decode(encode);
+        final Key key2 = Key.decode(encode);
         final DSAPrivateKey actual = (DSAPrivateKey) key2.getKey();
 
         KeyAsserts.assertDsaPrivateKey(expected, actual);
