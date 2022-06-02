@@ -152,165 +152,6 @@ public class Key {
         this.attributes.putAll(attributes);
         this.publicKey = publicKey(key, publicKey, algorithm, format, attributes);
     }
-
-    /**
-     * Inspects the contents of the supplied string, assumes it to be the contents
-     * of a valid key file, determines what key format was supplied and then parses
-     * it returning a {@link Key} instance.
-     *
-     * The {@link Key} instance can be used to query what type of key was found
-     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
-     * and the actual {@link java.security.Key} instance.
-     * @param contents the contents of any valid PEM, JWK, OpenSSH or SSH2 key file
-     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
-     */
-    public static Key decode(final String contents) throws IOException {
-        return decode(contents.getBytes(UTF_8));
-    }
-
-    /**
-     * Inspects the contents of the supplied file, determines what key file
-     * format was supplied and then parses it returning a {@link Key} instance.
-     *
-     * The {@link Key} instance can be used to query what type of key was found
-     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
-     * and the actual {@link java.security.Key} instance.
-     * @param file a valid PEM, JWK, OpenSSH or SSH2 key file
-     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
-     */
-    public static Key decode(final File file) throws IOException {
-        return decode(IO.readBytes(file));
-    }
-
-    /**
-     * Inspects the contents of the supplied bytes, determines what key file
-     * format was supplied and then parses it returning a {@link Key} instance.
-     *
-     * The {@link Key} instance can be used to query what type of key was found
-     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
-     * and the actual {@link java.security.Key} instance.
-     * @param bytes contents of any valid PEM, JWK, OpenSSH or SSH2 key file
-     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
-     */
-    public static Key decode(final byte[] bytes) {
-        for (final Format format : Format.values()) {
-            final Key key = format.decode(bytes);
-            if (key != null) {
-                return key;
-            }
-        }
-
-        throw new IllegalArgumentException("Cannot decode key: " + new String(bytes));
-    }
-
-    /**
-     * Creates a {@link Key} instance that encompasses both the public and private keys.  If this Key
-     * instance is exported via {@link Key#encode(Format)}} the resulting file will be a private key
-     * file that includes both the public and private key data.
-     *
-     * The key Algorithm (RSA, DSA, EC) will be discovered automatically.  The Format will default
-     * to PEM.  The key Type will be set as PRIVATE.  The corresponding public key can be obtained
-     * via {@link Key#getPublicKey()}
-     *
-     * This method is largely a convenience method for formatting {@link java.security.KeyPair} instances.
-     * For example:
-     * <code>
-     * final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
-     * final KeyPair pair = generator.generateKeyPair();
-     *
-     * final byte[] openssh = Keys.of(pair).format(OPENSSH);
-     * </code>
-     */
-    public static Key of(final KeyPair pair) {
-        Objects.requireNonNull(pair);
-
-        final PrivateKey key = pair.getPrivate();
-
-        if (key instanceof DSAPrivateKey) {
-            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.DSA, Format.PEM);
-        }
-
-        if (key instanceof ECPrivateKey) {
-            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.EC, Format.PEM);
-        }
-
-        if (key instanceof RSAPrivateCrtKey) {
-            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.RSA, Format.PEM);
-        }
-
-        if (key instanceof RSAPrivateKey) {
-            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.RSA, Format.PEM);
-        }
-
-        throw new UnsupportedOperationException("Unsupported key type: " + key.getClass().getName());
-
-    }
-
-    /**
-     * Creates a {@link Key} instance that encompasses the specified {@link java.security.Key}.
-     *
-     * The key {@link Type} (PUBLIC, PRIVATE) and {@link Algorithm} (RSA, DSA, EC) will
-     * be discovered automatically.  The Format will default to PEM.
-     *
-     * If the key is {@link Type#PRIVATE} and is either {@link Algorithm#RSA} or  {@link Algorithm#DSA}
-     * the public key information will be calculated and can be obtained via {@link Key#getPublicKey()}
-     * via {@link Key#getPublicKey()}
-     *
-     * This method is largely a convenience method for formatting {@link java.security.Key} instances.
-     * For example:
-     * <code>
-     * final RSAPrivateCrtKey myKey = ...
-     * final byte[] jwk = Keys.of(myKey).format(JWK);
-     * </code>
-     */
-    public static Key of(final java.security.Key key) {
-        Objects.requireNonNull(key);
-
-        if (key instanceof RSAPrivateCrtKey) return of((RSAPrivateCrtKey) key);
-
-        if (key instanceof RSAPrivateKey) return of((RSAPrivateKey) key);
-
-        if (key instanceof RSAPublicKey) return of((RSAPublicKey) key);
-
-        if (key instanceof DSAPrivateKey) return of((DSAPrivateKey) key);
-
-        if (key instanceof DSAPublicKey) return of((DSAPublicKey) key);
-
-        if (key instanceof ECPrivateKey) return of((ECPrivateKey) key);
-
-        if (key instanceof ECPublicKey) return of((ECPublicKey) key);
-
-        throw new UnsupportedOperationException("Unsupported key type: " + key.getClass().getName());
-    }
-
-    private static Key of(final DSAPrivateKey key) {
-        return new Key(key, Type.PRIVATE, Algorithm.DSA, Format.PEM);
-    }
-
-    private static Key of(final DSAPublicKey key) {
-        return new Key(key, Type.PUBLIC, Algorithm.DSA, Format.PEM);
-    }
-
-    private static Key of(final ECPrivateKey key) {
-        return new Key(key, Type.PRIVATE, Algorithm.EC, Format.PEM);
-    }
-
-    private static Key of(final ECPublicKey key) {
-        return new Key(key, Type.PUBLIC, Algorithm.EC, Format.PEM);
-    }
-
-    private static Key of(final RSAPrivateCrtKey key) {
-        return new Key(key, Type.PRIVATE, Algorithm.RSA, Format.PEM);
-    }
-
-    private static Key of(final RSAPrivateKey key) {
-        return new Key(key, Type.PRIVATE, Algorithm.RSA, Format.PEM);
-    }
-
-    private static Key of(final RSAPublicKey key) {
-        return new Key(key, Type.PUBLIC, Algorithm.RSA, Format.PEM);
-    }
-
     private Key publicKey(final java.security.Key key, PublicKey publicKey, final Algorithm algorithm,
                           final Format format, final Map<String, String> attributes) {
         if (!(key instanceof PrivateKey)) {
@@ -486,6 +327,167 @@ public class Key {
     public String toSsh2() {
         return new String(encode(Format.SSH2), UTF_8);
     }
+
+
+
+    /**
+     * Inspects the contents of the supplied string, assumes it to be the contents
+     * of a valid key file, determines what key format was supplied and then parses
+     * it returning a {@link Key} instance.
+     *
+     * The {@link Key} instance can be used to query what type of key was found
+     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
+     * and the actual {@link java.security.Key} instance.
+     * @param contents the contents of any valid PEM, JWK, OpenSSH or SSH2 key file
+     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
+     */
+    public static Key decode(final String contents) throws IOException {
+        return decode(contents.getBytes(UTF_8));
+    }
+
+    /**
+     * Inspects the contents of the supplied file, determines what key file
+     * format was supplied and then parses it returning a {@link Key} instance.
+     *
+     * The {@link Key} instance can be used to query what type of key was found
+     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
+     * and the actual {@link java.security.Key} instance.
+     * @param file a valid PEM, JWK, OpenSSH or SSH2 key file
+     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
+     */
+    public static Key decode(final File file) throws IOException {
+        return decode(IO.readBytes(file));
+    }
+
+    /**
+     * Inspects the contents of the supplied bytes, determines what key file
+     * format was supplied and then parses it returning a {@link Key} instance.
+     *
+     * The {@link Key} instance can be used to query what type of key was found
+     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
+     * and the actual {@link java.security.Key} instance.
+     * @param bytes contents of any valid PEM, JWK, OpenSSH or SSH2 key file
+     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
+     */
+    public static Key decode(final byte[] bytes) {
+        for (final Format format : Format.values()) {
+            final Key key = format.decode(bytes);
+            if (key != null) {
+                return key;
+            }
+        }
+
+        throw new IllegalArgumentException("Cannot decode key: " + new String(bytes));
+    }
+
+    /**
+     * Creates a {@link Key} instance that encompasses both the public and private keys.  If this Key
+     * instance is exported via {@link Key#encode(Format)}} the resulting file will be a private key
+     * file that includes both the public and private key data.
+     *
+     * The key Algorithm (RSA, DSA, EC) will be discovered automatically.  The Format will default
+     * to PEM.  The key Type will be set as PRIVATE.  The corresponding public key can be obtained
+     * via {@link Key#getPublicKey()}
+     *
+     * This method is largely a convenience method for formatting {@link java.security.KeyPair} instances.
+     * For example:
+     * <code>
+     * final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+     * final KeyPair pair = generator.generateKeyPair();
+     *
+     * final byte[] openssh = Keys.of(pair).format(OPENSSH);
+     * </code>
+     */
+    public static Key of(final KeyPair pair) {
+        Objects.requireNonNull(pair);
+
+        final PrivateKey key = pair.getPrivate();
+
+        if (key instanceof DSAPrivateKey) {
+            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.DSA, Format.PEM);
+        }
+
+        if (key instanceof ECPrivateKey) {
+            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.EC, Format.PEM);
+        }
+
+        if (key instanceof RSAPrivateCrtKey) {
+            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.RSA, Format.PEM);
+        }
+
+        if (key instanceof RSAPrivateKey) {
+            return new Key(pair.getPrivate(), pair.getPublic(), Type.PRIVATE, Algorithm.RSA, Format.PEM);
+        }
+
+        throw new UnsupportedOperationException("Unsupported key type: " + key.getClass().getName());
+
+    }
+
+    /**
+     * Creates a {@link Key} instance that encompasses the specified {@link java.security.Key}.
+     *
+     * The key {@link Type} (PUBLIC, PRIVATE) and {@link Algorithm} (RSA, DSA, EC) will
+     * be discovered automatically.  The Format will default to PEM.
+     *
+     * If the key is {@link Type#PRIVATE} and is either {@link Algorithm#RSA} or  {@link Algorithm#DSA}
+     * the public key information will be calculated and can be obtained via {@link Key#getPublicKey()}
+     * via {@link Key#getPublicKey()}
+     *
+     * This method is largely a convenience method for formatting {@link java.security.Key} instances.
+     * For example:
+     * <code>
+     * final RSAPrivateCrtKey myKey = ...
+     * final byte[] jwk = Keys.of(myKey).format(JWK);
+     * </code>
+     */
+    public static Key of(final java.security.Key key) {
+        Objects.requireNonNull(key);
+
+        if (key instanceof RSAPrivateCrtKey) return of((RSAPrivateCrtKey) key);
+
+        if (key instanceof RSAPrivateKey) return of((RSAPrivateKey) key);
+
+        if (key instanceof RSAPublicKey) return of((RSAPublicKey) key);
+
+        if (key instanceof DSAPrivateKey) return of((DSAPrivateKey) key);
+
+        if (key instanceof DSAPublicKey) return of((DSAPublicKey) key);
+
+        if (key instanceof ECPrivateKey) return of((ECPrivateKey) key);
+
+        if (key instanceof ECPublicKey) return of((ECPublicKey) key);
+
+        throw new UnsupportedOperationException("Unsupported key type: " + key.getClass().getName());
+    }
+
+    private static Key of(final DSAPrivateKey key) {
+        return new Key(key, Type.PRIVATE, Algorithm.DSA, Format.PEM);
+    }
+
+    private static Key of(final DSAPublicKey key) {
+        return new Key(key, Type.PUBLIC, Algorithm.DSA, Format.PEM);
+    }
+
+    private static Key of(final ECPrivateKey key) {
+        return new Key(key, Type.PRIVATE, Algorithm.EC, Format.PEM);
+    }
+
+    private static Key of(final ECPublicKey key) {
+        return new Key(key, Type.PUBLIC, Algorithm.EC, Format.PEM);
+    }
+
+    private static Key of(final RSAPrivateCrtKey key) {
+        return new Key(key, Type.PRIVATE, Algorithm.RSA, Format.PEM);
+    }
+
+    private static Key of(final RSAPrivateKey key) {
+        return new Key(key, Type.PRIVATE, Algorithm.RSA, Format.PEM);
+    }
+
+    private static Key of(final RSAPublicKey key) {
+        return new Key(key, Type.PUBLIC, Algorithm.RSA, Format.PEM);
+    }
+
 
     public enum Type {
         /**
