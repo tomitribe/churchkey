@@ -91,6 +91,17 @@ public class KeyDecodeSetTest {
     }
 
     @Test
+    public void rsaPublicJwks() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("rsaPublicJwks.jwk"));
+        assertEquals(1, keys.size());
+        final Key key = keys.get(0);
+        assertNotNull(key);
+        assertEquals(Key.Type.PUBLIC, key.getType());
+        assertEquals(Key.Format.JWK, key.getFormat());
+        assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+    }
+
+    @Test
     public void rsaPrivatePemPkcs1() throws Exception {
         final List<Key> keys = Keys.decodeSet(resource.bytes("rsaPrivatePemPkcs1.pem"));
         assertEquals(1, keys.size());
@@ -138,6 +149,17 @@ public class KeyDecodeSetTest {
     @Test
     public void rsaPrivateJwk() throws Exception {
         final List<Key> keys = Keys.decodeSet(resource.bytes("rsaPrivateJwk.jwk"));
+        assertEquals(1, keys.size());
+        final Key key = keys.get(0);
+        assertNotNull(key);
+        assertEquals(Key.Type.PRIVATE, key.getType());
+        assertEquals(Key.Format.JWK, key.getFormat());
+        assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+    }
+
+    @Test
+    public void rsaPrivateJwks() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("rsaPrivateJwks.jwk"));
         assertEquals(1, keys.size());
         final Key key = keys.get(0);
         assertNotNull(key);
@@ -203,6 +225,17 @@ public class KeyDecodeSetTest {
     }
 
     @Test
+    public void dsaPublicJwks() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("dsaPublicJwks.jwk"));
+        assertEquals(1, keys.size());
+        final Key key = keys.get(0);
+        assertNotNull(key);
+        assertEquals(Key.Type.PUBLIC, key.getType());
+        assertEquals(Key.Format.JWK, key.getFormat());
+        assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
+    }
+
+    @Test
     public void dsaPrivatePemPkcs1() throws Exception {
         final List<Key> keys = Keys.decodeSet(resource.bytes("dsaPrivatePemPkcs1.pem"));
         assertEquals(1, keys.size());
@@ -250,6 +283,17 @@ public class KeyDecodeSetTest {
     @Test
     public void dsaPrivateJwk() throws Exception {
         final List<Key> keys = Keys.decodeSet(resource.bytes("dsaPrivateJwk.jwk"));
+        assertEquals(1, keys.size());
+        final Key key = keys.get(0);
+        assertNotNull(key);
+        assertEquals(Key.Type.PRIVATE, key.getType());
+        assertEquals(Key.Format.JWK, key.getFormat());
+        assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
+    }
+
+    @Test
+    public void dsaPrivateJwks() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("dsaPrivateJwks.jwk"));
         assertEquals(1, keys.size());
         final Key key = keys.get(0);
         assertNotNull(key);
@@ -316,6 +360,17 @@ public class KeyDecodeSetTest {
     }
 
     @Test
+    public void ecPublicJwks() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("ecPublicJwks.jwk"));
+        assertEquals(1, keys.size());
+        final Key key = keys.get(0);
+        assertNotNull(key);
+        assertEquals(Key.Type.PUBLIC, key.getType());
+        assertEquals(Key.Format.JWK, key.getFormat());
+        assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+    }
+
+    @Test
     @Ignore("Implement")
     public void ecPrivatePemPkcs1() throws Exception {
         final List<Key> keys = Keys.decodeSet(resource.bytes("ecPrivatePemPkcs1.pem"));
@@ -372,6 +427,69 @@ public class KeyDecodeSetTest {
         assertEquals(Key.Algorithm.EC, key.getAlgorithm());
     }
 
+    @Test
+    public void ecPrivateJwks() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("ecPrivateJwks.jwk"));
+        assertEquals(1, keys.size());
+        final Key key = keys.get(0);
+        assertNotNull(key);
+        assertEquals(Key.Type.PRIVATE, key.getType());
+        assertEquals(Key.Format.JWK, key.getFormat());
+        assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+    }
+
+    @Test
+    public void allKeyTypesJwks() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("allKeyTypesJwks.jwk"));
+        {
+            final Key key = keys.get(0);
+            assertNotNull(key);
+            assertEquals(Key.Type.PRIVATE, key.getType());
+            assertEquals(Key.Format.JWK, key.getFormat());
+            assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
+        }
+
+        {
+            final Key key = keys.get(1);
+            assertNotNull(key);
+            assertEquals(Key.Type.PUBLIC, key.getType());
+            assertEquals(Key.Format.JWK, key.getFormat());
+            assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
+        }
+
+        {
+            final Key key = keys.get(2);
+            assertNotNull(key);
+            assertEquals(Key.Type.PRIVATE, key.getType());
+            assertEquals(Key.Format.JWK, key.getFormat());
+            assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+        }
+
+        {
+            final Key key = keys.get(3);
+            assertNotNull(key);
+            assertEquals(Key.Type.PUBLIC, key.getType());
+            assertEquals(Key.Format.JWK, key.getFormat());
+            assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+        }
+
+        {
+            final Key key = keys.get(4);
+            assertNotNull(key);
+            assertEquals(Key.Type.PRIVATE, key.getType());
+            assertEquals(Key.Format.JWK, key.getFormat());
+            assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+        }
+
+        {
+            final Key key = keys.get(5);
+            assertNotNull(key);
+            assertEquals(Key.Type.PUBLIC, key.getType());
+            assertEquals(Key.Format.JWK, key.getFormat());
+            assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+        }
+    }
+
     public static void _main(String[] args) {
         final List<String> methods = Arrays.asList("rsaPublicPemPkcs1",
                 "rsaPublicPemX509",
@@ -418,6 +536,31 @@ public class KeyDecodeSetTest {
                     "        assertEquals(Key.Algorithm.%s, key.getAlgorithm());\n" +
                     "    }\n" +
                     "\n", method, method, format.toLowerCase(), type, format, algorithm);
+        }
+    }
+
+    public static void __main(String[] args) {
+        final List<String> methods = Arrays.asList("dsaPrivateJwk.jwk",
+                "dsaPublicJwk.jwk",
+                "ecPrivateJwk.jwk",
+                "ecPublicJwk.jwk",
+                "rsaPrivateJwk.jwk",
+                "rsaPublicJwk.jwk"
+        );
+
+        int i = 0;
+        for (final String method : methods) {
+            final String type = method.contains("Public") ? "PUBLIC" : "PRIVATE";
+            final String format = getFormat(method.toLowerCase());
+            final String algorithm = getAlgorithm(method.toLowerCase());
+            System.out.printf("    {\n" +
+                    "        final Key key = keys.get(%s);\n" +
+                    "        assertNotNull(key);\n" +
+                    "        assertEquals(Key.Type.%s, key.getType());\n" +
+                    "        assertEquals(Key.Format.%s, key.getFormat());\n" +
+                    "        assertEquals(Key.Algorithm.%s, key.getAlgorithm());\n" +
+                    "    }\n" +
+                    "\n", i++, type, format, algorithm);
         }
     }
 
