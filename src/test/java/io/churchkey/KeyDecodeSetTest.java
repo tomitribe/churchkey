@@ -490,6 +490,35 @@ public class KeyDecodeSetTest {
         }
     }
 
+    @Test
+    public void authorizedKeysFile() throws Exception {
+        final List<Key> keys = Keys.decodeSet(resource.bytes("authorized_keys"));
+        {
+            final Key key = keys.get(0);
+            assertNotNull(key);
+            assertEquals(Key.Type.PUBLIC, key.getType());
+            assertEquals(Key.Format.OPENSSH, key.getFormat());
+            assertEquals(Key.Algorithm.DSA, key.getAlgorithm());
+        }
+
+        {
+            final Key key = keys.get(1);
+            assertNotNull(key);
+            assertEquals(Key.Type.PUBLIC, key.getType());
+            assertEquals(Key.Format.OPENSSH, key.getFormat());
+            assertEquals(Key.Algorithm.EC, key.getAlgorithm());
+        }
+
+        {
+            final Key key = keys.get(2);
+            assertNotNull(key);
+            assertEquals(Key.Type.PUBLIC, key.getType());
+            assertEquals(Key.Format.OPENSSH, key.getFormat());
+            assertEquals(Key.Algorithm.RSA, key.getAlgorithm());
+        }
+
+    }
+
     public static void _main(String[] args) {
         final List<String> methods = Arrays.asList("rsaPublicPemPkcs1",
                 "rsaPublicPemX509",
@@ -546,6 +575,28 @@ public class KeyDecodeSetTest {
                 "ecPublicJwk.jwk",
                 "rsaPrivateJwk.jwk",
                 "rsaPublicJwk.jwk"
+        );
+
+        int i = 0;
+        for (final String method : methods) {
+            final String type = method.contains("Public") ? "PUBLIC" : "PRIVATE";
+            final String format = getFormat(method.toLowerCase());
+            final String algorithm = getAlgorithm(method.toLowerCase());
+            System.out.printf("    {\n" +
+                    "        final Key key = keys.get(%s);\n" +
+                    "        assertNotNull(key);\n" +
+                    "        assertEquals(Key.Type.%s, key.getType());\n" +
+                    "        assertEquals(Key.Format.%s, key.getFormat());\n" +
+                    "        assertEquals(Key.Algorithm.%s, key.getAlgorithm());\n" +
+                    "    }\n" +
+                    "\n", i++, type, format, algorithm);
+        }
+    }
+
+    public static void main(String[] args) {
+        final List<String> methods = Arrays.asList("dsaPublicOpenSsh.txt",
+                "ecPublicOpenSsh.txt",
+                "rsaPublicOpenSsh.txt"
         );
 
         int i = 0;
