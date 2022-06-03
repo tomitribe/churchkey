@@ -30,10 +30,8 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * The primary factory used to obtain instances of {@link Key}
@@ -94,6 +92,7 @@ public class Keys {
 
         throw new IllegalArgumentException("Cannot decode key: " + new String(bytes));
     }
+
     /**
      * Inspects the contents of the supplied string, assumes it to be the contents
      * of a valid key file, determines what key format was supplied and then parses

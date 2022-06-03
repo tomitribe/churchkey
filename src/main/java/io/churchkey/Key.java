@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -385,7 +384,7 @@ public class Key {
 
             byte[] encode(final Key key);
 
-            default List<Key> decodeSet(byte[] bytes){
+            default List<Key> decodeSet(byte[] bytes) {
                 final Key key = decode(bytes);
                 if (key == null) return null;
                 return Collections.singletonList(key);

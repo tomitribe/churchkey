@@ -507,7 +507,7 @@ public class JwkParser implements Key.Format.Parser {
         if (!jsonObject.containsKey("keys")) {
             return Collections.singletonList(jsonObject);
         }
-        
+
         final Object keys = jsonObject.get("keys");
 
         if (keys == null) {
@@ -521,7 +521,7 @@ public class JwkParser implements Key.Format.Parser {
         if (keys instanceof JsonArray) {
             final JsonArray array = (JsonArray) keys;
             if (array.size() == 0) {
-                throw new IllegalArgumentException("Invalid JWKS; 'keys' entry is empty.\n" + jsonObject.toString());
+                throw new IllegalArgumentException("Invalid JWKS; 'keys' entry is empty.\n" + JsonWriter.string(jsonObject));
             }
 
             final List<JsonObject> objects = new ArrayList<>();
@@ -530,7 +530,8 @@ public class JwkParser implements Key.Format.Parser {
                 final Object value = array.get(i);
 
                 if (!(value instanceof JsonObject)) {
-                    throw new IllegalArgumentException("Invalid JWKS; 'keys' array should contain jwk objects.  Value at index " + i + " is not a json object: " + jsonObject.toString());
+                    throw new IllegalArgumentException("Invalid JWKS; 'keys' array should contain jwk objects. " +
+                            " Value at index " + i + " is not a json object: " + JsonWriter.string(jsonObject));
                 }
 
                 objects.add((JsonObject) value);
