@@ -36,10 +36,24 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OpenSSHPublicKey implements Key.Format.Parser {
+
+
+    @Override
+    public List<Key> decodeSet(final byte[] bytes) {
+        if (!Utils.startsWith("ssh-", bytes) && !Utils.startsWith("ecdsa-", bytes)) return null;
+        return Stream.of(new String(bytes).split("\n"))
+                .map(String::trim)
+                .filter(s -> s.startsWith("ssh-")||s.startsWith("ecdsa-"))
+                .map(s -> decode(s.getBytes()))
+                .collect(Collectors.toList());
+    }
 
     @Override
     public Key decode(final byte[] bytes) {

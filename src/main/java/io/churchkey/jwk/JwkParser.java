@@ -54,13 +54,33 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JwkParser implements Key.Format.Parser {
 
     @Override
+    public List<Key> decodeSet(final byte[] bytes) {
+        byte[] decoded = normalize(bytes);
+        if (!Utils.startsWith("{", decoded)) return null;
+
+        final String rawJson = new String(decoded);
+
+        final JsonObject jsonObject;
+        try {
+            jsonObject = JsonParser.object().from(IO.read(decoded));
+        } catch (Exception e) {
+            throw new InvalidJwkException(e, rawJson);
+        }
+
+        return getJwks(jsonObject).stream()
+                .map(this::asKey)
+                .collect(Collectors.toList());
+    }
+
     public Key decode(final byte[] bytes) {
         byte[] decoded = normalize(bytes);
         if (!Utils.startsWith("{", decoded)) return null;
@@ -71,9 +91,19 @@ public class JwkParser implements Key.Format.Parser {
         config.put("org.apache.johnzon.buffer-strategy", "BY_INSTANCE");
 
 
+        final JsonObject jwk;
         try {
             final JsonObject jsonObject = JsonParser.object().from(IO.read(decoded));
-            final JsonObject jwk = getJwk(jsonObject);
+            jwk = getJwk(jsonObject);
+        } catch (Exception e) {
+            throw new InvalidJwkException(e, rawJson);
+        }
+
+        return asKey(jwk);
+    }
+
+    private Key asKey(final JsonObject jwk) {
+        try {
 
             final String kty;
 
@@ -101,8 +131,8 @@ public class JwkParser implements Key.Format.Parser {
 
             throw new UnsupportedKtyAlgorithmException(kty);
 
-        } catch (Exception e) {
-            throw new InvalidJwkException(e, rawJson);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new InvalidJwkException(e, JsonWriter.string(jwk));
         }
     }
 
@@ -451,9 +481,14 @@ public class JwkParser implements Key.Format.Parser {
 
     }
 
+    /**
+     * Intentionally can handle reading a sinlge JWK or a JWK set
+     * If a "keys" entry is found, the first key is used and the
+     * rest are ignored.
+     */
     private JsonObject getJwk(final JsonObject jsonObject) {
         if (jsonObject.containsKey("keys")) {
-            return getJwkFromJwks(jsonObject);
+            return getFirstJwk(jsonObject);
         }
 
         if (jsonObject.containsKey("kty")) {
@@ -463,7 +498,51 @@ public class JwkParser implements Key.Format.Parser {
         throw new UnknownJsonFormatFoundException();
     }
 
-    private JsonObject getJwkFromJwks(final JsonObject jwks) {
+    /**
+     * Intentionally can handle reading a sinlge JWK or a JWK set
+     * If no "keys" entry is found it is assumed to be a single JWK
+     */
+    private List<JsonObject> getJwks(final JsonObject jsonObject) {
+
+        if (!jsonObject.containsKey("keys")) {
+            return Collections.singletonList(jsonObject);
+        }
+        
+        final Object keys = jsonObject.get("keys");
+
+        if (keys == null) {
+            throw new IllegalArgumentException("Invalid JWKS; 'keys' entry is missing.");
+        }
+
+        if (keys instanceof JsonObject) {
+            return Collections.singletonList((JsonObject) keys);
+        }
+
+        if (keys instanceof JsonArray) {
+            final JsonArray array = (JsonArray) keys;
+            if (array.size() == 0) {
+                throw new IllegalArgumentException("Invalid JWKS; 'keys' entry is empty.\n" + jsonObject.toString());
+            }
+
+            final List<JsonObject> objects = new ArrayList<>();
+
+            for (int i = 0; i < array.size(); i++) {
+                final Object value = array.get(i);
+
+                if (!(value instanceof JsonObject)) {
+                    throw new IllegalArgumentException("Invalid JWKS; 'keys' array should contain jwk objects.  Value at index " + i + " is not a json object: " + jsonObject.toString());
+                }
+
+                objects.add((JsonObject) value);
+            }
+
+            return objects;
+        }
+
+        throw new IllegalArgumentException("Invalid JWKS; 'keys' entry should be an array.");
+    }
+
+    private JsonObject getFirstJwk(final JsonObject jwks) {
         final Object keys = jwks.get("keys");
 
         if (keys == null) {
@@ -489,7 +568,7 @@ public class JwkParser implements Key.Format.Parser {
         final Object value = keys.get(0);
 
         if (!(value instanceof JsonObject)) {
-            throw new IllegalArgumentException("Invalid JWKS; 'keys' array should contain jwk objects.\n" + jwks.toString());
+            throw new IllegalArgumentException("Invalid JWKS; 'keys' array should contain jwk objects.  Value is not a json object: " + jwks.toString());
         }
 
         return (JsonObject) value;

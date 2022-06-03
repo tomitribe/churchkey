@@ -30,7 +30,10 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * The primary factory used to obtain instances of {@link Key}
@@ -86,6 +89,55 @@ public class Keys {
             final Key key = format.decode(bytes);
             if (key != null) {
                 return key;
+            }
+        }
+
+        throw new IllegalArgumentException("Cannot decode key: " + new String(bytes));
+    }
+    /**
+     * Inspects the contents of the supplied string, assumes it to be the contents
+     * of a valid key file, determines what key format was supplied and then parses
+     * it returning a {@link Key} instance.
+     *
+     * The {@link Key} instance can be used to query what type of key was found
+     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
+     * and the actual {@link java.security.Key} instance.
+     * @param contents the contents of any valid PEM, JWK, OpenSSH or SSH2 key file
+     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
+     */
+    public static List<Key> decodeSet(final String contents) throws IOException {
+        return decodeSet(contents.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Inspects the contents of the supplied file, determines what key file
+     * format was supplied and then parses it returning a {@link Key} instance.
+     *
+     * The {@link Key} instance can be used to query what type of key was found
+     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
+     * and the actual {@link java.security.Key} instance.
+     * @param file a valid PEM, JWK, OpenSSH or SSH2 key file
+     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
+     */
+    public static List<Key> decodeSet(final File file) throws IOException {
+        return decodeSet(IO.readBytes(file));
+    }
+
+    /**
+     * Inspects the contents of the supplied bytes, determines what key file
+     * format was supplied and then parses it returning a {@link Key} instance.
+     *
+     * The {@link Key} instance can be used to query what type of key was found
+     * (Public or Private), what format was discovered (PEM, JWK, OpenSSH, SSH2)
+     * and the actual {@link java.security.Key} instance.
+     * @param bytes contents of any valid PEM, JWK, OpenSSH or SSH2 key file
+     * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
+     */
+    public static List<Key> decodeSet(final byte[] bytes) {
+        for (final Key.Format format : Key.Format.values()) {
+            final List<Key> keys = format.decodeSet(bytes);
+            if (keys != null) {
+                return keys;
             }
         }
 

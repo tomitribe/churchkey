@@ -31,9 +31,12 @@ import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -373,10 +376,20 @@ public class Key {
             return parser.decode(bytes);
         }
 
+        public List<Key> decodeSet(final byte[] bytes) {
+            return parser.decodeSet(bytes);
+        }
+
         public interface Parser {
             Key decode(final byte[] bytes);
 
             byte[] encode(final Key key);
+
+            default List<Key> decodeSet(byte[] bytes){
+                final Key key = decode(bytes);
+                if (key == null) return null;
+                return Collections.singletonList(key);
+            }
         }
     }
 

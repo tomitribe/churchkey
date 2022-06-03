@@ -17,8 +17,8 @@
 package io.churchkey.ssh;
 
 import io.churchkey.Decoder;
-import io.churchkey.util.Pem;
 import io.churchkey.Key;
+import io.churchkey.util.Pem;
 import io.churchkey.util.Utils;
 
 import java.io.IOException;
