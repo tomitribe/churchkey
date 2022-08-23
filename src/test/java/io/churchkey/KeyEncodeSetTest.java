@@ -238,10 +238,9 @@ public class KeyEncodeSetTest {
         assertJwksEncoding("ecPrivateJwks.jwk");
     }
 
-    @Ignore("TODO")
     @Test
     public void allKeyTypesJwks() throws Exception {
-        assertEncoding("allKeyTypesJwks.jwk", JWK);
+        assertJwksEncoding("allKeyTypesJwks.jwk");
     }
 
     @Test
