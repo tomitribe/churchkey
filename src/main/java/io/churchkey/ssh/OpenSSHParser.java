@@ -22,6 +22,7 @@ import io.churchkey.util.Utils;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OpenSSHParser implements Key.Format.Parser {
 
@@ -69,7 +70,27 @@ public class OpenSSHParser implements Key.Format.Parser {
         return null;
     }
 
+    @Override
+    public byte[] encodeSet(final List<Key> keys) {
+        if (keys.size() == 0) {
+            throw new IllegalArgumentException("No keys to encode");
+        }
+        if (keys.size() == 1) {
+            return encode(keys.get(0));
+        }
 
+        final List<Key> publicKeys = keys.stream()
+                .filter(key -> key.getType().equals(Key.Type.PUBLIC))
+                .collect(Collectors.toList());
+
+        if (keys.size() != publicKeys.size()) {
+            final String message = String.format("Encoding of multiple keys in OpenSSH is only supported for public keys.  " +
+                    "Found %s private keys", keys.size() - publicKeys.size());
+            throw new UnsupportedOperationException(message);
+        }
+
+        return new OpenSSHPublicKey().encodeSet(keys);
+    }
 
     public static String base64(byte[] src) {
         return Base64.getEncoder().encodeToString(src);

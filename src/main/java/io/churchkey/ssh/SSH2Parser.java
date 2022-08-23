@@ -16,7 +16,6 @@
  */
 package io.churchkey.ssh;
 
-import io.churchkey.Decoder;
 import io.churchkey.Key;
 import io.churchkey.util.Pem;
 import io.churchkey.util.Utils;
@@ -24,56 +23,82 @@ import io.churchkey.util.Utils;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+
+import static io.churchkey.Key.Algorithm.DSA;
+import static io.churchkey.Key.Algorithm.EC;
+import static io.churchkey.Key.Algorithm.RSA;
+import static io.churchkey.Key.Type.PUBLIC;
 
 public class SSH2Parser implements Key.Format.Parser {
 
     @Override
     public Key decode(final byte[] bytes) {
-        return new Ssh2PublicKeyDecoder().decode(bytes);
+        if (!Utils.startsWith("---- BEGIN SSH2 PUBLIC KEY ----", bytes)) return null;
+
+        final Pem pem = Pem.parse(bytes);
+
+        try {
+            final KeyInput reader = new KeyInput(pem.getData());
+
+            final String algorithm = reader.readString();
+
+            if (algorithm.equals("ssh-rsa")) {
+
+                final PublicKey publicKey = OpenSSHPublicKey.RsaPublic.read(reader);
+
+                return new Key(publicKey, PUBLIC, RSA, Key.Format.SSH2, pem.getAttributes());
+
+            } else if (algorithm.equals("ssh-dss")) {
+
+                final PublicKey publicKey = OpenSSHPublicKey.DsaPublic.read(reader);
+
+                return new Key(publicKey, PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2, pem.getAttributes());
+
+            } else {
+                throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
+            }
+
+        } catch (UnsupportedOperationException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
     public byte[] encode(final Key key) {
-        return new byte[0];
-    }
-
-    public static class Ssh2PublicKeyDecoder implements Decoder {
-
-        public Ssh2PublicKeyDecoder() {
+        if (!PUBLIC.equals(key.getType())) {
+            throw new UnsupportedOperationException("SSH2 encoding only supported for public keys");
         }
 
-        @Override
-        public Key decode(final byte[] key) {
-            if (!Utils.startsWith("---- BEGIN SSH2 PUBLIC KEY ----", key)) return null;
-
-            final Pem pem = Pem.parse(key);
-
-            try {
-                final KeyInput reader = new KeyInput(pem.getData());
-
-                final String algorithm = reader.readString();
-
-                if (algorithm.equals("ssh-rsa")) {
-
-                    final PublicKey publicKey = OpenSSHPublicKey.RsaPublic.read(reader);
-
-                    return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.RSA, Key.Format.SSH2, pem.getAttributes());
-
-                } else if (algorithm.equals("ssh-dss")) {
-
-                    final PublicKey publicKey = OpenSSHPublicKey.DsaPublic.read(reader);
-
-                    return new Key(publicKey, Key.Type.PUBLIC, Key.Algorithm.DSA, Key.Format.SSH2, pem.getAttributes());
-
-                } else {
-                    throw new UnsupportedOperationException("Unsupported key type: " + algorithm);
-                }
-
-            } catch (UnsupportedOperationException e) {
-                throw e;
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+        final byte[] bytes;
+        try {
+            if (RSA.equals(key.getAlgorithm())) {
+                bytes = OpenSSHPublicKey.RsaPublic.write((RSAPublicKey) key.getKey());
+            } else if (DSA.equals(key.getAlgorithm())) {
+                bytes = OpenSSHPublicKey.DsaPublic.write((DSAPublicKey) key.getKey());
+            } else if (EC.equals(key.getAlgorithm())) {
+                final ECPublicKey ecPublicKey = (ECPublicKey) key.getKey();
+                final String curveName = OpenSSHPublicKey.EcPublic.curveName(ecPublicKey.getParams());
+                bytes = OpenSSHPublicKey.EcPublic.write(ecPublicKey, curveName);
+            } else {
+                throw new UnsupportedOperationException("Unsupported key algorithm: " + key.getAlgorithm());
             }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
+
+        return Pem.builder()
+                .data(bytes)
+                .attributes(key.getAttributes())
+                .wrap(70)
+                .header("---- BEGIN SSH2 PUBLIC KEY ----")
+                .footer("---- END SSH2 PUBLIC KEY ----")
+                .format()
+                .getBytes();
     }
+
 }

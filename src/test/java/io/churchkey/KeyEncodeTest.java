@@ -15,6 +15,7 @@
  */
 package io.churchkey;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.security.KeyPair;
@@ -98,17 +99,6 @@ public class KeyEncodeTest {
     }
 
     @Test
-    public void rsaPrivateSsh2() throws Exception {
-        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        final KeyPair pair = generator.generateKeyPair();
-        final RSAPrivateCrtKey expected = (RSAPrivateCrtKey) pair.getPrivate();
-
-        final String content = new String(Keys.of(expected).encode(Key.Format.SSH2));
-
-        assertNotNull(content);
-    }
-
-    @Test
     public void rsaPrivateJwk() throws Exception {
         final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         final KeyPair pair = generator.generateKeyPair();
@@ -177,16 +167,6 @@ public class KeyEncodeTest {
         final KeyPair pair = generator.generateKeyPair();
 
         final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.OPENSSH));
-
-        assertNotNull(content);
-    }
-
-    @Test
-    public void dsaPrivateSsh2() throws Exception {
-        final KeyPairGenerator generator = KeyPairGenerator.getInstance("DSA");
-        final KeyPair pair = generator.generateKeyPair();
-
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }
@@ -262,16 +242,6 @@ public class KeyEncodeTest {
         final KeyPair pair = generator.generateKeyPair();
 
         final String content = new String(Keys.of(pair).encode(Key.Format.OPENSSH));
-
-        assertNotNull(content);
-    }
-
-    @Test
-    public void ecPrivateSsh2() throws Exception {
-        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
-        final KeyPair pair = generator.generateKeyPair();
-
-        final String content = new String(Keys.of(pair.getPrivate()).encode(Key.Format.SSH2));
 
         assertNotNull(content);
     }

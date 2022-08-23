@@ -15,16 +15,17 @@
  */
 package io.churchkey.ssh;
 
+import io.churchkey.Key;
 import io.churchkey.dsa.Dsa;
 import io.churchkey.ec.Curve;
-import io.churchkey.rsa.Rsa;
-import io.churchkey.Key;
 import io.churchkey.ec.ECParameterSpecs;
-import io.churchkey.ec.Ecdsa;
 import io.churchkey.ec.EcPoints;
+import io.churchkey.ec.Ecdsa;
 import io.churchkey.ec.UnsupportedCurveException;
+import io.churchkey.rsa.Rsa;
 import io.churchkey.util.Utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +51,7 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
         if (!Utils.startsWith("ssh-", bytes) && !Utils.startsWith("ecdsa-", bytes)) return null;
         return Stream.of(new String(bytes).split("\n"))
                 .map(String::trim)
-                .filter(s -> s.startsWith("ssh-")||s.startsWith("ecdsa-"))
+                .filter(s -> s.startsWith("ssh-") || s.startsWith("ecdsa-"))
                 .map(s -> decode(s.getBytes()))
                 .collect(Collectors.toList());
     }
@@ -136,6 +137,18 @@ public class OpenSSHPublicKey implements Key.Format.Parser {
 
     }
 
+    @Override
+    public byte[] encodeSet(final List<Key> keys) {
+        final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        for (final Key key : keys) {
+            try {
+                bytes.write(encode(key));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return bytes.toByteArray();
+    }
 
     /**
      * Order determined by https://tools.ietf.org/html/rfc4253#section-6.6

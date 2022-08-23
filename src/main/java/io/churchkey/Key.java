@@ -379,6 +379,11 @@ public class Key {
             return parser.decodeSet(bytes);
         }
 
+        public byte[] encodeSet(final List<Key> keys) {
+            return parser.encodeSet(keys);
+        }
+
+
         public interface Parser {
             Key decode(final byte[] bytes);
 
@@ -388,6 +393,17 @@ public class Key {
                 final Key key = decode(bytes);
                 if (key == null) return null;
                 return Collections.singletonList(key);
+            }
+
+            default byte[] encodeSet(final List<Key> keys) {
+                if (keys.size() == 0) {
+                    throw new IllegalArgumentException("No keys to encode");
+                }
+                if (keys.size() > 1) {
+                    throw new UnsupportedOperationException("Encoding multiple keys not supported for by this parser: " + this.getClass().getName());
+                }
+
+                return encode(keys.get(0));
             }
         }
     }

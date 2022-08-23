@@ -591,7 +591,35 @@ public class JwkParser implements Key.Format.Parser {
     }
 
     @Override
+    public byte[] encodeSet(final List<Key> keys) {
+        if (keys.size() == 0) {
+            throw new IllegalArgumentException("No keys to encode");
+        }
+
+        if (keys.size() == 1) {
+            final JsonBuilder<JsonObject> builder = JsonObject.builder();
+            builder.value("keys", toJsonObject(keys.get(0)));
+            return JsonWriter.string(builder.done()).getBytes();
+        }
+        
+        final JsonBuilder<JsonObject> builder = JsonObject.builder();
+        final JsonBuilder<JsonObject> keysArray = builder.array("keys");
+
+        for (final Key key : keys) {
+            final JsonObject o = toJsonObject(key);
+            keysArray.value(o);
+        }
+        return JsonWriter.string(builder.done()).getBytes();
+
+    }
+
+    @Override
     public byte[] encode(final Key key) {
+        final JsonObject build = toJsonObject(key);
+        return JsonWriter.string(build).getBytes();
+    }
+
+    private JsonObject toJsonObject(final Key key) {
         final JsonBuilder<JsonObject> builder = JsonObject.builder();
         for (final Map.Entry<String, String> entry : key.getAttributes().entrySet()) {
             builder.value(entry.getKey(), entry.getValue());
@@ -618,8 +646,7 @@ public class JwkParser implements Key.Format.Parser {
                 throw new UnsupportedOperationException("Cannot encode key type: " + key.getAlgorithm());
         }
 
-        final JsonObject build = builder.done();
-        return JsonWriter.string(build).getBytes();
+        return builder.done();
     }
 
     private void encodeAttribute(final JsonBuilder<JsonObject> builder, final String key, final String value) {

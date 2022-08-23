@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for n in *.jwk; do
+    cat $n
+    echo ","
+done

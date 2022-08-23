@@ -186,6 +186,10 @@ public class Keys {
         return format.encode(key);
     }
 
+    public static byte[] encodeSet(final List<Key> keys, Key.Format format) {
+        return format.encodeSet(keys);
+    }
+
     /**
      * Creates a {@link Key} instance that encompasses both the public and private keys.  If this Key
      * instance is exported via {@link Key#encode(Key.Format)}} the resulting file will be a private key
