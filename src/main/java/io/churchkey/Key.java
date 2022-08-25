@@ -310,6 +310,10 @@ public class Key {
         return new String(encode(Format.JWK), UTF_8);
     }
 
+    public String toJwks() {
+        return new String(Format.JWK.encodeSet(Collections.singletonList(this)), UTF_8);
+    }
+
     public String toPem() {
         return new String(encode(Format.PEM), UTF_8);
     }
