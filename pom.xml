@@ -28,14 +28,14 @@
   <groupId>io.churchkey</groupId>
   <artifactId>churchkey</artifactId>
   <packaging>jar</packaging>
-  <version>1.21</version>
+  <version>1.22-SNAPSHOT</version>
   <name>Churchkey</name>
 
   <scm>
     <connection>scm:git:git@github.com:tomitribe/churchkey.git</connection>
     <url>scm:git:git@github.com:tomitribe/churchkey.git</url>
     <developerConnection>scm:git:git@github.com:tomitribe/churchkey.git</developerConnection>
-    <tag>churchkey-1.21</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
