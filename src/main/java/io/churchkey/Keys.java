@@ -16,11 +16,10 @@
  */
 package io.churchkey;
 
-import org.tomitribe.util.IO;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.interfaces.DSAPrivateKey;
@@ -69,7 +68,7 @@ public class Keys {
      * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
      */
     public static Key decode(final File file) throws IOException {
-        return decode(IO.readBytes(file));
+        return decode(Files.readAllBytes(file.toPath()));
     }
 
     /**
@@ -119,7 +118,7 @@ public class Keys {
      * @return a {@link Key} instance that has metadata and wraps the parsed {@link java.security.Key}
      */
     public static List<Key> decodeSet(final File file) throws IOException {
-        return decodeSet(IO.readBytes(file));
+        return decodeSet(Files.readAllBytes(file.toPath()));
     }
 
     /**

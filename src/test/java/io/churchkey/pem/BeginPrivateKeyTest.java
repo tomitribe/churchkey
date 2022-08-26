@@ -18,11 +18,11 @@ package io.churchkey.pem;
 
 import io.churchkey.Decoder;
 import io.churchkey.KeyAsserts;
+import org.junit.Assume;
 import org.junit.Test;
 import io.churchkey.Key;
 import io.churchkey.Keys;
 import io.churchkey.Resource;
-import org.tomitribe.util.Hex;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -31,6 +31,7 @@ import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.ECFieldFp;
 import java.security.spec.PKCS8EncodedKeySpec;
 
+import static io.churchkey.util.Utils.toHexString;
 import static org.junit.Assert.assertEquals;
 
 public class BeginPrivateKeyTest {
@@ -172,6 +173,8 @@ public class BeginPrivateKeyTest {
      */
     @Test
     public void trickyEncoding() throws Exception {
+        Assume.assumeTrue(Boolean.parseBoolean(System.getProperty("test.json", "true")));
+
         final String jwk = "{" +
                 "\"d\":\"i-cfA2QsqM293T8lSVHK0XHXya21y6Fxv6x2cuHFjeg\"," +
                 "\"crv\":\"P-256\",\"y\":\"rod-94CZV31COEG_BBA3BL9k7tLEMl7fsikNlFEJ7q4\"," +
@@ -189,7 +192,7 @@ public class BeginPrivateKeyTest {
     }
 
     private String toHex(final BigInteger bigInteger) {
-        return Hex.toString(bigInteger.toByteArray()).toUpperCase().replaceAll("^00", "");
+        return toHexString(bigInteger.toByteArray()).toUpperCase().replaceAll("^00", "");
     }
 
     public void assertDecode(final Decoder decoder, final Resource resource) throws Exception {

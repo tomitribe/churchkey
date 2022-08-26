@@ -16,10 +16,10 @@
 package io.churchkey.util;
 
 import lombok.Data;
-import org.tomitribe.util.PrintString;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import static io.churchkey.util.Printers.printer;
 
 @Data
 public class Pem {
@@ -98,7 +100,7 @@ public class Pem {
     }
 
     public String format() {
-        final PrintString out = new PrintString();
+        final PrintStream out = printer();
         out.println(header);
 
         for (final Map.Entry<String, String> entry : attributes.entrySet()) {

@@ -16,10 +16,11 @@
 package io.churchkey.ec;
 
 import io.churchkey.util.Bytes;
-import org.tomitribe.util.Hex;
 
 import java.math.BigInteger;
 import java.security.spec.ECPoint;
+
+import static io.churchkey.util.Utils.toHexString;
 
 public class EcPoints {
     private EcPoints() {
@@ -32,7 +33,7 @@ public class EcPoints {
 
         if (bytes[0] != (byte) 0x04) {
             final byte[] format = {bytes[0]};
-            throw new UnsupportedOperationException("Only uncompressed EC points are supported.  Found EC point compression format of " + Hex.toString(format) + " (hex)");
+            throw new UnsupportedOperationException("Only uncompressed EC points are supported.  Found EC point compression format of " + toHexString(format) + " (hex)");
         }
 
         final int length = bytes.length - 1;

@@ -16,10 +16,67 @@
  */
 package io.churchkey.util;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Function;
+
+import static java.lang.ClassLoader.getSystemClassLoader;
 
 public class Utils {
+    private static final Function<String, byte[]> HEX_PARSER;
+    private static final Function<byte[], String> HEX_WRITER;
+    static {
+        Function<String, byte[]> parser;
+        Function<byte[], String> writer;
+        try {
+            final Class<?> hexFormat = getSystemClassLoader().loadClass("java.util.HexFormat");
+            final Method of = hexFormat.getMethod("of");
+            if (!of.isAccessible()) {
+                of.setAccessible(true);
+            }
+            final Object instance = of.invoke(null);
+            final Method parseHex = hexFormat.getMethod("parseHex", CharSequence.class);
+            if (!parseHex.isAccessible()) {
+                parseHex.setAccessible(true);
+            }
+            final Method formatHex = hexFormat.getMethod("formatHex", byte[].class);
+            if (!formatHex.isAccessible()) {
+                formatHex.setAccessible(true);
+            }
+            parser = s -> {
+                try {
+                    return byte[].class.cast(parseHex.invoke(instance, s));
+                } catch (final IllegalAccessException e) {
+                    throw new IllegalStateException(e);
+                } catch (final InvocationTargetException e) {
+                    final Throwable ex = e.getTargetException();
+                    if (RuntimeException.class.isInstance(ex)) {
+                        throw RuntimeException.class.cast(ex);
+                    }
+                    throw new IllegalStateException(ex);
+                }
+            };
+            writer = bytes -> {
+                try {
+                    return String.class.cast(formatHex.invoke(instance, bytes));
+                } catch (final IllegalAccessException e) {
+                    throw new IllegalStateException(e);
+                } catch (final InvocationTargetException e) {
+                    final Throwable ex = e.getTargetException();
+                    if (RuntimeException.class.isInstance(ex)) {
+                        throw RuntimeException.class.cast(ex);
+                    }
+                    throw new IllegalStateException(ex);
+                }
+            };
+        } catch (final Exception cnfe) {
+            // DO NOT USE METHOD REF to keep it lazy!
+            parser = s -> org.tomitribe.util.Hex.fromString(s);
+            writer = s -> org.tomitribe.util.Hex.toString(s);
+        }
+        HEX_PARSER = parser;
+        HEX_WRITER = writer;
+    }
 
     private Utils() {
     }
@@ -40,11 +97,11 @@ public class Utils {
         return true;
     }
 
-    public static byte[] base64Decode(final String s) throws UnsupportedEncodingException {
-        return Base64.getDecoder().decode(s.getBytes("UTF-8"));
+    public static byte[] fromHexString(final String s) {
+        return HEX_PARSER.apply(s);
     }
 
-    public static String base64Encode(final byte[] bytes) throws UnsupportedEncodingException {
-        return Base64.getEncoder().encodeToString(bytes);
+    public static String toHexString(final byte[] bytes) {
+        return HEX_WRITER.apply(bytes);
     }
 }

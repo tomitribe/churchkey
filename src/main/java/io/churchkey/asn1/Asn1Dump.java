@@ -16,14 +16,16 @@
 package io.churchkey.asn1;
 
 import io.churchkey.util.Pem;
-import org.tomitribe.util.IO;
 import org.tomitribe.util.Pipe;
-import org.tomitribe.util.PrintString;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import static io.churchkey.util.Printers.printer;
 
 public class Asn1Dump {
 
@@ -32,7 +34,7 @@ public class Asn1Dump {
 
     public static void print(final byte[] bytes) throws IOException {
         final File der = File.createTempFile("der", ".dump");
-        IO.copy(bytes, der);
+        Files.write(der.toPath(), bytes);
 
         final ProcessBuilder builder = new ProcessBuilder("openssl", "asn1parse", "-i", "-inform", "DER", "-in", der.getAbsolutePath(), "-dump");
         final Process process = builder.start();
@@ -53,13 +55,13 @@ public class Asn1Dump {
 
         if (bytes[0] == '-' && bytes[1] == '-'){
             final Pem pem = Pem.parse(bytes);
-            IO.copy(pem.getData(), der);
+            Files.write(der.toPath(), pem.getData());
         } else {
-            IO.copy(bytes, der);
+            Files.write(der.toPath(), bytes);
         }
 
-        final PrintString err = new PrintString();
-        final PrintString out = new PrintString();
+        final PrintStream out = printer();
+        final PrintStream err = printer();
         final ProcessBuilder builder = new ProcessBuilder("openssl", "asn1parse", "-i", "-inform", "DER", "-in", der.getAbsolutePath(), "-dump");
         final Process process = builder.start();
         final Future<Pipe> o = Pipe.pipe(process.getInputStream(), out);

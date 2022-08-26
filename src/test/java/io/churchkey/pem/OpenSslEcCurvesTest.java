@@ -20,6 +20,7 @@ import io.churchkey.asn1.Asn1Dump;
 import io.churchkey.ec.Curve;
 import io.churchkey.ec.CurveAsserts;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -115,6 +116,7 @@ public class OpenSslEcCurvesTest {
         final byte[] expected = resource.bytes(openSslCurveName + "-params.pem");
         final byte[] actual = BeginEcParameters.encode(curve.getParameterSpec());
 
+        Assume.assumeTrue(Boolean.parseBoolean(System.getProperty("test.tomitribe-util", "true")));
         Assert.assertEquals(Asn1Dump.dump(expected), Asn1Dump.dump(actual));
         assertEquals(new String(expected), new String(actual));
     }

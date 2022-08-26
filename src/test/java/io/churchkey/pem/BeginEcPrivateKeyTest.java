@@ -24,7 +24,6 @@ import org.junit.runners.Parameterized;
 import io.churchkey.Key;
 import io.churchkey.Resource;
 import io.churchkey.Skip;
-import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.security.interfaces.ECPrivateKey;
@@ -32,6 +31,7 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
 import java.util.List;
 
+import static io.churchkey.util.Utils.toHexString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -89,7 +89,7 @@ public class BeginEcPrivateKeyTest {
 
         { // assert private key integer
             final byte[] expected = resource.bytes("private.pkcs1." + openSslCurveName + "." + format + ".txt");
-            assertEquals(new String(expected), Hex.toString(privateKey.getS().toByteArray()));
+            assertEquals(new String(expected), toHexString(privateKey.getS().toByteArray()));
         }
 
         { // assert curve parameters

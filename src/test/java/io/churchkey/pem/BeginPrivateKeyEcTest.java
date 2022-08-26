@@ -26,7 +26,6 @@ import io.churchkey.Key;
 import io.churchkey.Keys;
 import io.churchkey.Resource;
 import io.churchkey.ec.ECParameterSpecs;
-import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -40,6 +39,8 @@ import java.security.spec.ECParameterSpec;
 import java.util.Base64;
 import java.util.List;
 
+import static io.churchkey.util.Utils.fromHexString;
+import static io.churchkey.util.Utils.toHexString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -97,7 +98,7 @@ public class BeginPrivateKeyEcTest {
         { // assert private key integer
             final byte[] expected = resource.bytes("private.pkcs8." + openSslCurveName + "." + format + ".txt");
 
-            final BigInteger i = new BigInteger(1, Hex.fromString(new String(expected)));
+            final BigInteger i = new BigInteger(1, fromHexString(new String(expected)));
             final BigInteger s = privateKey.getS();
             assertEquals(i, s);
         }
@@ -128,7 +129,7 @@ public class BeginPrivateKeyEcTest {
         // Assert what we read is identical
         final ECPrivateKey expectedKey = (ECPrivateKey) expected.getKey();
         final ECPrivateKey actualKey = (ECPrivateKey) actual.getKey();
-        assertEquals(Hex.toString(expectedKey.getS().toByteArray()), Hex.toString(actualKey.getS().toByteArray()));
+        assertEquals(toHexString(expectedKey.getS().toByteArray()), toHexString(actualKey.getS().toByteArray()));
         ECParameterSpecs.equals(expectedKey.getParams(), actualKey.getParams());
     }
 

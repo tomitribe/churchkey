@@ -15,10 +15,7 @@
  */
 package io.churchkey.ec;
 
-import org.tomitribe.util.Hex;
-import org.tomitribe.util.Join;
-import org.tomitribe.util.PrintString;
-
+import java.io.PrintStream;
 import java.math.BigInteger;
 import java.security.spec.ECField;
 import java.security.spec.ECFieldF2m;
@@ -26,6 +23,10 @@ import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.churchkey.util.Printers.printer;
+import static io.churchkey.util.Utils.toHexString;
+import static java.util.stream.Collectors.joining;
 
 public class ECParameterSpecs {
     private ECParameterSpecs() {
@@ -57,7 +58,7 @@ public class ECParameterSpecs {
     }
 
     public static String toString(final ECParameterSpec spec) {
-        final PrintString out = new PrintString();
+        final PrintStream out = printer();
         final String x = hex(spec.getGenerator().getAffineX());
         final String y = hex(spec.getGenerator().getAffineY());
         final String a = hex(spec.getCurve().getA());
@@ -94,7 +95,7 @@ public class ECParameterSpecs {
                     "    \"%s\",\n" +
                     "    \"%s\",\n" +
                     "    \"%s\",\n" +
-                    "    %s), %s)\n", m, Join.join(", ", terms), a, b, x, y, n, cofactor, null);
+                    "    %s), %s)\n", m, terms.stream().map(Object::toString).collect(joining(", ")), a, b, x, y, n, cofactor, null);
         }
 
 
@@ -102,6 +103,6 @@ public class ECParameterSpecs {
     }
 
     public static String hex(final BigInteger bi) {
-        return Hex.toString(bi.toByteArray()).toUpperCase();
+        return toHexString(bi.toByteArray()).toUpperCase();
     }
 }

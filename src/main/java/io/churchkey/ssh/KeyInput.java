@@ -15,13 +15,14 @@
  */
 package io.churchkey.ssh;
 
-import org.tomitribe.util.PrintString;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.math.BigInteger;
+
+import static io.churchkey.util.Printers.printer;
 
 public class KeyInput extends DataInputStream {
 
@@ -30,7 +31,7 @@ public class KeyInput extends DataInputStream {
     }
 
     public String readAuthMagic() throws IOException {
-        final PrintString string = new PrintString();
+        final PrintStream string = printer();
         int read = this.read();
         while (read != '\000') {
             if (read == -1) throw new EOFException();

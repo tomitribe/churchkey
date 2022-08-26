@@ -19,12 +19,12 @@ import org.junit.Test;
 import io.churchkey.Key;
 import io.churchkey.Keys;
 import io.churchkey.Resource;
-import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.interfaces.DSAPrivateKey;
 
+import static io.churchkey.util.Utils.toHexString;
 import static org.junit.Assert.assertEquals;
 
 public class BeginPrivateKeyDsaTest {
@@ -119,7 +119,7 @@ public class BeginPrivateKeyDsaTest {
     }
 
     private String toHex(final BigInteger bigInteger) {
-        return Hex.toString(bigInteger.toByteArray()).toUpperCase().replaceAll("^00", "");
+        return toHexString(bigInteger.toByteArray()).toUpperCase().replaceAll("^00", "");
     }
 
     @Test

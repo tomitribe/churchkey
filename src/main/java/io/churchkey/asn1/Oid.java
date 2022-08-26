@@ -15,9 +15,6 @@
  */
 package io.churchkey.asn1;
 
-import org.tomitribe.util.Hex;
-import org.tomitribe.util.Join;
-
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -28,6 +25,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static io.churchkey.util.Utils.fromHexString;
+import static io.churchkey.util.Utils.toHexString;
+import static java.util.stream.Collectors.joining;
 
 /**
  * OIDs are encoded using Variable-Length Quantity.
@@ -65,11 +66,11 @@ public class Oid {
 
     @Override
     public String toString() {
-        return Join.join(".", oid);
+        return oid.stream().map(Object::toString).collect(joining("."));
     }
 
     public String toHex() {
-        return Hex.toString(toBytes());
+        return toHexString(toBytes());
     }
 
     public byte[] toBytes() {
@@ -115,7 +116,7 @@ public class Oid {
     }
 
     public static Oid fromHex(final String hex) throws IOException {
-        final byte[] bytes = Hex.fromString(hex);
+        final byte[] bytes = fromHexString(hex);
         return fromBytes(bytes);
     }
 

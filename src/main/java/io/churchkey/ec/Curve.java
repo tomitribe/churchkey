@@ -16,7 +16,6 @@
 package io.churchkey.ec;
 
 import io.churchkey.asn1.Oid;
-import org.tomitribe.util.Hex;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -39,6 +38,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static io.churchkey.asn1.Oid.oid;
+import static io.churchkey.util.Utils.fromHexString;
 
 /**
  * Curves supplied via https://neuromancer.sk/std/
@@ -1001,7 +1001,7 @@ public enum Curve {
 
     private static ECParameterSpec prime(final String fp, final String a, final String b, final String x, final String y, final String n, final String seed, final int h) {
         return new ECParameterSpec(
-                new EllipticCurve(new ECFieldFp(bi(fp)), bi(a), bi(b), Hex.fromString(seed)),
+                new EllipticCurve(new ECFieldFp(bi(fp)), bi(a), bi(b), fromHexString(seed)),
                 new ECPoint(bi(x), bi(y)),
                 bi(n), h);
     }
@@ -1015,7 +1015,7 @@ public enum Curve {
 
     private static ECParameterSpec binary(final int m, int[] ks, final String a, final String b, final String x, final String y, final String n, final String seed, final int h) {
         return new ECParameterSpec(
-                new EllipticCurve(new ECFieldF2m(m, ks), bi(a), bi(b), Hex.fromString(seed)),
+                new EllipticCurve(new ECFieldF2m(m, ks), bi(a), bi(b), fromHexString(seed)),
                 new ECPoint(bi(x), bi(y)),
                 bi(n), h);
     }

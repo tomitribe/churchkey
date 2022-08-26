@@ -89,7 +89,7 @@ public class BeginPublicKeyTest {
             final String exported = new String(key.encode(Key.Format.OPENSSH));
             assertEquals(new String(resource.bytes("public.openssh")).replace(" dblevins@mingus.lan", ""), exported);
         }
-        { // Export to JWK
+        if (Boolean.parseBoolean(System.getProperty("test.json", "true"))) { // Export to JWK
             final String exported = new String(key.encode(Key.Format.JWK));
             JsonAsserts.assertJson(new String(resource.bytes("public.jwk")), exported);
         }
