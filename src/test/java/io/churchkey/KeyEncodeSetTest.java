@@ -15,6 +15,7 @@
  */
 package io.churchkey;
 
+import com.grack.nanojson.JsonArray;
 import com.grack.nanojson.JsonObject;
 import com.grack.nanojson.JsonParser;
 import com.grack.nanojson.JsonParserException;
@@ -298,7 +299,8 @@ public class KeyEncodeSetTest {
         final byte[] encodedSet = Keys.encodeSet(keys, JWK);
         final JsonObject set = JsonParser.object().from(new ByteArrayInputStream(encodedSet));
         assertTrue(set.containsKey("keys"));
-        final JsonObject key = set.getObject("keys");
+        final JsonArray array = set.getArray("keys");
+        final JsonObject key = array.getObject(0);
 
         final String actual = JsonWriter.string(key);
         JsonAsserts.assertJson(expected, actual);

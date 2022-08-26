@@ -596,12 +596,6 @@ public class JwkParser implements Key.Format.Parser {
             throw new IllegalArgumentException("No keys to encode");
         }
 
-        if (keys.size() == 1) {
-            final JsonBuilder<JsonObject> builder = JsonObject.builder();
-            builder.value("keys", toJsonObject(keys.get(0)));
-            return JsonWriter.string(builder.done()).getBytes();
-        }
-        
         final JsonBuilder<JsonObject> builder = JsonObject.builder();
         final JsonBuilder<JsonObject> keysArray = builder.array("keys");
 
