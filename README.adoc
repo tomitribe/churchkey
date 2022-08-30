@@ -202,9 +202,9 @@ wHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q==
 [source,xml]
 ----
 <dependency>
-  <groupId>org.tomitribe</groupId>
+  <groupId>io.churchkey</groupId>
   <artifactId>churchkey</artifactId>
-  <version>0.14</version>
+  <version>1.21</version>
 </dependency>
 ----
 
