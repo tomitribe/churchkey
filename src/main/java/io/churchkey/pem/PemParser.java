@@ -21,6 +21,7 @@ import io.churchkey.Key;
 import io.churchkey.util.Pem;
 import io.churchkey.util.Utils;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -71,17 +72,32 @@ public class PemParser implements Key.Format.Parser {
 
         @Override
         public Key decode(final byte[] key) {
-            if (!Utils.startsWith("-----", key)) return null;
+            if (Utils.startsWith("-----", key)){
+                final Pem pem = Pem.parse(key);
 
-            final Pem pem = Pem.parse(key);
+                final Function<byte[], Key> converter = converters.get(pem.getType());
 
-            final Function<byte[], Key> converter = converters.get(pem.getType());
+                if (converter == null) {
+                    throw new UnsupportedOperationException(String.format("Unsupported PEM format '%s'", pem.getType()));
+                }
 
-            if (converter == null) {
-                throw new UnsupportedOperationException(String.format("Unsupported PEM format '%s'", pem.getType()));
+                return converter.apply(pem.getData());
             }
 
-            return converter.apply(pem.getData());
+            if (Utils.startsWith("MI", key) || Utils.startsWith("MF", key)) {
+                final byte[] decoded = Base64.getDecoder().decode(key);
+                for (final Function<byte[], Key> converter : converters.values()) {
+                    try {
+                        return converter.apply(decoded);
+                    } catch (Exception ignore) {
+                        // didn't work, try the next format
+                    }
+                }
+
+                throw new UnsupportedOperationException(String.format("Unsupported PEM base64 bytes '%s'", new String(key)));
+            }
+
+            return null;
         }
     }
 }
