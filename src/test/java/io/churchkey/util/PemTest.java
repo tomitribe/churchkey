@@ -33,7 +33,7 @@ public class PemTest {
                 "9 blue20";
 
         final String formatted = Pem.builder()
-                .data(data)
+                .data(data.getBytes())
                 .type("color strings")
                 .wrap(50)
                 .format();
@@ -73,7 +73,7 @@ public class PemTest {
                 "9 blue20";
 
         final String formatted = Pem.builder()
-                .data(data)
+                .data(data.getBytes())
                 .header("---- BEGIN COLOR STRINGS ----")
                 .footer("---- END COLOR STRINGS ----")
                 .attribute("Comment", "this is some pretty fun stuff")

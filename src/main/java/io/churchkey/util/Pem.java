@@ -142,12 +142,18 @@ public class Pem {
             return this;
         }
 
-        public Builder data(final String data) {
-            return data(data.getBytes());
+        /**
+         * Base64 encoded data
+         */
+        public Builder data(final String base64Data) {
+            return data(Base64.getDecoder().decode(base64Data));
         }
 
-        public Builder data(final byte[] data) {
-            this.data = data;
+        /**
+         * Unencoded binary data
+         */
+        public Builder data(final byte[] binaryData) {
+            this.data = binaryData;
             return this;
         }
 
