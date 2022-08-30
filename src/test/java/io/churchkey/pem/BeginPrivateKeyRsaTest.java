@@ -19,13 +19,13 @@ import org.junit.Test;
 import io.churchkey.Key;
 import io.churchkey.Keys;
 import io.churchkey.Resource;
-import org.tomitribe.util.Hex;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPublicKey;
 
+import static io.churchkey.util.Utils.toHexString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -230,7 +230,7 @@ public class BeginPrivateKeyRsaTest {
     }
 
     private String toHex(final BigInteger bigInteger) {
-        return Hex.toString(bigInteger.toByteArray()).toUpperCase().replaceAll("^00", "");
+        return toHexString(bigInteger.toByteArray()).toUpperCase().replaceAll("^00", "");
     }
 
 }

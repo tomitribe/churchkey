@@ -1,13 +1,17 @@
-# Churchkey
+= Churchkey
+:churchkey-version: 0.14
+
+image::https://img.shields.io/maven-central/v/org.tomitribe/churchkey?color=e77224&label=Last%20Release&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAEAAAAA/CAMAAABnwz74AAAAilBMVEUAAADqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyXqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyXqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyTqcyRL2uskAAAALXRSTlMA7+SJTZT9OyIG2Z71dt/MRScZDQgE+bOXcC0U8j/FwbyljFlQ0o9lVIJrijavM7/TAAAB4ElEQVRIx+2W2ZaiMBRFE9oOCTMog2iBinPV/f/fa5QG7o3doDyz3zw5a8vKtMKGCVIO4J0lm4bKBDzhx2mC39DiBGwCXwI6rNUEwR4QiwkCAwu+h7srKeVSDx0ssNkAi50jhEj8i5okUHbXKqMpAhvVCjzZ2/cEAWBcNGLhgRvDxHlVBX8nLSUCT+F9hDAZ4scXdcTd+OHaAiHsayGahJLssHYgq39sBBV8oeK9GzNCFC+9rn0cFrALb8JTjtOqb+9GBCxyU9/fV4qE577NY6Ze5mCUrG8L9boKHwsW2j74SJAo7dT67xx7F10T8eMk9oYi0rqR+eCHHtQwgZZfTXItElFzWmv/b5ai6W2zzT+XwevijZQyYhrXBH1rRM6vaMKcDSHJAu/odWkXfnpfskHOQDD/34xDsyGPcXyCNxe4skS7LQxX6XeqPuGv3EgtVe8Iouu65vKcw0BoXzouiG9OE4lSMlYCxViNCr4B0EYQoJGPCcIEpQcGOosxwRqn1ucCetfyWTALZsEsmAWzYFgQfCjY6gLZFgua39v8QAU2UHzWsiZ50omv9OkkOemJoH/VW3jgQF77+L0fYINzwQ9KZNijJ6TJqTY6nHiDZdOH39L1n7mRHkkuM++Z7+r4D2hVbEujx/8RAAAAAElFTkSuQmCC[]
+// TODO once CI is setup image::https://github.com/tomitribe/churchkey/workflows/Github%20CI/badge.svg[Github Action Build]
 
 Churchkey is a Java library that can parse and export public and private key files in several formats including:
 
-  - JSON Web Key (JWK)
+- JSON Web Key (JWK)
   - PEM
   - OpenSSH
   - SSH2
 
-## Reading keys
+== Reading keys
 
 *Step 1* Pass the bytes of the key file to Churchkey. No need to tell Churchkey what kind of key it is.
 
@@ -42,7 +46,7 @@ Assert.assertTrue(key.getKey() instanceof RSAPublicKey);
 
 See the complete link:https://github.com/tomitribe/churchkey/blob/master/src/test/java/org/supertribe/ExampleTest.java#L39[source]
 
-## Writing/Converting Keys
+== Writing/Converting Keys
 
 The following will read (decode) a PEM file and then convert (encode) it to a JWK format
 
@@ -70,7 +74,7 @@ JsonAsserts.assertJson(expected, jwk);
 
 See the complete link:https://github.com/tomitribe/churchkey/blob/master/src/test/java/org/supertribe/Pem2JwkTest.java#L48[source]
 
-## Get the Public key from a Private key
+== Get the Public key from a Private key
 
 The following will read (decode) a private key PEM file and then obtain and write out the public PEM.
 
@@ -102,10 +106,10 @@ assertEquals("" +
 See the complete link:https://github.com/tomitribe/churchkey/blob/master/src/test/java/org/supertribe/PublicFromPrivateTest.java#L41[source]
 
 
-## Supported Key Formats
+== Supported Key Formats
 Churchkey is a Java library that can read RSA and DSA that look like any of the following:
 
-### JSON Web Key (JWK)
+=== JSON Web Key (JWK)
 
 [source,json]
 ----
@@ -122,7 +126,9 @@ Churchkey is a Java library that can read RSA and DSA that look like any of the 
 }
 ----
 
-### Various PEM Files
+NOTE: requires `nanojson` library.
+
+=== Various PEM Files
 ----
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG7UuaUHqs09
@@ -169,12 +175,12 @@ eDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht
 -----END PUBLIC KEY-----
 ----
 
-### OpenSSH
+=== OpenSSH
 
 Common locations for these would be in:
 
- - `~/.ssh/id_rsa` (PEM format shown above)
- - `~/.ssh/id_rsa.pub` (`ssh-` format shown here)
+- `~/.ssh/id_rsa` (PEM format shown above)
+- `~/.ssh/id_rsa.pub` (`ssh-` format shown here)
 
 ----
 ssh-dss AAAAB3NzaC1kc3MAAACBAN9w84QLHWmzl/gY2Xh/CnM7hfTsUl6Z89NUmhOFfs/wzO54Pl84qKjWmlhJO9VGFwsMRbw0EqGgS1eBngv+DR/eMAN+0KnLTPTNEajKP/ibTRf3sI3Rf7UTYhSp7W5r5FB8TN39chg9JQUR7c0ALOdbyDL8d+yhB5SzLEAWQ4QTAAAAFQCcu9GKMJJyX8go6w1gn93Xi1/EDwAAAIBJYC9VGyg80b7DF8+fHKfezGEjjRgJOVMJQA946vA3A+cntFUU+Y1LayXJ2y... dblevins@mingus.lan
@@ -184,7 +190,7 @@ ssh-dss AAAAB3NzaC1kc3MAAACBAN9w84QLHWmzl/gY2Xh/CnM7hfTsUl6Z89NUmhOFfs/wzO54Pl84
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCyzNurU19lqnYhx5QI72sIX1lh8cTehTmboC+DLG7UuaUHqs096M754HtP2IiHFcIQqwYNzHgKmjmfGdbk9JBkz/DNeDVsA5nc7qTnsSgULXTxwHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q== dblevins@mingus.lan
 ----
 
-### SSH2
+=== SSH2
 
 Commonly mistaken for PEM, but different.
 
@@ -197,14 +203,30 @@ wHSF286IJdco5kasaJm4Xurlm3V+2oiTugraBsi1J0Ht0OtHgJIlIaGxK7mY/Q==
 ---- END SSH2 PUBLIC KEY ----
 ----
 
-## Maven Coordinates
+== Maven Coordinates
 
 [source,xml]
 ----
 <dependency>
   <groupId>org.tomitribe</groupId>
   <artifactId>churchkey</artifactId>
-  <version>0.14</version>
+  <version>${churchkey.version}</version>
 </dependency>
 ----
 
+Note that on Java 17, you can exclude all transitive dependencies if you only use PEM format:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.tomitribe</groupId>
+  <artifactId>churchkey</artifactId>
+  <version>${churchkey.version}</version>
+  <exclusions>
+    <exclusion>
+      <groupId>*</groupId>
+      <artifactId>*</artifactId>
+    </exclusion>
+  </exclusions>
+</dependency>
+----

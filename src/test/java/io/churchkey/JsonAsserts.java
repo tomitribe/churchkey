@@ -18,7 +18,6 @@ package io.churchkey;
 
 import org.junit.Assert;
 import org.tomitribe.util.IO;
-import org.tomitribe.util.PrintString;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -29,8 +28,11 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import static io.churchkey.util.Printers.printer;
 
 public class JsonAsserts {
 
@@ -52,7 +54,7 @@ public class JsonAsserts {
         final Map<String, Object> properties = new HashMap<>(1);
         properties.put(JsonGenerator.PRETTY_PRINTING, true);
         final JsonGeneratorFactory jgf = Json.createGeneratorFactory(properties);
-        final PrintString out = new PrintString();
+        final PrintStream out = printer();
         final JsonGenerator jg = jgf.createGenerator(out);
         jg.write(jsonObject);
         jg.flush();

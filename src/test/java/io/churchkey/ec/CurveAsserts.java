@@ -22,6 +22,7 @@ import java.security.spec.ECFieldF2m;
 import java.security.spec.ECFieldFp;
 import java.security.spec.ECParameterSpec;
 
+import static io.churchkey.util.Utils.toHexString;
 import static org.junit.Assert.assertEquals;
 
 public class CurveAsserts {
@@ -44,8 +45,8 @@ public class CurveAsserts {
     }
 
     public static void assertBigInt(final BigInteger expected, final BigInteger actual) {
-        final String e1 = Hex.toString(expected.toByteArray()).replaceFirst("^00", "");
-        final String a1 = Hex.toString(actual.toByteArray()).replaceFirst("^00", "");
+        final String e1 = toHexString(expected.toByteArray()).replaceFirst("^00", "");
+        final String a1 = toHexString(actual.toByteArray()).replaceFirst("^00", "");
         assertEquals(e1, a1);
     }
 }

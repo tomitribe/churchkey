@@ -16,11 +16,10 @@
  */
 package io.churchkey;
 
-import org.tomitribe.util.IO;
-
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -31,11 +30,11 @@ public class Generate {
         final File dir = new File("/Users/dblevins/work/tomitribe/churchkey/src/test/resources/der");
 
         for (final File file : dir.listFiles()) {
-            final DataInputStream stream = new DataInputStream(IO.read(file));
-            final int anInt = stream.readInt();
-
-            stream.close();
-            IO.copy(Integer.toBinaryString(anInt).getBytes(), new File(file.getAbsolutePath() + ".bin"));
+            final int anInt;
+            try (final DataInputStream stream = new DataInputStream(Files.newInputStream(file.toPath()))) {
+                anInt = stream.readInt();
+            }
+            Files.write(new File(file.getAbsolutePath() + ".bin").toPath(), Integer.toBinaryString(anInt).getBytes());
         }
     }
 
@@ -55,8 +54,8 @@ public class Generate {
 
         for (int i = 0; i < 100; i++) {
             final KeyPair keyPair = rsa.generateKeyPair();
-            IO.copy(keyPair.getPublic().getEncoded(), new File(dir, algorithm + "-" + size + "-public-pkcs8.der." + i));
-            IO.copy(keyPair.getPrivate().getEncoded(), new File(dir, algorithm + "-" + size + "-private-pkcs8.der." + i));
+            Files.write(new File(dir, algorithm + "-" + size + "-public-pkcs8.der." + i).toPath(), keyPair.getPublic().getEncoded());
+            Files.write(new File(dir, algorithm + "-" + size + "-private-pkcs8.der." + i).toPath(), keyPair.getPrivate().getEncoded());
         }
     }
 

@@ -16,9 +16,10 @@
  */
 package io.churchkey;
 
-import org.tomitribe.util.IO;
-
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 
 public class Resource {
@@ -48,7 +49,16 @@ public class Resource {
     public byte[] bytes(final String name) throws IOException {
         final URL privateDerUrl = new URL(base, name);
         requireResource(privateDerUrl, name);
-        return IO.readBytes(privateDerUrl);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final InputStream stream = privateDerUrl.openStream();
+             final OutputStream out = baos) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = stream.read(buffer, 0, buffer.length)) >= 0) {
+                out.write(buffer, 0, read);
+            }
+        }
+        return baos.toByteArray();
     }
 
     private static URL requireResource(final URL resource, final String name) {
